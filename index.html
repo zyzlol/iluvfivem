@@ -225,7 +225,7 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
             rgba(var(--menu-color),0.75) 100%);
         border-radius: 1vw;
         box-shadow: inset 0 .06vw 0 rgba(255,255,255,0.35);
-        transition: top .2s ease, height .2s ease, background .15s ease;
+        transition: top .12s cubic-bezier(.22,1,.36,1), height .12s cubic-bezier(.22,1,.36,1), background .15s ease;
         box-sizing: border-box;
     }
 
@@ -464,9 +464,9 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
 
     .PWrapper .PTabs .PTab .PTLabel {
         position: absolute; display: flex; align-items: center;
-        left: .7vw; top: 0; bottom: 0; right: 8.1vw;
+        left: .7vw; top: 0; bottom: 0; right: 6.8vw;
         width: auto; height: auto; max-width: none;
-        font-size: .62vw; font-weight: 500; line-height: 1.15;
+        font-size: .62vw; font-weight: 500; line-height: 1;
         color: rgba(255,255,255,0.92);
         /* Clip text on .PTText only — overflow:hidden here was slicing FA/SVG icons. */
         overflow: visible;
@@ -477,10 +477,12 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         pointer-events: none;
     }
     .PWrapper .PTabs .PTab .PTLabel .PTText {
-        display: block;
+        display: flex;
+        align-items: center;
         flex: 1 1 auto;
         min-width: 0;
         max-width: 100%;
+        height: 100%;
         overflow: hidden; text-overflow: ellipsis;
         white-space: nowrap;
         font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
@@ -488,10 +490,11 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         font-weight: 500;
         letter-spacing: .01vw;
         color: rgba(255,255,255,0.92);
-        /* 1.15 matches Desktop Static Menu — line-height:1 clips tall glyphs. */
-        line-height: 1.15;
-        transform: none;
-        margin: 0; padding: 0;
+        line-height: 1;
+        padding: 0;
+        box-sizing: border-box;
+        transform: translateY(-.02vw);
+        margin: 0;
         opacity: 1;
         visibility: visible;
     }
@@ -516,7 +519,7 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         flex: 0 0 .72vw !important;
         width: .72vw !important;
         height: .72vw !important;
-        margin: 0 .28vw 0 0 !important;
+        margin: 0 .14vw 0 0 !important;
         padding: 0 !important;
         position: static !important;
         left: auto !important;
@@ -1012,24 +1015,68 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
 
 
 
-/* Notifications — compact menu strip (no toast/icon chrome) */
+/* Notifications — same chrome as keybinds, wider rows like Label + State */
 .NotificationsWrapper {
-    position: fixed;
-    top: 2.2vw;
-    right: 1.4vw;
-    left: auto;
-    bottom: auto;
-    transform: none;
-    display: flex;
+    position: absolute;
+    display: none;
+    width: var(--hud-notify-w);
     flex-direction: column;
-    align-items: flex-end;
-    gap: .18vw;
+    font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+    font-optical-sizing: auto;
+    border-radius: var(--menu-radius);
+    border: .06vw solid var(--menu-border);
+    background: rgba(12,13,17,0.92);
+    box-shadow: none;
+    overflow: hidden;
     z-index: 10000;
     pointer-events: none;
-    font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
-    width: var(--hud-notify-w, 11.6vw);
-    max-width: 280px;
-    background: transparent !important;
+    right: calc(var(--hud-dock-left) + var(--hud-panel-w) + var(--hud-dock-gap));
+    top: calc(var(--hud-dock-top) + 0.45vw);
+    left: auto;
+    bottom: auto;
+}
+.NotificationsWrapper .Header {
+    display: flex; width: 100%; height: 1.7vw;
+    align-items: center;
+    gap: .38vw;
+    padding: 0 .7vw;
+    border-bottom: .06vw solid var(--menu-border);
+    background: linear-gradient(180deg, rgba(255,255,255,0.03), transparent);
+    box-sizing: border-box;
+}
+.NotificationsWrapper .Header .Icon {
+    display: flex; align-items: center; justify-content: center;
+    width: .82vw; height: .82vw;
+    color: rgb(var(--menu-color));
+    flex-shrink: 0;
+    border-radius: .16vw;
+    background: rgba(var(--menu-color),0.12);
+    border: .06vw solid rgba(var(--menu-color),0.28);
+    box-sizing: border-box;
+    line-height: 0;
+}
+.NotificationsWrapper .Header .Icon svg {
+    width: .5vw; height: .5vw; display: block; margin: 0;
+}
+.NotificationsWrapper .Header span {
+    display: flex;
+    align-items: center;
+    height: .82vw;
+    margin: 0;
+    padding: 0;
+    font-size: .58vw; font-weight: 600;
+    letter-spacing: .055vw;
+    text-transform: uppercase;
+    color: var(--text-primary);
+    line-height: 1;
+    transform: none;
+}
+.NotificationsWrapper .Notifications {
+    display: flex; width: 100%;
+    flex-direction: column;
+    padding: .32vw .7vw;
+    max-height: 18vw;
+    overflow: hidden;
 }
 
 .Notification {
@@ -1037,22 +1084,22 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
     position: relative;
     display: flex;
     flex-direction: column;
-    width: auto;
-    min-width: 8.5vw;
+    width: 100%;
+    min-width: 0;
     max-width: 100%;
     box-sizing: border-box;
     pointer-events: none;
     overflow: hidden;
     padding: 0;
-    background: rgba(8,8,12,0.94);
-    border: .06vw solid rgba(255,255,255,0.06);
-    border-radius: .26vw;
-    box-shadow: 0 .2vw .55vw rgba(0,0,0,0.35);
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
     opacity: 0;
     transform: translate3d(.35vw, 0, 0);
-    max-height: 5.5vw;
+    max-height: 4vw;
     transition:
         opacity .12s ease,
         transform .14s ease,
@@ -1060,22 +1107,20 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         margin .12s ease;
 }
 
-/* thin top hairline only — no left stripe / no icons */
 .Notification::before {
     content: "";
     position: absolute;
     left: 0;
-    right: 0;
-    top: 0;
-    bottom: auto;
-    width: auto;
-    height: .05vw;
-    border-radius: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: .12vw;
+    height: .62vw;
+    border-radius: .08vw;
     background: var(--n-accent);
     opacity: .95;
     z-index: 3;
     pointer-events: none;
-    box-shadow: none;
+    box-shadow: 0 0 .18vw var(--n-accent);
 }
 
 .Notification.success { --n-accent: #5fd39a; }
@@ -1097,10 +1142,10 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
 .NotificationInner {
     display: flex;
     width: 100%;
-    align-items: flex-start;
+    align-items: center;
     gap: 0;
-    min-height: 0;
-    padding: .38vw .55vw .36vw;
+    min-height: 1.2vw;
+    padding: .28vw 0 .28vw .42vw;
     box-sizing: border-box;
     background: transparent;
     border: none;
@@ -1108,10 +1153,10 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
 
 .Notification.solo .NotificationInner,
 .Notification:not(.solo) .NotificationInner {
-    min-height: 0;
+    min-height: 1.2vw;
     height: auto;
-    padding: .38vw .55vw .36vw;
-    align-items: flex-start;
+    padding: .28vw 0 .28vw .42vw;
+    align-items: center;
 }
 
 .NotificationMark {
@@ -1129,11 +1174,11 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
     min-width: 0;
     width: 100%;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     flex-wrap: nowrap;
-    align-items: flex-start;
-    gap: .1vw;
-    justify-content: flex-start;
+    align-items: center;
+    justify-content: space-between;
+    gap: .45vw;
     padding: 0;
 }
 
@@ -1141,37 +1186,46 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
 
 .NotificationTitle {
     display: block;
-    font-size: .56vw;
-    font-weight: 550;
-    letter-spacing: .01vw;
+    font-size: .58vw;
+    font-weight: 500;
+    letter-spacing: 0;
     text-transform: none;
-    color: rgba(255,255,255,0.94);
+    color: var(--text-primary);
     line-height: 1.15;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 100%;
+    min-width: 0;
+    flex: 1;
 }
 
-/* keep titles white — kind only colors the top hairline */
 .Notification.success .NotificationTitle,
 .Notification.error .NotificationTitle,
 .Notification.off .NotificationTitle,
 .Notification.info .NotificationTitle {
-    color: rgba(255,255,255,0.94);
+    color: var(--text-primary);
 }
 
 .NotificationBody {
-    display: block;
+    display: flex;
+    align-items: center;
     margin: 0;
     padding: 0;
-    font-size: .48vw;
-    font-weight: 450;
-    letter-spacing: .005vw;
+    font-size: .52vw;
+    font-weight: 600;
+    letter-spacing: .02vw;
     text-transform: none;
-    color: rgba(255,255,255,0.48);
-    line-height: 1.25;
-    word-break: break-word;
+    color: var(--n-accent);
+    line-height: 1;
+    white-space: nowrap;
+    flex: 0 0 auto;
+    max-width: 46%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.Notification.off .NotificationBody {
+    color: var(--text-secondary);
 }
 
 .Notification.solo .NotificationBody {
@@ -1492,9 +1546,9 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
 .PWrapper .PCategories.show{display:flex;}
 /* List scroll and selection bubble share a curve/duration, otherwise crossing a scroll
    boundary glides the rows at one speed and snaps the highlight at another. */
-.PWrapper.fast-nav #list{transition:transform .12s cubic-bezier(.22,1,.36,1)!important;}.PWrapper.fast-nav #selOverlay{transition:top .12s cubic-bezier(.22,1,.36,1)!important;}
+.PWrapper.fast-nav #list{transition:transform .12s cubic-bezier(.22,1,.36,1)!important;}.PWrapper.fast-nav #selOverlay{transition:top .12s cubic-bezier(.22,1,.36,1)!important;}.PWrapper.fast-nav #psProgress{transition:none!important;}
 /* Full rebuilds (tab switches) must not animate in from the old scroll offset. */
-.PWrapper.rendering #list{transition:none!important;}.PWrapper.rendering #selOverlay{transition:none!important;}
+.PWrapper.rendering #list{transition:none!important;}.PWrapper.rendering #selOverlay{transition:none!important;}.PWrapper.rendering #psProgress{transition:none!important;}
 #list{position:relative;z-index:2;width:100%;transition:transform .2s cubic-bezier(.22,1,.36,1);}
 /* Icons stay muted — never brighten on hover/active (matches Static Shark). */
 .PTab.active .PTLabel > .fa-solid,
@@ -1969,7 +2023,7 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
     <div class="PRightElements">
       <div class="PCategories" id="tabsbar"></div>
       <div class="PTabs" id="listWrap">
-        <div id="selOverlay" style="position:absolute;left:0;width:100%;height:1.6vw;border-radius:.3083vw;pointer-events:none;z-index:0;opacity:0;box-sizing:border-box;transition:top 200ms ease, height 120ms ease;"></div>
+        <div id="selOverlay" style="position:absolute;left:.08vw;right:.08vw;width:auto;height:1.6vw;border-radius:.3083vw;pointer-events:none;z-index:0;opacity:0;box-sizing:border-box;transition:top 200ms ease, height 120ms ease;"></div>
         <div class="keybind-panel" id="keybindPanel">
           <div class="kb-head">
             <div class="kb-icon" id="kbCaptureIcon">
@@ -2018,7 +2072,13 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
   </div>
   <div class="Keybinds" id="kbDisplayList"></div>
 </div>
-<div class="NotificationsWrapper" id="notifyWrap"></div>
+<div class="NotificationsWrapper" id="notifyWrap">
+  <div class="Header">
+    <div class="Icon" id="notifyDisplayIcon"></div>
+    <span>Notifications</span>
+  </div>
+  <div class="Notifications" id="notifyList"></div>
+</div>
 <div class="ac-display" id="acDisplay">
   <div class="ac-display-panel">
     <div class="ac-display-head"><div class="ac-display-icon" id="acDisplayIcon"></div><span>Detected on</span></div>
@@ -2452,6 +2512,13 @@ function svgIcon(path, stroke){
       ch.className='chev-right';
       ch.textContent='›';
       tab.appendChild(ch);
+    } else if(kind==='button' && r.sliderMode==='Choice'){
+      const sc=document.createElement('div'); sc.className='Scrollable';
+      const l=document.createElement('span'); l.textContent='-';
+      const m=document.createElement('span'); m.textContent=choiceChipText(r);
+      const rr=document.createElement('span'); rr.textContent='-';
+      sc.appendChild(l); sc.appendChild(m); sc.appendChild(rr);
+      tab.appendChild(sc);
     }
 
     tab.addEventListener('mousedown', function(ev){
@@ -2531,17 +2598,17 @@ function svgIcon(path, stroke){
       if(topPx + hPx > maxH) hPx = Math.max(1, maxH - topPx);
       if(topPx > maxH) topPx = Math.max(0, maxH - hPx);
     }
-    // Flush bubble (no edgeInset) — Desktop Static Menu fill/border/glow.
+    // Same bubble as before (fill, glow, .3083vw radius), inset equally so the
+    // left no longer shows a black sliver while the right sits flush.
     const edgeTol = 1;
     const atTop = topPx <= edgeTol;
-    const rMid = '.3083vw';
     if(atTop) topPx = 0;
     selOverlay.style.boxSizing = 'border-box';
     selOverlay.style.top = topPx + 'px';
     selOverlay.style.height = hPx + 'px';
-    selOverlay.style.left = '0';
-    selOverlay.style.right = 'auto';
-    selOverlay.style.width = '100%';
+    selOverlay.style.left = '.08vw';
+    selOverlay.style.right = '.08vw';
+    selOverlay.style.width = 'auto';
     selOverlay.style.margin = '0';
     selOverlay.style.opacity = '1';
     selOverlay.style.zIndex = '0';
@@ -2551,12 +2618,13 @@ function svgIcon(path, stroke){
     selOverlay.style.border = '0.04vw solid rgba('+color+', 0.95)';
     selOverlay.style.outline = 'none';
     selOverlay.style.outlineOffset = '0';
-    selOverlay.style.borderRadius = rMid;
+    selOverlay.style.borderRadius = '.3083vw';
     selOverlay.style.boxShadow = '0vw 0vw .18vw .02vw rgba('+color+',0.85)';
     selOverlay.style.transition = 'top 200ms ease, height 120ms ease, border-radius 120ms ease';
   }
 
-  // Index scrollbar math (14.0625 / 1.5625 visible rows) — Eshay1.
+  // Thumb tracks the list window (scrollOffset), not the hovered index — otherwise
+  // hold-scroll leaves the bar a few rows behind the translateY.
   function updateScrollBar(scrollOffset, total, maxVis, activeIdx, rowList){
     if(!psProgress) return;
     const rail = document.getElementById('pScroll');
@@ -2567,35 +2635,16 @@ function svgIcon(path, stroke){
     }
     const rows = rowList || [];
     const I = Math.max(1, Number(maxVis) || Math.floor(14.0625 / 1.5625));
-    const countable = [];
-    for(let i = 0; i < rows.length; i++){
-      const r = rows[i];
-      if(!r || r.kind === 'label' || r.menuSectionTitle || r.menuSectionHeader) continue;
-      countable.push(r);
-    }
-    const K = countable.length > 0 ? countable.length : Math.max(0, Number(total) || rows.length || 0);
-    let S = 0;
-    if(countable.length > 0){
-      const ai = Math.max(0, Math.min(Number(activeIdx) || 0, Math.max(rows.length - 1, 0)));
-      const active = rows[ai];
-      const found = countable.indexOf(active);
-      if(found >= 0) S = found;
-      else {
-        for(let i = ai; i >= 0; i--){
-          const f = countable.indexOf(rows[i]);
-          if(f >= 0){ S = f; break; }
-        }
-      }
-    } else {
-      S = Math.max(0, Number(activeIdx) || 0);
-    }
-    if(K <= I){
+    const rawTotal = Math.max(1, Number(total) || rows.length || 0);
+    if(rawTotal <= I){
       psProgress.style.height = '100%';
       psProgress.style.top = '0%';
       return;
     }
-    const F = (I / K) * 100;
-    const te = (S / Math.max(K - 1, 1)) * (100 - F);
+    const rawMaxOff = Math.max(1, rawTotal - I);
+    const off = Math.max(0, Math.min(Number(scrollOffset) || 0, rawMaxOff));
+    const F = (I / rawTotal) * 100;
+    const te = (off / rawMaxOff) * (100 - F);
     psProgress.style.height = F + '%';
     psProgress.style.top = te + '%';
   }
@@ -2667,6 +2716,8 @@ function svgIcon(path, stroke){
   const spDisplayIcon=document.getElementById('spDisplayIcon');
   if(kbDisplayIcon && !kbDisplayIcon.innerHTML) kbDisplayIcon.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M8 14h8"></path></svg>';
   if(spDisplayIcon && !spDisplayIcon.innerHTML) spDisplayIcon.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>';
+  const notifyDisplayIcon=document.getElementById('notifyDisplayIcon');
+  if(notifyDisplayIcon && !notifyDisplayIcon.innerHTML) notifyDisplayIcon.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg>';
   const piIcon=document.getElementById('piIcon');
   if(piIcon && !piIcon.innerHTML) piIcon.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.2"></circle><path d="M5.5 19c.8-3.2 3.4-5 6.5-5s5.7 1.8 6.5 5"></path></svg>';
 
@@ -2688,6 +2739,7 @@ function svgIcon(path, stroke){
   window.staticNotify=function(opts){
     opts=opts||{};
     const wrap=document.getElementById('notifyWrap');
+    const list=document.getElementById('notifyList') || wrap;
     if(!wrap) return false;
     const title=String(opts.title||'Notice');
     const message=String(opts.message||'');
@@ -2704,18 +2756,21 @@ function svgIcon(path, stroke){
       if(!node || node.classList.contains('exit')) return;
       node.classList.remove('enter');
       node.classList.add('exit');
-      setTimeout(function(n){ if(n && n.parentNode) n.parentNode.removeChild(n); }, delay||EXIT_MS, node);
+      setTimeout(function(n){
+        if(n && n.parentNode) n.parentNode.removeChild(n);
+        if(wrap && !wrap.querySelector('.Notification')) wrap.style.display='none';
+      }, delay||EXIT_MS, node);
     }
 
-    const existing=[].slice.call(wrap.querySelectorAll('.Notification:not(.exit)'));
+    const existing=[].slice.call(list.querySelectorAll('.Notification:not(.exit)'));
     for(let i=0;i<existing.length;i++){
       const t=existing[i].querySelector('.NotificationTitle');
       if(t && t.textContent===title){
         dismissToast(existing[i], EXIT_MS);
       }
     }
-    while(wrap.querySelectorAll('.Notification:not(.exit)').length>=MAX_TOASTS){
-      const oldest=wrap.querySelector('.Notification:not(.exit)');
+    while(list.querySelectorAll('.Notification:not(.exit)').length>=MAX_TOASTS){
+      const oldest=list.querySelector('.Notification:not(.exit)');
       if(!oldest) break;
       dismissToast(oldest, EXIT_MS);
     }
@@ -2757,7 +2812,8 @@ function svgIcon(path, stroke){
     progress.appendChild(bar);
     el.appendChild(progress);
 
-    wrap.appendChild(el);
+    list.appendChild(el);
+    wrap.style.display='flex';
     requestAnimationFrame(function(){
       requestAnimationFrame(function(){ el.classList.add('enter'); });
     });
@@ -3116,6 +3172,8 @@ function svgIcon(path, stroke){
         setListShift(0, false);
       } else {
         setListShift(scrollOffset, true);
+        updateHighlight(idx, scrollOffset);
+        updateScrollBar(scrollOffset, rows.length, maxVis, idx, rows);
       }
       window.__staticScrollOff = scrollOffset;
       window.__staticActiveIdx = idx;
