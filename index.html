@@ -519,7 +519,7 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         flex: 0 0 .72vw !important;
         width: .72vw !important;
         height: .72vw !important;
-        margin: 0 .14vw 0 0 !important;
+        margin: 0 .22vw 0 0 !important;
         padding: 0 !important;
         position: static !important;
         left: auto !important;
@@ -547,7 +547,7 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
     .PWrapper .PTabs .PTab i.chev-right,
     .PWrapper .PTabs .PTab .chev-right {
         position: absolute; display: flex;
-        right: .65vw;
+        right: .7vw;
         top: 50%;
         font-size: .58vw;
         color: var(--text-secondary);
@@ -566,7 +566,7 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
 
     .PWrapper .PTabs .PTab .TOptions {
         position: absolute; display: flex;
-        right: .65vw; top: 0; bottom: 0; height: 100%;
+        right: .7vw; top: 0; bottom: 0; height: 100%;
         width: 7.8125vw;
         justify-content: flex-end; align-items: center;
         flex-direction: row; gap: .5vw;
@@ -686,13 +686,28 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
     }
 
     .PWrapper .PTabs .PTab .Slider {
-        position: absolute; display: flex; right: .65vw;
+        position: absolute; display: flex; right: 2.15vw;
         top: 50%;
         transform: translateY(-50%);
         width: 2.2vw; height: .18vw;
         justify-content: flex-start; align-items: center;
         background: rgba(255,255,255,0.06);
         border-radius: .26vw;
+    }
+
+    .PWrapper .PTabs .PTab .SliderValue {
+        position: absolute;
+        right: .42vw;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: .55vw;
+        font-weight: 600;
+        letter-spacing: .01vw;
+        color: rgba(255,255,255,.92);
+        line-height: 1;
+        white-space: nowrap;
+        pointer-events: none;
+        z-index: 2;
     }
 
     .PWrapper .PTabs .PTab .Slider .Progress {
@@ -992,7 +1007,7 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         display: flex;
         align-items: center;
         height: 100%;
-        font-size: .55vw; font-weight: 450;
+        font-size: .48vw; font-weight: 450;
         letter-spacing: .04vw;
         line-height: 1;
         color: var(--text-secondary);
@@ -1015,115 +1030,89 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
 
 
 
-/* Notifications — same chrome as keybinds, wider rows like Label + State */
+/* Silk toasts — no panel header. Same glass / accent / type as HUD. */
 .NotificationsWrapper {
     position: absolute;
     display: none;
-    width: var(--hud-notify-w);
+    left: 50%;
+    right: auto;
+    top: auto;
+    bottom: 2.52vw;
+    transform: translateX(-50%);
+    width: auto;
+    min-width: 11.2vw;
+    max-width: 22vw;
     flex-direction: column;
-    font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
-    font-optical-sizing: auto;
-    border-radius: var(--menu-radius);
-    border: .06vw solid var(--menu-border);
-    background: rgba(12,13,17,0.92);
+    align-items: center;
+    gap: 0;
+    padding: 0;
+    background: none;
+    border: none;
+    border-radius: 0;
     box-shadow: none;
-    overflow: hidden;
+    overflow: visible;
     z-index: 10000;
     pointer-events: none;
-    right: calc(var(--hud-dock-left) + var(--hud-panel-w) + var(--hud-dock-gap));
-    top: calc(var(--hud-dock-top) + 0.45vw);
-    left: auto;
-    bottom: auto;
+    font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
 }
-.NotificationsWrapper .Header {
-    display: flex; width: 100%; height: 1.7vw;
-    align-items: center;
-    gap: .38vw;
-    padding: 0 .7vw;
-    border-bottom: .06vw solid var(--menu-border);
-    background: linear-gradient(180deg, rgba(255,255,255,0.03), transparent);
-    box-sizing: border-box;
-}
-.NotificationsWrapper .Header .Icon {
-    display: flex; align-items: center; justify-content: center;
-    width: .82vw; height: .82vw;
-    color: rgb(var(--menu-color));
-    flex-shrink: 0;
-    border-radius: .16vw;
-    background: rgba(var(--menu-color),0.12);
-    border: .06vw solid rgba(var(--menu-color),0.28);
-    box-sizing: border-box;
-    line-height: 0;
-}
-.NotificationsWrapper .Header .Icon svg {
-    width: .5vw; height: .5vw; display: block; margin: 0;
-}
-.NotificationsWrapper .Header span {
-    display: flex;
-    align-items: center;
-    height: .82vw;
-    margin: 0;
-    padding: 0;
-    font-size: .58vw; font-weight: 600;
-    letter-spacing: .055vw;
-    text-transform: uppercase;
-    color: var(--text-primary);
-    line-height: 1;
-    transform: none;
-}
+.NotificationsWrapper .Header { display: none !important; }
 .NotificationsWrapper .Notifications {
-    display: flex; width: 100%;
-    flex-direction: column;
-    padding: .32vw .7vw;
-    max-height: 18vw;
-    overflow: hidden;
+    display: flex;
+    width: 100%;
+    flex-direction: column-reverse;
+    align-items: stretch;
+    gap: .32vw;
+    padding: 0;
+    max-height: none;
+    overflow: visible;
+    background: none;
 }
 
 .Notification {
     --n-accent: rgb(var(--menu-color));
     position: relative;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    align-items: center;
     width: 100%;
     min-width: 0;
-    max-width: 100%;
+    min-height: 1.28vw;
+    max-height: 3.2vw;
+    gap: .38vw;
+    padding: .32vw .55vw .38vw .42vw;
     box-sizing: border-box;
     pointer-events: none;
     overflow: hidden;
-    padding: 0;
-    background: transparent;
-    border: none;
-    border-radius: 0;
-    box-shadow: none;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
+    background: rgba(12,13,17,.94);
+    border: .06vw solid var(--menu-border);
+    border-radius: .28vw;
+    box-shadow: 0 .16vw .5vw rgba(0,0,0,.42);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
     opacity: 0;
-    transform: translate3d(.35vw, 0, 0);
-    max-height: 4vw;
-    transition:
-        opacity .12s ease,
-        transform .14s ease,
-        max-height .14s ease,
-        margin .12s ease;
+    transform: translate3d(0, .32vw, 0);
+    transition: opacity .16s ease, transform .18s cubic-bezier(.22,1,.36,1);
 }
 
 .Notification::before {
     content: "";
-    position: absolute;
-    left: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    width: .12vw;
-    height: .62vw;
+    display: block;
+    flex: 0 0 .1vw;
+    width: .1vw;
+    height: .52vw;
     border-radius: .08vw;
     background: var(--n-accent);
-    opacity: .95;
-    z-index: 3;
-    pointer-events: none;
-    box-shadow: 0 0 .18vw var(--n-accent);
+    box-shadow: 0 0 .2vw var(--n-accent);
+    position: static;
+    left: auto;
+    top: auto;
+    transform: none;
+    opacity: 1;
+    z-index: 2;
 }
 
-.Notification.success { --n-accent: #5fd39a; }
+.Notification.success { --n-accent: rgb(var(--menu-color)); }
+.Notification.info { --n-accent: rgb(var(--menu-color)); }
 .Notification.error { --n-accent: #ef6b6b; }
 .Notification.off { --n-accent: #8b93a3; }
 
@@ -1131,109 +1120,101 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
     opacity: 1;
     transform: translate3d(0, 0, 0);
 }
-
 .Notification.exit {
     opacity: 0;
-    transform: translate3d(.28vw, 0, 0);
-    max-height: 0;
-    margin: 0 !important;
+    transform: translate3d(0, .22vw, 0);
 }
 
-.NotificationInner {
+.NotificationInner,
+.NotificationContent {
     display: flex;
-    width: 100%;
+    flex: 1 1 auto;
+    min-width: 0;
+    width: auto;
     align-items: center;
-    gap: 0;
-    min-height: 1.2vw;
-    padding: .28vw 0 .28vw .42vw;
-    box-sizing: border-box;
-    background: transparent;
+    justify-content: space-between;
+    gap: .4vw;
+    padding: 0;
+    margin: 0;
+    background: none;
     border: none;
 }
 
-.Notification.solo .NotificationInner,
-.Notification:not(.solo) .NotificationInner {
-    min-height: 1.2vw;
-    height: auto;
-    padding: .28vw 0 .28vw .42vw;
-    align-items: center;
-}
-
-.NotificationMark {
-    display: none !important;
-}
-
+.NotificationMark,
 .NotificationMark svg,
-.NotificationMark::after {
+.NotificationMark::after,
+.NotificationKind {
     display: none !important;
     content: none !important;
 }
 
-.NotificationContent {
-    flex: 1 1 auto;
-    min-width: 0;
-    width: 100%;
-    display: flex;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: .45vw;
-    padding: 0;
-}
-
-.NotificationKind { display: none !important; }
-
 .NotificationTitle {
     display: block;
-    font-size: .58vw;
+    min-width: 0;
+    flex: 1 1 auto;
+    font-size: .52vw;
     font-weight: 500;
-    letter-spacing: 0;
+    letter-spacing: .01vw;
     text-transform: none;
     color: var(--text-primary);
     line-height: 1.15;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    min-width: 0;
-    flex: 1;
 }
 
+.Notification.info .NotificationTitle,
 .Notification.success .NotificationTitle,
 .Notification.error .NotificationTitle,
-.Notification.off .NotificationTitle,
-.Notification.info .NotificationTitle {
+.Notification.off .NotificationTitle {
     color: var(--text-primary);
 }
 
 .NotificationBody {
     display: flex;
     align-items: center;
+    flex: 0 0 auto;
+    max-width: none;
     margin: 0;
     padding: 0;
-    font-size: .52vw;
+    font-size: .48vw;
     font-weight: 600;
     letter-spacing: .02vw;
     text-transform: none;
     color: var(--n-accent);
     line-height: 1;
     white-space: nowrap;
-    flex: 0 0 auto;
-    max-width: 46%;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    overflow: visible;
 }
 
-.Notification.off .NotificationBody {
-    color: var(--text-secondary);
-}
-
-.Notification.solo .NotificationBody {
-    display: none;
-}
+.Notification.off .NotificationBody { color: var(--text-secondary); }
+.Notification.solo .NotificationBody { display: none; }
 
 .NotificationProgress {
-    display: none !important;
+    display: block;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: .055vw;
+    background: rgba(255,255,255,.05);
+    overflow: hidden;
+    z-index: 3;
+}
+.NotificationProgress i {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: var(--n-accent);
+    opacity: .85;
+    transform-origin: left center;
+    animation-name: notifyBarShrink;
+    animation-timing-function: linear;
+    animation-fill-mode: forwards;
+}
+@keyframes notifyBarShrink {
+    from { transform: scaleX(1); }
+    to { transform: scaleX(0); }
 }
 
 
@@ -1550,6 +1531,7 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
 /* Full rebuilds (tab switches) must not animate in from the old scroll offset. */
 .PWrapper.rendering #list{transition:none!important;}.PWrapper.rendering #selOverlay{transition:none!important;}.PWrapper.rendering #psProgress{transition:none!important;}
 #list{position:relative;z-index:2;width:100%;transition:transform .2s cubic-bezier(.22,1,.36,1);}
+#selOverlay{position:absolute!important;left:0!important;right:0!important;width:100%!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;box-sizing:border-box!important;border-radius:.3083vw!important;}
 /* Icons stay muted — never brighten on hover/active (matches Static Shark). */
 .PTab.active .PTLabel > .fa-solid,
 .PTab.active .PTLabel .ico,
@@ -2023,7 +2005,7 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
     <div class="PRightElements">
       <div class="PCategories" id="tabsbar"></div>
       <div class="PTabs" id="listWrap">
-        <div id="selOverlay" style="position:absolute;left:.08vw;right:.08vw;width:auto;height:1.6vw;border-radius:.3083vw;pointer-events:none;z-index:0;opacity:0;box-sizing:border-box;transition:top 200ms ease, height 120ms ease;"></div>
+        <div id="selOverlay" style="position:absolute;left:0;right:0;width:100%;height:1.6vw;border-radius:.3083vw;pointer-events:none;z-index:0;opacity:0;box-sizing:border-box;margin:0;transform:none;transition:top 200ms ease, height 120ms ease;"></div>
         <div class="keybind-panel" id="keybindPanel">
           <div class="kb-head">
             <div class="kb-icon" id="kbCaptureIcon">
@@ -2043,7 +2025,7 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
         <div id="list"></div>
       </div>
       <div class="PFooter">
-        <span class="PBuild" id="footL">Static Menu</span>
+        <span class="PBuild" id="footL">discord.gg/staticservices</span>
         <span class="PIndicator" id="footR">(1/1)</span>
       </div>
     </div>
@@ -2073,10 +2055,6 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
   <div class="Keybinds" id="kbDisplayList"></div>
 </div>
 <div class="NotificationsWrapper" id="notifyWrap">
-  <div class="Header">
-    <div class="Icon" id="notifyDisplayIcon"></div>
-    <span>Notifications</span>
-  </div>
   <div class="Notifications" id="notifyList"></div>
 </div>
 <div class="ac-display" id="acDisplay">
@@ -2475,9 +2453,6 @@ function svgIcon(path, stroke){
       }
     }
     let labelText = esc(r.label||'');
-    if(kind==='slider' && isActive && !isChoiceLikeRow(r)){
-      labelText = labelText + ': ' + esc(r.sliderText!=null?r.sliderText:(r.sliderValue!=null?r.sliderValue:''));
-    }
     const txt=document.createElement('span'); txt.className='PTText'; txt.textContent=labelText; lab.appendChild(txt);
     tab.appendChild(lab);
 
@@ -2506,6 +2481,15 @@ function svgIcon(path, stroke){
         const pct=Math.max(0,Math.min(100, max===min?0:((v-min)/(max-min))*100));
         sl.innerHTML='<div class="Progress" style="width:'+pct+'%"><div class="Thumb"></div></div>';
         tab.appendChild(sl);
+        const valText = (r.sliderText!=null && String(r.sliderText)!=='')
+          ? String(r.sliderText)
+          : (r.sliderValue!=null ? String(r.sliderValue) : '');
+        if(valText){
+          const sv=document.createElement('span');
+          sv.className='SliderValue';
+          sv.textContent=valText;
+          tab.appendChild(sv);
+        }
       }
     } else if(kind==='category'){
       const ch=document.createElement('span');
@@ -2586,7 +2570,6 @@ function svgIcon(path, stroke){
       return;
     }
     const color = row.classList.contains('red-row') ? '229, 72, 72' : menuColor();
-    // Eshay1: offsetTop, not getBoundingClientRect (avoids in-flight transform = visual jump).
     const rowH = (list.children[0] && list.children[0].offsetHeight) || row.offsetHeight || 0;
     const scrollPx = window.__staticListShiftPx != null
       ? Math.max(0, window.__staticListShiftPx)
@@ -2598,26 +2581,24 @@ function svgIcon(path, stroke){
       if(topPx + hPx > maxH) hPx = Math.max(1, maxH - topPx);
       if(topPx > maxH) topPx = Math.max(0, maxH - hPx);
     }
-    // Same bubble as before (fill, glow, .3083vw radius), inset equally so the
-    // left no longer shows a black sliver while the right sits flush.
-    const edgeTol = 1;
-    const atTop = topPx <= edgeTol;
-    if(atTop) topPx = 0;
+    if(topPx <= 1) topPx = 0;
+    selOverlay.style.display = 'block';
     selOverlay.style.boxSizing = 'border-box';
     selOverlay.style.top = topPx + 'px';
     selOverlay.style.height = hPx + 'px';
-    selOverlay.style.left = '.08vw';
-    selOverlay.style.right = '.08vw';
-    selOverlay.style.width = 'auto';
-    selOverlay.style.margin = '0';
+    selOverlay.style.setProperty('left', '0', 'important');
+    selOverlay.style.setProperty('right', '0', 'important');
+    selOverlay.style.setProperty('width', '100%', 'important');
+    selOverlay.style.setProperty('margin', '0', 'important');
+    selOverlay.style.setProperty('max-height', 'none', 'important');
+    selOverlay.style.setProperty('transform', 'none', 'important');
     selOverlay.style.opacity = '1';
     selOverlay.style.zIndex = '0';
     selOverlay.style.pointerEvents = 'none';
     selOverlay.style.background = 'none';
     selOverlay.style.backgroundColor = 'rgba('+color+', 0.55)';
-    selOverlay.style.border = '0.04vw solid rgba('+color+', 0.95)';
     selOverlay.style.outline = 'none';
-    selOverlay.style.outlineOffset = '0';
+    selOverlay.style.border = '0.04vw solid rgba('+color+', 0.95)';
     selOverlay.style.borderRadius = '.3083vw';
     selOverlay.style.boxShadow = '0vw 0vw .18vw .02vw rgba('+color+',0.85)';
     selOverlay.style.transition = 'top 200ms ease, height 120ms ease, border-radius 120ms ease';
@@ -2716,12 +2697,8 @@ function svgIcon(path, stroke){
   const spDisplayIcon=document.getElementById('spDisplayIcon');
   if(kbDisplayIcon && !kbDisplayIcon.innerHTML) kbDisplayIcon.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M8 14h8"></path></svg>';
   if(spDisplayIcon && !spDisplayIcon.innerHTML) spDisplayIcon.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>';
-  const notifyDisplayIcon=document.getElementById('notifyDisplayIcon');
-  if(notifyDisplayIcon && !notifyDisplayIcon.innerHTML) notifyDisplayIcon.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg>';
   const piIcon=document.getElementById('piIcon');
   if(piIcon && !piIcon.innerHTML) piIcon.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.2"></circle><path d="M5.5 19c.8-3.2 3.4-5 6.5-5s5.7 1.8 6.5 5"></path></svg>';
-
-  const NOTIFY_ICONS={};
 
   function notifyKindClass(kind, title, message){
     const k=String(kind||'').toLowerCase();
@@ -2745,12 +2722,8 @@ function svgIcon(path, stroke){
     const message=String(opts.message||'');
     const kind=notifyKindClass(opts.kind, title, message);
     const duration=Math.max(1800, Number(opts.duration)||3600);
-    const EXIT_MS=200;
-    const MAX_TOASTS=4;
-    const iconHtml=(kind==='success' && (ICONS['shield-check'] || ICONS.check || ICONS.ghost))
-      || (kind==='error' && (ICONS.ban || ICONS.alert || ICONS.ghost))
-      || (kind==='off' && (ICONS.lock || ICONS.power || ICONS.eye || ICONS.ghost))
-      || (ICONS.info || ICONS.ghost || '');
+    const EXIT_MS=220;
+    const MAX_TOASTS=3;
 
     function dismissToast(node, delay){
       if(!node || node.classList.contains('exit')) return;
@@ -2758,7 +2731,9 @@ function svgIcon(path, stroke){
       node.classList.add('exit');
       setTimeout(function(n){
         if(n && n.parentNode) n.parentNode.removeChild(n);
-        if(wrap && !wrap.querySelector('.Notification')) wrap.style.display='none';
+        if(wrap && !wrap.querySelector('.Notification')){
+          wrap.style.setProperty('display','none','important');
+        }
       }, delay||EXIT_MS, node);
     }
 
@@ -2780,12 +2755,6 @@ function svgIcon(path, stroke){
 
     const inner=document.createElement('div');
     inner.className='NotificationInner';
-
-    const mark=document.createElement('div');
-    mark.className='NotificationMark';
-    mark.setAttribute('aria-hidden','true');
-    if(iconHtml) mark.innerHTML=iconHtml;
-    inner.appendChild(mark);
 
     const content=document.createElement('div');
     content.className='NotificationContent';
@@ -2813,7 +2782,7 @@ function svgIcon(path, stroke){
     el.appendChild(progress);
 
     list.appendChild(el);
-    wrap.style.display='flex';
+    wrap.style.setProperty('display','flex','important');
     requestAnimationFrame(function(){
       requestAnimationFrame(function(){ el.classList.add('enter'); });
     });
@@ -3130,7 +3099,7 @@ function svgIcon(path, stroke){
       cluster.style.visibility='';
       document.documentElement.classList.add('static-shark-ready');
 
-      if(footL && !isKeybind) footL.textContent = s.footerLeft || 'Static Menu';
+      if(footL && !isKeybind) footL.textContent = s.footerLeft || 'discord.gg/staticservices';
 
       if(listSectionHeader){
         listSectionHeader.classList.remove('show');
