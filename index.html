@@ -376,6 +376,7 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
             rgba(var(--menu-color),0.4) 100%);
         border-radius: .1vw .1vw 0 0;
         box-shadow: 0 0 .6vw rgba(var(--menu-color),0.5);
+        transition: opacity .18s ease, transform .18s ease;
     }
 
     /* Single tab (e.g. Main): same visual weight as a multi-tab cell (~1/3), not tiny left text. */
@@ -1495,9 +1496,14 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
 .PWrapper:not(.keybind-mode) .PBanner,.PWrapper:not(.keybind-mode) .PCategories,.PWrapper:not(.keybind-mode) .PTabs,.PWrapper:not(.keybind-mode) .PFooter{width:100%!important;max-width:100%!important;margin-left:0!important;margin-right:0!important;box-sizing:border-box!important;}
 .PWrapper .PCategories:empty,.PWrapper .PCategories:not(.show){display:none;}
 .PWrapper .PCategories.show{display:flex;}
-/* Full rebuilds (tab switches) must not animate in from the old scroll offset. */
+/* List scroll and selection bubble share a curve/duration, otherwise crossing a scroll
+   boundary glides the rows at one speed and snaps the highlight at another. */
+.PWrapper.fast-nav #list{transition:transform .12s cubic-bezier(.22,1,.36,1), opacity .12s ease!important;}
+.PWrapper.fast-nav #selOverlay{transition:top .12s cubic-bezier(.22,1,.36,1), height .12s cubic-bezier(.22,1,.36,1)!important;}
+.PWrapper.fast-nav #psProgress{transition:none!important;}
+/* Full rebuilds (section changes) must not animate in from the old scroll offset. */
 .PWrapper.rendering #list{transition:none!important;}.PWrapper.rendering #selOverlay{transition:none!important;}.PWrapper.rendering #psProgress{transition:none!important;}
-#list{position:relative;z-index:2;width:100%;transition:transform 200ms ease;}
+#list{position:relative;z-index:2;width:100%;transition:transform .2s cubic-bezier(.22,1,.36,1), opacity .16s ease;}
 #selOverlay{position:absolute!important;left:-0.06vw!important;right:-0.06vw!important;width:auto!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;box-sizing:border-box!important;border-radius:.3083vw!important;background:none!important;border:none!important;box-shadow:none!important;outline:none!important;transition:top 200ms ease, height 120ms ease;}
 .PTab.active .PTLabel > .fa-solid,
 .PTab.active .PTLabel .ico,
@@ -2229,6 +2235,23 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
   window.__staticLastState=null;
   let _lastSelAt=0;
 
+  function beginFastNav(ms){
+    ms = ms || 200;
+    if(!cluster) return;
+    cluster.classList.add('fast-nav');
+    clearTimeout(window.__staticFastNavTimer);
+    window.__staticFastNavTimer = setTimeout(function(){
+      if(cluster) cluster.classList.remove('fast-nav');
+    }, ms);
+  }
+
+  function isTabSwitch(prevCtx, s){
+    if(!prevCtx || !s) return false;
+    const pp = prevCtx.split('|');
+    if(pp.length < 3) return false;
+    return pp[0]===(s.mode||'') && pp[1]===(s.section||'') && pp[2]!==String(s.tabIndex||1);
+  }
+
   function menuColor(){
     return getComputedStyle(document.documentElement).getPropertyValue('--menu-color').trim() || '22, 137, 212';
   }
@@ -2375,23 +2398,7 @@ function S(inner){
     gauge:'fa-sliders', rainbow:'fa-palette'
   };
 
-  function iconFaClass(spec){
-    const s=String(spec||'').trim();
-    if(!s) return '';
-    if(/\bfa-solid\b|\bfa-regular\b|\bfas\b|\bfar\b/.test(s)) return s.replace(/\s+/g,' ').trim();
-    if(/\bfa-[a-z0-9-]+\b/i.test(s)){
-      const parts=s.match(/\bfa-[a-z0-9-]+\b/gi)||[];
-      const icons=parts.filter(p=>!/^fa-(solid|regular|brands)$/i.test(p));
-      if(icons.length) return ('fa-solid '+icons.join(' ')).trim();
-    }
-    const k=iconKeyFromSpec(s);
-    const fa=FA_FROM_KEY[k];
-    return fa ? ('fa-solid '+fa) : '';
-  }
-
   function iconSvgHtml(key){
-    const faCls=iconFaClass(key);
-    if(faCls) return '<i class="'+faCls+'" aria-hidden="true"></i>';
     const k=iconKeyFromSpec(key);
     return (typeof ICONS!=='undefined' && (ICONS[k]||ICONS.dot)) || '';
   }
@@ -2452,19 +2459,12 @@ function S(inner){
     }
 
     const lab=document.createElement('span'); lab.className='PTLabel';
+    // Category icons: embedded SVG (ICONS map). FA subset is for scroll arrows / chrome only.
     if(kind==='category' && r.icon){
-      const faCls=iconFaClass(r.icon);
-      if(faCls){
-        const ico=document.createElement('i');
-        ico.className=faCls;
-        ico.setAttribute('aria-hidden','true');
-        lab.appendChild(ico);
-      } else {
-        const ico=document.createElement('span');
-        ico.className='ico';
-        ico.innerHTML=iconSvgHtml(r.icon);
-        lab.appendChild(ico);
-      }
+      const ico=document.createElement('span');
+      ico.className='ico';
+      ico.innerHTML=iconSvgHtml(r.icon);
+      lab.appendChild(ico);
     }
     let labelText = esc(r.label||'');
     const txt=document.createElement('span'); txt.className='PTText'; txt.textContent=labelText; lab.appendChild(txt);
@@ -3058,7 +3058,7 @@ function S(inner){
         window.__staticCtxSig = null;
         window.__staticListSig = null;
         window.__staticVirtSig = null;
-        cluster.classList.remove('open','rendering','input-hidden','color-picker-open','gun-picker-open');
+        cluster.classList.remove('open','rendering','fast-nav','input-hidden','color-picker-open','gun-picker-open');
         cluster.style.opacity='0';
         cluster.style.visibility='hidden';
         cluster.style.pointerEvents='none';
@@ -3165,12 +3165,14 @@ function S(inner){
       const idx=Math.max(0, Math.min((s.activeRow||1)-1, Math.max(rows.length-1,0)));
       const isMain = s.mode==='main';
       const maxVis = isKeybind ? DEFAULT_VIS : maxVisibleRows(showTabs, isMain);
+      const prevCtx = window.__staticCtxSig;
       const ctxSig = (s.mode||'')+'|'+(s.section||'')+'|'+(s.tabIndex||1)+'|'+(s.rowsVersion||0);
-      const forceList = window.__staticCtxSig !== ctxSig;
+      const forceList = prevCtx !== ctxSig;
+      const tabSwitch = forceList && !isKeybind && (!!s.smoothTab || isTabSwitch(prevCtx, s));
       window.__staticCtxSig = ctxSig;
 
-      const paintListNow=function(){
-        cluster.classList.add('rendering');
+      const paintListNow=function(smooth){
+        if(!smooth) cluster.classList.add('rendering');
         let scrollOffset = 0;
         try{
           scrollOffset = isKeybind ? 0 : paintVisibleRows(rows, idx, maxVis, forceList);
@@ -3183,26 +3185,50 @@ function S(inner){
         }catch(listErr){
           console.error('[Static x Eshay] list paint failed', listErr);
         }finally{
-          requestAnimationFrame(function(){
-            cluster.classList.remove('rendering');
-            if(!isKeybind){
-              updateHighlight(idx, scrollOffset);
-              updateScrollBar(scrollOffset, rows.length, maxVis, idx, rows);
-            } else if(selOverlay){ selOverlay.style.opacity='0'; }
-          });
+          if(smooth){
+            requestAnimationFrame(function(){
+              if(!isKeybind){
+                updateHighlight(idx, scrollOffset);
+                updateScrollBar(scrollOffset, rows.length, maxVis, idx, rows);
+              } else if(selOverlay){ selOverlay.style.opacity='0'; }
+            });
+          } else {
+            requestAnimationFrame(function(){
+              cluster.classList.remove('rendering');
+              if(!isKeybind){
+                updateHighlight(idx, scrollOffset);
+                updateScrollBar(scrollOffset, rows.length, maxVis, idx, rows);
+              } else if(selOverlay){ selOverlay.style.opacity='0'; }
+            });
+          }
         }
       };
 
       if(forceList && !isKeybind){
-        if(window.__staticNavRaf) cancelAnimationFrame(window.__staticNavRaf);
-        if(selOverlay) selOverlay.style.opacity='0';
-        cluster.classList.add('rendering');
-        window.__staticNavRaf = requestAnimationFrame(function(){
-          window.__staticNavRaf = 0;
-          paintListNow();
-        });
+        if(tabSwitch){
+          beginFastNav(220);
+          if(window.__staticNavRaf) cancelAnimationFrame(window.__staticNavRaf);
+          if(list) list.style.opacity='0.35';
+          window.__staticNavRaf = requestAnimationFrame(function(){
+            window.__staticNavRaf = 0;
+            paintListNow(true);
+            if(list){
+              requestAnimationFrame(function(){
+                list.style.opacity='1';
+              });
+            }
+          });
+        } else {
+          if(window.__staticNavRaf) cancelAnimationFrame(window.__staticNavRaf);
+          if(selOverlay) selOverlay.style.opacity='0';
+          cluster.classList.add('rendering');
+          window.__staticNavRaf = requestAnimationFrame(function(){
+            window.__staticNavRaf = 0;
+            paintListNow(false);
+          });
+        }
       } else {
-        paintListNow();
+        paintListNow(false);
       }
 
       if(footR && !isKeybind){
@@ -3229,7 +3255,10 @@ function S(inner){
     s.activeRow=Number(activeRow)||1;
     if(typeof footerRight==='string') s.footerRight=footerRight;
     const idx=Math.max(0, Math.min((s.activeRow||1)-1, Math.max(rows.length-1,0)));
-    _lastSelAt=(performance&&performance.now)?performance.now():Date.now();
+    const now=(performance&&performance.now)?performance.now():Date.now();
+    const fast=(now-_lastSelAt)<90;
+    cluster.classList.toggle('fast-nav', fast);
+    _lastSelAt=now;
     for(let i=0;i<list.children.length;i++) list.children[i].classList.toggle('active', i===idx);
 
     const showTabs = s.mode!=='main' && s.tabs && s.tabs.length>1;
@@ -3243,6 +3272,10 @@ function S(inner){
     updateScrollBar(scrollOffset, rows.length, maxVis, idx, rows);
     if(footR) footR.textContent=formatFootCount(rows, idx);
     setDesc(s.footerRight||'');
+    if(fast){
+      clearTimeout(window.__staticFastNavTimer);
+      window.__staticFastNavTimer=setTimeout(function(){ cluster.classList.remove('fast-nav'); }, 180);
+    }
     return true;
   };
 
