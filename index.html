@@ -1898,6 +1898,8 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
       try{
         const inner=typeof d.text==='string'?JSON.parse(d.text):d.text;
         if(inner&&inner.t==='ui') return inner;
+        if(inner&&inner.open!=null&&(inner.rows||inner.mode))
+          return { t:'ui', action:'render', payload: inner };
       }catch(_){}
     }
     if(d.type&&d.text!=null){
@@ -1911,6 +1913,8 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
         if(typeof payload==='string'){ try{ payload=JSON.parse(payload); }catch(_){} }
         return { t:'ui', action:'render', payload };
       }
+      if(body&&typeof body==='object'&&body.open!=null&&(body.rows||body.mode))
+        return { t:'ui', action:'render', payload: body };
       if(body&&typeof body==='object') return Object.assign({ t:'ui', action:typ }, body);
       return { t:'ui', action:typ, text:d.text };
     }
@@ -2205,7 +2209,10 @@ function S(inner){
     return tab;
   }
 
-  function rowHeightPx(){ return window.innerWidth * (ROW_H_VW / 100); }
+  function rowHeightPx(){
+    const w=Math.max(window.innerWidth||0, document.documentElement.clientWidth||0, 1920);
+    return w*(ROW_H_VW/100);
+  }
 
   // Real distance between row tops. Borders/padding make this larger than ROW_H_VW, and
   // that gap multiplies by the scroll offset — which is what pushed the last rows of a
@@ -2653,8 +2660,8 @@ function S(inner){
     }
     const vis=Math.max(Math.min(rowCount, maxVis), rowCount>0?1:0);
     // Whole-row height + tiny pad so the selection bubble isn't clipped.
-    const pitch = rowPitchPx();
-    const slack = window.innerWidth * (0.04 / 100);
+    const pitch=Math.max(18, rowPitchPx());
+    const slack=Math.max(0.5, window.innerWidth*(0.04/100));
     listWrap.style.height=(vis*pitch + slack)+'px';
     listWrap.style.maxHeight = isMain
       ? 'none'
@@ -2899,8 +2906,11 @@ function S(inner){
     if(d.action==='weaponWheelShow' && window.__staticWWShow){ window.__staticWWShow(d.weaponWheel||{}); }
     else if(d.action==='weaponWheelUpdate' && window.__staticWWUpdate){ window.__staticWWUpdate(d.weaponWheel||{}); }
     else if(d.action==='weaponWheelHide' && window.__staticWWHide){ window.__staticWWHide(); }
-    else if(d.action==='render'){
-      var p=d.payload;
+    else if(d.action==='render' || (d.open!=null && (d.rows||d.mode))){
+      var p=d.action==='render' ? d.payload : d;
+      if(p==null && d.text!=null){
+        p=typeof d.text==='string' ? (function(){ try{return JSON.parse(d.text);}catch(_){return null;} })() : d.text;
+      }
       if(typeof p==='string'){ try{p=JSON.parse(p);}catch(_){return;} }
       if(p) window.staticRender(p);
     }
