@@ -1491,7 +1491,25 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
 /* Full rebuilds (tab switches) must not animate in from the old scroll offset. */
 .PWrapper.rendering #list{transition:none!important;}.PWrapper.rendering #selOverlay{transition:none!important;}.PWrapper.rendering #psProgress{transition:none!important;}
 #list{position:relative!important;z-index:2;width:100%;transition:transform .2s cubic-bezier(.22,1,.36,1);}
-#selOverlay{position:absolute!important;top:0;left:0!important;right:0!important;width:auto!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;box-sizing:border-box!important;border-radius:.3083vw!important;filter:none!important;z-index:0!important}
+#selOverlay{display:none!important;opacity:0!important;pointer-events:none!important}
+.PWrapper .PTabs .PTab.active::before{
+  content:"";
+  position:absolute;
+  left:.06vw;right:0;top:0;bottom:0;
+  background-color:rgba(var(--menu-color),0.55);
+  border:.04vw solid rgba(var(--menu-color),0.95);
+  border-radius:.3083vw;
+  box-shadow:inset .04vw 0 0 0 rgba(var(--menu-color),0.95),0 0 .18vw .02vw rgba(var(--menu-color),0.85);
+  pointer-events:none;
+  z-index:0;
+  box-sizing:border-box;
+}
+.PWrapper .PTabs .PTab.red-row.active::before{
+  background-color:rgba(229,72,72,0.55);
+  border-color:rgba(229,72,72,0.95);
+  box-shadow:inset .04vw 0 0 0 rgba(229,72,72,0.95),0 0 .18vw .02vw rgba(229,72,72,0.85);
+}
+.PWrapper .PTabs .PTab.active{background:transparent!important}
 .PTab.active .PTLabel > .fa-solid,
 .PTab.active .PTLabel .ico,
 .PTab.active .PTLabel .ico .fa-solid,
@@ -2610,37 +2628,12 @@ function S(inner){
     return ov;
   }
 
-  function updateHighlight(idx, scrollOffset){
-    const ov = ensureSelOverlayInList();
-    if(!ov || !list) return;
-    const row = findRowEl(idx);
-    if(!row){
-      ov.style.opacity='0';
-      return;
+  function updateHighlight(){
+    const ov = document.getElementById('selOverlay');
+    if(ov){
+      ov.style.display = 'none';
+      ov.style.opacity = '0';
     }
-    const color = row.classList.contains('red-row') ? '229, 72, 72' : menuColor();
-    let topPx = row.offsetTop || 0;
-    let hPx = row.offsetHeight || rowPitchPx() || 1;
-    const scrollOff = Math.max(0, Number(scrollOffset != null ? scrollOffset : window.__staticScrollOff) || 0);
-    if(scrollOff <= 0 && topPx <= 1) topPx = 0;
-    ov.style.display = 'block';
-    ov.style.top = topPx + 'px';
-    ov.style.height = hPx + 'px';
-    ov.style.left = '0';
-    ov.style.right = '0';
-    ov.style.width = 'auto';
-    ov.style.opacity = '1';
-    ov.style.zIndex = '0';
-    ov.style.pointerEvents = 'none';
-    ov.style.boxSizing = 'border-box';
-    ov.style.background = 'none';
-    ov.style.backgroundColor = 'rgba('+color+', 0.55)';
-    ov.style.outline = 'none';
-    ov.style.border = '0.04vw solid rgba('+color+', 0.95)';
-    ov.style.borderRadius = '.3083vw';
-    ov.style.boxShadow = '0vw 0vw .18vw .02vw rgba('+color+',0.85)';
-    ov.style.filter = 'none';
-    ov.style.transition = 'top 200ms ease, height 120ms ease, border-radius 120ms ease';
   }
   window.__staticUpdateHighlight = updateHighlight;
 
