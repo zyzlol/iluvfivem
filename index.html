@@ -123,7 +123,7 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         position: absolute; display: flex; left: 50%; bottom: 4vw;
         transform: translate(-50%); width: auto; height: 1.3vw;
         background: rgba(8,8,12,0.96); border-radius: .26vw;
-        padding: 0 1vw; font-family: Inter; font-weight: 350;
+        padding: 0 1vw; font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif; font-weight: 400;
         font-size: .62vw; color: var(--text-secondary);
         justify-content: center; align-items: center;
         border: .06vw solid rgba(var(--menu-color),0.2);
@@ -153,8 +153,8 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
     .PWrapper .PElements {
         position: relative; display: flex;
         width: 100%;
-        justify-content: flex-start; align-items: center;
-        flex-direction: row; gap: .26vw;
+        justify-content: flex-start; align-items: stretch;
+        flex-direction: row; gap: 0;
         box-sizing: border-box;
     }
 
@@ -338,7 +338,7 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         position: relative; display: flex; flex: 1;
         text-align: center; height: 100%;
         justify-content: center; align-items: center;
-        font-size: .6vw; font-weight: 450;
+        font-size: .6vw; font-weight: 500;
         color: var(--text-secondary);
         letter-spacing: .03vw;
         cursor: pointer;
@@ -397,7 +397,7 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         position: relative; display: flex;
         width: 100%; height: auto;
         max-height: 14.0625vw;
-        justify-content: flex-start; align-items: center;
+        justify-content: flex-start; align-items: stretch;
         flex-direction: column;
         background: var(--menu-bg);
         border: .06vw solid var(--menu-border);
@@ -433,10 +433,12 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         background: linear-gradient(90deg, rgba(var(--menu-color),0.1) 0%, rgba(255,255,255,0.01) 60%, transparent 100%);
     }
 
-    .PWrapper .PTabs .PTab.red-row .PTLabel {
+    .PWrapper .PTabs .PTab.red-row .PTLabel,
+    .PWrapper .PTabs .PTab.red-row .PTLabel .PTText {
         color: #e54848 !important;
     }
-    .PWrapper .PTabs .PTab.red-row.active .PTLabel {
+    .PWrapper .PTabs .PTab.red-row.active .PTLabel,
+    .PWrapper .PTabs .PTab.red-row.active .PTLabel .PTText {
         color: #fff !important;
     }
     .PWrapper .PTabs .PTab.red-row:hover {
@@ -449,9 +451,9 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
 
     .PWrapper .PTabs .PTab .PTLabel {
         position: absolute; display: flex; align-items: center;
-        left: .7vw; top: 0; bottom: 0; right: 6.8vw;
+        left: .7vw; top: 0; bottom: 0; right: 8.1vw;
         width: auto; height: auto; max-width: none;
-        font-size: .62vw; font-weight: 500; line-height: 1;
+        font-size: .62vw; font-weight: 500; line-height: 1.15;
         color: rgba(255,255,255,0.92);
         overflow: visible;
         white-space: nowrap;
@@ -461,23 +463,22 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         pointer-events: none;
     }
     .PWrapper .PTabs .PTab .PTLabel .PTText {
-        display: flex;
-        align-items: center;
+        display: block;
         flex: 1 1 auto;
         min-width: 0;
         max-width: 100%;
-        height: 100%;
         overflow: hidden; text-overflow: ellipsis;
         white-space: nowrap;
+        font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
         font-size: .62vw;
         font-weight: 500;
         letter-spacing: .01vw;
         color: rgba(255,255,255,0.92);
-        line-height: 1;
-        padding: 0;
-        box-sizing: border-box;
-        transform: translateY(-.02vw);
-        margin: 0;
+        line-height: 1.15;
+        transform: none;
+        margin: 0; padding: 0;
+        opacity: 1;
+        visibility: visible;
     }
 
     .PWrapper .PTabs .PTab.active .PTLabel,
@@ -491,13 +492,45 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         font-size: .58vw; color: var(--text-secondary);
     }
 
+    .PWrapper .PTabs .PTab .PTLabel > .fa-solid,
+    .PWrapper .PTabs .PTab .PTLabel > .ico {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        flex: 0 0 .72vw !important;
+        width: .72vw !important;
+        height: .72vw !important;
+        margin: 0 .28vw 0 0 !important;
+        padding: 0 !important;
+        position: static !important;
+        left: auto !important;
+        right: auto !important;
+        top: auto !important;
+        bottom: auto !important;
+        transform: none !important;
+        line-height: 1 !important;
+        font-size: .58vw !important;
+        color: rgba(255,255,255,.72) !important;
+        vertical-align: middle;
+        transition: none;
+        overflow: visible !important;
+        box-sizing: border-box !important;
+    }
+    .PWrapper .PTabs .PTab .PTLabel > .ico svg {
+        width: .58vw !important;
+        height: .58vw !important;
+        display: block;
+        margin: 0;
+        overflow: visible;
+        stroke-width: 2.2;
+    }
+
     .PWrapper .PTabs .PTab i.chev-right,
     .PWrapper .PTabs .PTab .chev-right {
         position: absolute; display: flex;
-        right: .7vw;
+        right: .65vw;
         top: 50%;
         font-size: .58vw;
-        font-weight: 400;
         color: var(--text-secondary);
         transform: translateY(-50%);
         line-height: 1;
@@ -511,51 +544,10 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         transform: none;
         flex: 0 0 auto;
     }
-    .PWrapper .PTabs .PTab .PTLabel > .fa-solid,
-    .PWrapper .PTabs .PTab .PTLabel > .ico {
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        flex: 0 0 .72vw !important;
-        width: .72vw !important;
-        height: .72vw !important;
-        margin: 0 .22vw 0 0 !important;
-        padding: 0 !important;
-        position: static !important;
-        left: auto !important;
-        right: auto !important;
-        top: auto !important;
-        bottom: auto !important;
-        transform: none !important;
-        line-height: 1 !important;
-        font-size: .58vw !important;
-        color: rgba(255,255,255,.72) !important;
-        overflow: visible !important;
-        box-sizing: border-box !important;
-    }
-    .PWrapper .PTabs .PTab .PTLabel > .ico svg {
-        width: .58vw !important;
-        height: .58vw !important;
-        display: block;
-        margin: 0;
-        overflow: visible;
-        stroke-width: 1.65;
-    }
-    .PWrapper .PTabs .PTab .PTLabel > .ico .fa-solid,
-    .PWrapper .PTabs .PTab .PTLabel > .ico i {
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        width: .58vw !important;
-        height: .58vw !important;
-        font-size: .58vw !important;
-        line-height: 1 !important;
-        color: rgba(255,255,255,.72) !important;
-    }
 
     .PWrapper .PTabs .PTab .TOptions {
         position: absolute; display: flex;
-        right: .7vw; top: 0; bottom: 0; height: 100%;
+        right: .65vw; top: 0; bottom: 0; height: 100%;
         width: 7.8125vw;
         justify-content: flex-end; align-items: center;
         flex-direction: row; gap: .5vw;
@@ -985,7 +977,7 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         display: flex;
         align-items: center;
         height: 100%;
-        font-size: .48vw; font-weight: 450;
+        font-size: .55vw; font-weight: 450;
         letter-spacing: .04vw;
         line-height: 1;
         color: var(--text-secondary);
@@ -1497,7 +1489,7 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
 /* Full rebuilds (tab switches) must not animate in from the old scroll offset. */
 .PWrapper.rendering #list{transition:none!important;}.PWrapper.rendering #selOverlay{transition:none!important;}.PWrapper.rendering #psProgress{transition:none!important;}
 #list{position:relative;z-index:2;width:100%;transition:transform .2s cubic-bezier(.22,1,.36,1);}
-#selOverlay{position:absolute!important;left:0!important;right:0!important;width:100%!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;box-sizing:border-box!important;border-radius:.3083vw!important;}
+#selOverlay{position:absolute!important;left:0!important;right:auto!important;width:100%!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;border-radius:.3083vw!important;}
 .PTab.active .PTLabel > .fa-solid,
 .PTab.active .PTLabel .ico,
 .PTab.active .PTLabel .ico .fa-solid,
@@ -1986,7 +1978,7 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
     <div class="PRightElements">
       <div class="PCategories" id="tabsbar"></div>
       <div class="PTabs" id="listWrap">
-        <div id="selOverlay" style="position:absolute;left:0;right:0;width:100%;height:1.6vw;border-radius:.3083vw;pointer-events:none;z-index:0;opacity:0;box-sizing:border-box;margin:0;transform:none;transition:top 200ms ease, height 120ms ease;"></div>
+        <div id="selOverlay" style="position:absolute;left:0;width:100%;height:1.6vw;border-radius:.3083vw;pointer-events:none;z-index:0;opacity:0;transition:top 200ms ease, height 120ms ease;"></div>
         <div class="keybind-panel" id="keybindPanel">
           <div class="kb-head">
             <div class="kb-icon" id="kbCaptureIcon">
@@ -2588,34 +2580,37 @@ function S(inner){
   }
 
   function updateHighlight(idx, scrollOffset){
-    if(!selOverlay || !list || !listWrap) return;
+    if(!selOverlay || !list) return;
     const row = findRowEl(idx) || list.children[idx];
     if(!row){
       selOverlay.style.opacity='0';
       return;
     }
     const color = row.classList.contains('red-row') ? '229, 72, 72' : menuColor();
-    const wrapRect = listWrap.getBoundingClientRect();
-    const rowRect = row.getBoundingClientRect();
-    let topPx = rowRect.top - wrapRect.top;
-    let hPx = rowRect.height;
-    const maxH = Math.max(0, listWrap.clientHeight);
-    if(maxH > 0){
-      if(topPx + hPx > maxH) hPx = Math.max(1, maxH - topPx);
+    // Eshay1: offsetTop, not getBoundingClientRect (avoids in-flight transform = visual jump).
+    const rowH = (list.children[0] && list.children[0].offsetHeight) || row.offsetHeight || 0;
+    const scrollPx = window.__staticListShiftPx != null
+      ? Math.max(0, window.__staticListShiftPx)
+      : Math.max(0, (scrollOffset||0) * rowH);
+    let topPx = Math.max(0, (row.offsetTop||0) - scrollPx);
+    let hPx = row.offsetHeight || rowH || 1;
+    const maxH = listWrap ? Math.max(0, listWrap.clientHeight) : 0;
+    if(listWrap){
+      if(topPx + hPx > maxH){
+        hPx = Math.max(1, maxH - topPx);
+      }
       if(topPx > maxH) topPx = Math.max(0, maxH - hPx);
     }
-    topPx = Math.max(0, topPx);
-    hPx = Math.max(1, hPx);
+    const edgeTol = 1;
+    const atTop = topPx <= edgeTol;
+    const rMid = '.3083vw';
+    if(atTop) topPx = 0;
     selOverlay.style.display = 'block';
-    selOverlay.style.boxSizing = 'border-box';
     selOverlay.style.top = topPx + 'px';
     selOverlay.style.height = hPx + 'px';
-    selOverlay.style.setProperty('left', '0', 'important');
-    selOverlay.style.setProperty('right', '0', 'important');
-    selOverlay.style.setProperty('width', '100%', 'important');
-    selOverlay.style.setProperty('margin', '0', 'important');
-    selOverlay.style.setProperty('max-height', 'none', 'important');
-    selOverlay.style.setProperty('transform', 'none', 'important');
+    selOverlay.style.width = '100%';
+    selOverlay.style.left = '0';
+    selOverlay.style.right = 'auto';
     selOverlay.style.opacity = '1';
     selOverlay.style.zIndex = '0';
     selOverlay.style.pointerEvents = 'none';
@@ -2623,10 +2618,11 @@ function S(inner){
     selOverlay.style.backgroundColor = 'rgba('+color+', 0.55)';
     selOverlay.style.outline = 'none';
     selOverlay.style.border = '0.04vw solid rgba('+color+', 0.95)';
-    selOverlay.style.borderRadius = '.3083vw';
+    selOverlay.style.borderRadius = rMid;
     selOverlay.style.boxShadow = '0vw 0vw .18vw .02vw rgba('+color+',0.85)';
     selOverlay.style.transition = 'top 200ms ease, height 120ms ease, border-radius 120ms ease';
   }
+  window.__staticUpdateHighlight = updateHighlight;
 
   // Left rail stays full — no proportional thumb.
   function updateScrollBar(){
