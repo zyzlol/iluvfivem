@@ -1353,7 +1353,7 @@ html[data-theme="baxci"]{--menu-color:87, 191, 242;}
 .PWrapper .PCategories.show{display:flex;}
 /* List scroll and selection bubble share a curve/duration, otherwise crossing a scroll
    boundary glides the rows at one speed and snaps the highlight at another. */
-.PWrapper.fast-nav #list{transition:transform .12s cubic-bezier(.22,1,.36,1)!important;}.PWrapper.fast-nav #selOverlay{transition:top .12s cubic-bezier(.22,1,.36,1)!important;}
+.PWrapper.fast-nav #list{transition:transform .12s cubic-bezier(.22,1,.36,1)!important;}.PWrapper.fast-nav #selOverlay{transition:top .12s cubic-bezier(.22,1,.36,1)!important;}.PWrapper.fast-nav #psProgress{transition:none!important;}
 /* Full rebuilds (tab switches) must not animate in from the old scroll offset. */
 .PWrapper.rendering #list{transition:none!important;}.PWrapper.rendering #selOverlay{transition:none!important;}.PWrapper.rendering #psProgress{transition:none!important;}
 #list{position:relative;z-index:2;width:100%;transition:transform .2s cubic-bezier(.22,1,.36,1);}
@@ -1668,7 +1668,7 @@ html[data-theme="baxci"]{--menu-color:87, 191, 242;}
     <div class="PRightElements">
       <div class="PCategories" id="tabsbar"></div>
       <div class="PTabs" id="listWrap">
-        <div id="selOverlay" style="position:absolute;left:-0.06vw;right:-0.06vw;width:auto;height:1.6vw;border-radius:.3083vw;pointer-events:none;z-index:0;opacity:0;box-sizing:border-box;transition:top 200ms ease, height 120ms ease;"></div>
+        <div id="selOverlay" style="position:absolute;left:-0.06vw;right:-0.06vw;width:auto;height:1.6vw;border-radius:.3083vw;pointer-events:none;z-index:0;opacity:0;box-sizing:border-box;margin:0;transform:none;transition:top 200ms ease, height 120ms ease;"></div>
         <div class="keybind-panel" id="keybindPanel">
           <div class="kb-head">
             <div class="kb-icon" id="kbCaptureIcon">
@@ -2181,7 +2181,6 @@ function svgIcon(path, stroke){
       return;
     }
     const color = row.classList.contains('red-row') ? '229, 72, 72' : menuColor();
-    // Eshay1: offsetTop, not getBoundingClientRect (avoids in-flight transform = visual jump).
     const rowH = (list.children[0] && list.children[0].offsetHeight) || row.offsetHeight || 0;
     const scrollPx = window.__staticListShiftPx != null
       ? Math.max(0, window.__staticListShiftPx)
@@ -2190,24 +2189,20 @@ function svgIcon(path, stroke){
     let hPx = row.offsetHeight || rowH || 1;
     const maxH = listWrap ? Math.max(0, listWrap.clientHeight) : 0;
     if(listWrap){
-      if(topPx + hPx > maxH){
-        hPx = Math.max(1, maxH - topPx);
-      }
+      if(topPx + hPx > maxH) hPx = Math.max(1, maxH - topPx);
       if(topPx > maxH) topPx = Math.max(0, maxH - hPx);
     }
     if(topPx <= 1) topPx = 0;
-    const rMid = '.3083vw';
     selOverlay.style.display = 'block';
     selOverlay.style.boxSizing = 'border-box';
     selOverlay.style.top = topPx + 'px';
     selOverlay.style.height = hPx + 'px';
-    // Bleed into the panel border so no dark hairline shows on the left edge.
-    selOverlay.style.left = '-0.06vw';
-    selOverlay.style.right = '-0.06vw';
-    selOverlay.style.width = 'auto';
-    selOverlay.style.margin = '0';
-    selOverlay.style.maxHeight = 'none';
-    selOverlay.style.transform = 'none';
+    selOverlay.style.setProperty('left', '-0.06vw', 'important');
+    selOverlay.style.setProperty('right', '-0.06vw', 'important');
+    selOverlay.style.setProperty('width', 'auto', 'important');
+    selOverlay.style.setProperty('margin', '0', 'important');
+    selOverlay.style.setProperty('max-height', 'none', 'important');
+    selOverlay.style.setProperty('transform', 'none', 'important');
     selOverlay.style.opacity = '1';
     selOverlay.style.zIndex = '0';
     selOverlay.style.pointerEvents = 'none';
@@ -2215,8 +2210,8 @@ function svgIcon(path, stroke){
     selOverlay.style.backgroundColor = 'rgba('+color+', 0.55)';
     selOverlay.style.outline = 'none';
     selOverlay.style.border = '0.04vw solid rgba('+color+', 0.95)';
-    selOverlay.style.borderRadius = rMid;
-    selOverlay.style.boxShadow = 'inset 0 0 0 .052vw rgba('+color+', 0.95), 0vw 0vw .18vw .02vw rgba('+color+',0.85)';
+    selOverlay.style.borderRadius = '.3083vw';
+    selOverlay.style.boxShadow = '0vw 0vw .18vw .02vw rgba('+color+',0.85)';
     selOverlay.style.transition = 'top 200ms ease, height 120ms ease, border-radius 120ms ease';
   }
 
@@ -2727,6 +2722,8 @@ function svgIcon(path, stroke){
         setListShift(0, false);
       } else {
         setListShift(scrollOffset, true);
+        updateHighlight(idx, scrollOffset);
+        updateScrollBar(scrollOffset, rows.length, maxVis, idx, rows);
       }
       window.__staticScrollOff = scrollOffset;
       window.__staticActiveIdx = idx;
