@@ -2392,16 +2392,13 @@ function S(inner){
 
     const lab=document.createElement('span'); lab.className='PTLabel';
     if(kind==='category' && r.icon){
-      const ico=document.createElement('i');
-      ico.className=String(r.icon);
-      ico.style.marginRight='.3vw';
-      ico.style.position='static';
-      ico.style.right='auto';
-      ico.style.display='inline';
+      const ico=document.createElement('span');
+      ico.className='ico';
+      ico.innerHTML=iconSvgHtml(r.icon);
       lab.appendChild(ico);
     }
     let labelText = esc(r.label||'');
-    lab.appendChild(document.createTextNode(labelText));
+    const txt=document.createElement('span'); txt.className='PTText'; txt.textContent=labelText; lab.appendChild(txt);
     tab.appendChild(lab);
 
     if(kind==='toggle'){
@@ -2440,8 +2437,9 @@ function S(inner){
         }
       }
     } else if(kind==='category'){
-      const ch=document.createElement('i');
-      ch.className='fa-solid fa-angle-right';
+      const ch=document.createElement('span');
+      ch.className='chev-right';
+      ch.textContent='›';
       tab.appendChild(ch);
     } else if(kind==='button' && r.sliderMode==='Choice'){
       const sc=document.createElement('div'); sc.className='Scrollable';
