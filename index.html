@@ -1498,10 +1498,10 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
 /* Full rebuilds (tab switches) must not animate in from the old scroll offset. */
 .PWrapper.rendering #list{transition:none!important;}.PWrapper.rendering #selOverlay{transition:none!important;}.PWrapper.rendering #psProgress{transition:none!important;}
 #list{position:relative;z-index:2;width:100%;transition:transform .2s cubic-bezier(.22,1,.36,1);}
-#selOverlay{position:absolute!important;left:0!important;right:0!important;width:100%!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;box-sizing:border-box!important;border-radius:.3083vw!important;}
+#selOverlay{position:absolute!important;left:.06vw!important;right:.06vw!important;width:auto!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;box-sizing:border-box!important;border-radius:.28vw!important;}
 #listWrap{will-change:transform,opacity;}
-.PWrapper.tab-switch #listWrap{animation:staticTabFwd .22s cubic-bezier(.22,1,.36,1);}
-.PWrapper.tab-back #listWrap{animation:staticTabBack .22s cubic-bezier(.22,1,.36,1);}
+.PWrapper.tab-switch #listWrap,.PWrapper.tab-switch .PCategories{animation:staticTabFwd .22s cubic-bezier(.22,1,.36,1);}
+.PWrapper.tab-back #listWrap,.PWrapper.tab-back .PCategories{animation:staticTabBack .22s cubic-bezier(.22,1,.36,1);}
 @keyframes staticTabFwd{from{opacity:0;transform:translateX(.45vw);}to{opacity:1;transform:translateX(0);}}
 @keyframes staticTabBack{from{opacity:0;transform:translateX(-.45vw);}to{opacity:1;transform:translateX(0);}}
 .PWrapper.tab-switch #selOverlay,.PWrapper.tab-back #selOverlay{transition:opacity .18s ease,top .18s ease,height .12s ease,border-radius .12s ease!important;}
@@ -1977,7 +1977,7 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
     <div class="PRightElements">
       <div class="PCategories" id="tabsbar"></div>
       <div class="PTabs" id="listWrap">
-        <div id="selOverlay" style="position:absolute;left:0;right:0;width:100%;height:1.6vw;border-radius:.3083vw;pointer-events:none;z-index:0;opacity:0;box-sizing:border-box;margin:0;transform:none;transition:top 200ms ease, height 120ms ease;"></div>
+        <div id="selOverlay" style="position:absolute;left:.06vw;right:.06vw;width:auto;height:1.6vw;border-radius:.28vw;pointer-events:none;z-index:0;opacity:0;box-sizing:border-box;margin:0;transform:none;transition:top 200ms ease, height 120ms ease;"></div>
         <div class="keybind-panel" id="keybindPanel">
           <div class="kb-head">
             <div class="kb-icon" id="kbCaptureIcon">
@@ -2643,17 +2643,41 @@ function S(inner){
     }
   }
 
-  function applyTabSwitchAnim(s){
-    if(!cluster) return;
+  function detectNavDir(s){
+    const cur = {
+      mode: String(s.mode || ''),
+      section: String(s.section || ''),
+      tab: Number(s.tabIndex) || 1
+    };
+    const prev = window.__staticNavCtx;
+    window.__staticNavCtx = cur;
+    if(!prev) return 0;
+    if(prev.mode === cur.mode && prev.section === cur.section && prev.tab === cur.tab) return 0;
+    if(prev.mode !== cur.mode) return cur.mode === 'main' ? -1 : 1;
+    if(prev.section !== cur.section) return 1;
+    if(cur.tab !== prev.tab) return cur.tab > prev.tab ? 1 : -1;
+    return 1;
+  }
+
+  function resolveTabAnimDir(s){
+    if(s && s.smoothTab){
+      const d = Number(s.tabDir) || 0;
+      return d < 0 ? -1 : 1;
+    }
+    return detectNavDir(s);
+  }
+
+  function applyTabSwitchAnim(dir){
+    if(!cluster || !dir) return;
     cluster.classList.remove('tab-switch','tab-back');
-    if(!s || !s.smoothTab) return;
-    const dir = Number(s.tabDir) || 0;
-    if(dir < 0) cluster.classList.add('tab-back');
-    else cluster.classList.add('tab-switch');
-    clearTimeout(window.__staticTabAnimTimer);
-    window.__staticTabAnimTimer = setTimeout(function(){
-      if(cluster) cluster.classList.remove('tab-switch','tab-back');
-    }, 260);
+    void cluster.offsetWidth;
+    requestAnimationFrame(function(){
+      cluster.classList.add(dir < 0 ? 'tab-back' : 'tab-switch');
+      clearTimeout(window.__staticTabAnimTimer);
+      window.__staticTabAnimTimer = setTimeout(function(){
+        if(cluster) cluster.classList.remove('tab-switch','tab-back');
+      }, 280);
+    });
   }
 
   function updateHighlight(idx, scrollOffset){
@@ -2679,16 +2703,20 @@ function S(inner){
     const edgeTol = 1;
     const atTop = topPx <= edgeTol;
     const atBot = maxH > 0 && (topPx + hPx >= maxH - edgeTol);
-    const rMid = '.3083vw';
+    const rMid = '.28vw';
     const rPanel = 'var(--menu-radius)';
-    if(atTop) topPx = 0;
+    const bubbleInsetX = '.06vw';
+    const bubblePadY = 1;
+    if(atTop) topPx = bubblePadY;
+    else topPx += bubblePadY;
+    hPx = Math.max(1, hPx - bubblePadY * 2);
     selOverlay.style.display = 'block';
     selOverlay.style.boxSizing = 'border-box';
     selOverlay.style.top = topPx + 'px';
     selOverlay.style.height = hPx + 'px';
-    selOverlay.style.setProperty('left', '0', 'important');
-    selOverlay.style.setProperty('right', '0', 'important');
-    selOverlay.style.setProperty('width', '100%', 'important');
+    selOverlay.style.setProperty('left', bubbleInsetX, 'important');
+    selOverlay.style.setProperty('right', bubbleInsetX, 'important');
+    selOverlay.style.setProperty('width', 'auto', 'important');
     selOverlay.style.setProperty('margin', '0', 'important');
     selOverlay.style.setProperty('max-height', 'none', 'important');
     selOverlay.style.setProperty('transform', 'none', 'important');
@@ -2698,7 +2726,7 @@ function S(inner){
     selOverlay.style.background = 'none';
     selOverlay.style.backgroundColor = 'rgba('+color+', 0.55)';
     selOverlay.style.outline = 'none';
-    selOverlay.style.border = '0.04vw solid rgba('+color+', 0.95)';
+    selOverlay.style.border = '0.035vw solid rgba('+color+', 0.95)';
     if(atTop && atBot){
       selOverlay.style.borderRadius = rPanel;
     } else if(atTop){
@@ -2708,7 +2736,7 @@ function S(inner){
     } else {
       selOverlay.style.borderRadius = rMid;
     }
-    selOverlay.style.boxShadow = '0vw 0vw .18vw .02vw rgba('+color+',0.85)';
+    selOverlay.style.boxShadow = 'inset 0 0 0 .01vw rgba('+color+',0.35), 0 0 .12vw .01vw rgba('+color+',0.65)';
     selOverlay.style.transition = 'top 200ms ease, height 120ms ease, border-radius 120ms ease';
   }
 
@@ -3150,8 +3178,6 @@ function S(inner){
       const showTabs = !isKeybind && s.mode!=='main' && tabs.length>1;
       const showCats = !isKeybind && (showTabs || !!(s.sectionTitle||s.section));
       paintTabsbar(s, showTabs, showCats, tabs);
-      const smoothTab = !!(s.smoothTab);
-      applyTabSwitchAnim(s);
 
       if(keybindPanel){
         keybindPanel.classList.toggle('show', isKeybind);
@@ -3202,6 +3228,8 @@ function S(inner){
       const idx=Math.max(0, Math.min((s.activeRow||1)-1, Math.max(rows.length-1,0)));
       const isMain = s.mode==='main';
       const maxVis = isKeybind ? DEFAULT_VIS : maxVisibleRows(showTabs, isMain);
+      const animDir = resolveTabAnimDir(s);
+      const smoothTab = animDir !== 0;
       if(smoothTab){
         window.__staticVirtSig = null;
         window.__staticListSig = null;
@@ -3225,6 +3253,7 @@ function S(inner){
       }
       window.__staticScrollOff = scrollOffset;
       window.__staticActiveIdx = idx;
+      if(smoothTab) applyTabSwitchAnim(animDir);
       requestAnimationFrame(function(){
         if(!smoothTab) cluster.classList.remove('rendering');
         if(!isKeybind){
