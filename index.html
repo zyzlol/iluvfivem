@@ -48,6 +48,7 @@ html,body,.PWrapper,.Desc,.FCWrapper,.Option,.PCategories,.PCategory,.PTabs,.PTa
 .fa-shield-halved:before{content:"\f3ed";}
 .fa-skull:before{content:"\f54c";}
 .fa-bolt:before{content:"\f0e7";}
+.fa-folder:before{content:"\f07b";}
 .fa-sliders:before{content:"\f1de";}
 .fa-gear:before{content:"\f013";}
 .fa-magnifying-glass:before{content:"\f002";}
@@ -95,6 +96,7 @@ html:not(.static-shark-ready) #cluster{opacity:0!important;visibility:hidden!imp
 html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-optical-sizing:auto;}
     :root {
         --menu-color: 22, 137, 212;
+        --bubble-color: 59, 155, 255;
         --menu-x: 4.5%;
         --menu-y: 26%;
         --menu-scale: 1;
@@ -169,31 +171,18 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         overflow: visible;
     }
 
-    /* arrow caps — embedded SVG (FA glyphs fail in FiveM DUI) */
-    .PWrapper .PElements .PScroll .scroll-ico {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: .62vw;
-        height: .62vw;
-        flex-shrink: 0;
-        color: rgba(255,255,255,0.35);
+    /* arrow caps — Eshay: Font Awesome angle-up/down */
+    .PWrapper .PElements .PScroll i {
+        display: flex; justify-content: center; align-items: center;
+        width: .62vw; height: .62vw; flex-shrink: 0;
+        font-size: .44vw; color: rgba(255,255,255,0.35);
         background: rgba(255,255,255,0.04);
         border-radius: .16vw;
         transition: color .15s ease, background .15s ease;
-        overflow: hidden;
-        line-height: 0;
-        padding: 0;
-        margin: 0;
-        box-sizing: border-box;
-    }
-    .PWrapper .PElements .PScroll .scroll-ico svg {
-        width: .44vw;
-        height: .44vw;
-        display: block;
+        line-height: 1;
     }
 
-    .PWrapper .PElements .PScroll:hover .scroll-ico {
+    .PWrapper .PElements .PScroll:hover i {
         color: rgb(var(--menu-color));
         background: rgba(var(--menu-color),0.14);
     }
@@ -442,12 +431,10 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         background: linear-gradient(90deg, rgba(var(--menu-color),0.1) 0%, rgba(255,255,255,0.01) 60%, transparent 100%);
     }
 
-    .PWrapper .PTabs .PTab.red-row .PTLabel,
-    .PWrapper .PTabs .PTab.red-row .PTLabel .PTText {
+    .PWrapper .PTabs .PTab.red-row .PTLabel {
         color: #e54848 !important;
     }
-    .PWrapper .PTabs .PTab.red-row.active .PTLabel,
-    .PWrapper .PTabs .PTab.red-row.active .PTLabel .PTText {
+    .PWrapper .PTabs .PTab.red-row.active .PTLabel {
         color: #fff !important;
     }
     .PWrapper .PTabs .PTab.red-row:hover {
@@ -460,29 +447,16 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
 
     .PWrapper .PTabs .PTab .PTLabel {
         position: absolute; display: flex; align-items: center;
+        top: 0; bottom: 0; height: 100%;
         left: .75vw; width: 55%;
         font-size: .62vw; font-weight: 400;
         color: var(--text-primary);
         overflow: hidden; text-overflow: ellipsis;
         white-space: nowrap;
         letter-spacing: .015vw;
-        line-height: 1;
-    }
-    .PWrapper .PTabs .PTab .PTLabel .PTText {
-        overflow: hidden; text-overflow: ellipsis;
-        white-space: nowrap;
-        font: inherit;
-        color: inherit;
-        letter-spacing: inherit;
-        line-height: inherit;
-        min-width: 0;
-        flex: 1 1 auto;
-        margin: 0;
-        padding: 0;
     }
 
     .PWrapper .PTabs .PTab.active .PTLabel,
-    .PWrapper .PTabs .PTab.active .PTLabel .PTText,
     .PWrapper .PTabs .PTTab--active .PTLabel {
         color: #fff;
     }
@@ -492,7 +466,25 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         font-size: .58vw; color: var(--text-secondary);
     }
 
-    /* Eshay-sized inline SVG icons (embedded — reliable in DUI). */
+    /* Eshay: Font Awesome <i> in rows (embedded FA woff2). */
+    .PWrapper .PTabs .PTab i {
+        position: absolute;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        right: .65vw;
+        font-size: .58vw;
+        color: var(--text-secondary);
+        transition: transform .15s ease;
+        line-height: 1;
+    }
+    .PWrapper .PTabs .PTab .PTLabel > i {
+        position: static;
+        right: auto;
+        margin-right: .3vw;
+        display: inline;
+        font-size: .58vw;
+    }
     .PWrapper .PTabs .PTab .PTLabel > .ico {
         display: inline-flex;
         align-items: center;
@@ -509,24 +501,6 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         height: .58vw;
         display: block;
     }
-    .PWrapper .PTabs .PTab > .ico.chev-right {
-        position: absolute;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        right: .65vw;
-        width: .58vw;
-        height: .58vw;
-        color: var(--text-secondary);
-        line-height: 0;
-        transition: transform .15s ease;
-    }
-    .PWrapper .PTabs .PTab > .ico.chev-right svg {
-        width: .58vw;
-        height: .58vw;
-        display: block;
-    }
-
     .PWrapper .PTabs .PTab .TOptions .chev-right {
         position: relative; right: auto; top: auto;
         transform: none;
@@ -1474,7 +1448,7 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
 /* Full rebuilds (tab switches) must not animate in from the old scroll offset. */
 .PWrapper.rendering #list{transition:none!important;}.PWrapper.rendering #selOverlay{transition:none!important;}.PWrapper.rendering #psProgress{transition:none!important;}
 #list{position:relative;z-index:2;width:100%;transition:transform 200ms ease;}
-#selOverlay{position:absolute!important;left:0!important;right:0!important;width:auto!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;box-sizing:border-box!important;border-radius:.3083vw!important;transition:top 200ms ease, height 120ms ease;}
+#selOverlay{position:absolute!important;left:0!important;right:0!important;width:auto!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;box-sizing:border-box!important;border-radius:.3083vw!important;background:rgba(var(--bubble-color,59,155,255),.60)!important;background-clip:border-box!important;border:.052vw solid rgb(var(--bubble-color,59,155,255))!important;box-shadow:0 0 .2083vw .0339vw rgb(var(--bubble-color,59,155,255))!important;transition:top 200ms ease, height 120ms ease;}
 .PTab.active .PTLabel > .ico,
 .PTab:hover .PTLabel > .ico{
   color:var(--text-secondary);
@@ -1936,9 +1910,9 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
   </div>
   <div class="PElements">
     <div class="PScroll" id="pScroll">
-      <span class="scroll-ico" id="scrollUp"></span>
+      <i class="fa-solid fa-angle-up"></i>
       <div class="PSProgressWrapper"><div class="PSProgress" id="psProgress"></div></div>
-      <span class="scroll-ico" id="scrollDown"></span>
+      <i class="fa-solid fa-angle-down"></i>
     </div>
     <div class="PRightElements">
       <div class="PCategories" id="tabsbar"></div>
@@ -2204,6 +2178,9 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
   function menuColor(){
     return getComputedStyle(document.documentElement).getPropertyValue('--menu-color').trim() || '22, 137, 212';
   }
+  function bubbleColor(){
+    return getComputedStyle(document.documentElement).getPropertyValue('--bubble-color').trim() || menuColor();
+  }
   function esc(s){ return String(s==null?'':s); }
 
   function applyTheme(theme, bannerUrl){
@@ -2320,14 +2297,6 @@ function S(inner){
 
   function iconSvgHtml(key){ return (typeof ICONS!=='undefined' && (ICONS[key]||ICONS.dot)) || ''; }
 
-  function mountScrollIcons(){
-    var up = document.getElementById('scrollUp');
-    var dn = document.getElementById('scrollDown');
-    if(up) up.innerHTML = iconSvgHtml('angle-up');
-    if(dn) dn.innerHTML = iconSvgHtml('angle-down');
-  }
-  mountScrollIcons();
-
   const FA_FROM_KEY = {
     user:'fa-user', users:'fa-users', server:'fa-server', cloud:'fa-cloud',
     crosshair:'fa-crosshairs', eye:'fa-eye', 'eye-off':'fa-eye',
@@ -2402,13 +2371,20 @@ function S(inner){
 
     const lab=document.createElement('span'); lab.className='PTLabel';
     if(kind==='category' && r.icon){
-      const ico=document.createElement('span');
-      ico.className='ico';
-      ico.innerHTML=iconSvgHtml(iconKeyFromSpec(r.icon));
-      lab.appendChild(ico);
+      const spec = String(r.icon);
+      if(spec.indexOf('fa-')>=0){
+        const i=document.createElement('i');
+        i.className=spec;
+        lab.appendChild(i);
+      } else {
+        const ico=document.createElement('span');
+        ico.className='ico';
+        ico.innerHTML=iconSvgHtml(iconKeyFromSpec(spec));
+        lab.appendChild(ico);
+      }
     }
     let labelText = esc(r.label||'');
-    const txt=document.createElement('span'); txt.className='PTText'; txt.textContent=labelText; lab.appendChild(txt);
+    lab.appendChild(document.createTextNode(labelText));
     tab.appendChild(lab);
 
     if(kind==='toggle'){
@@ -2447,9 +2423,8 @@ function S(inner){
         }
       }
     } else if(kind==='category'){
-      const ch=document.createElement('span');
-      ch.className='ico chev-right';
-      ch.innerHTML=iconSvgHtml('chevron-right');
+      const ch=document.createElement('i');
+      ch.className='fa-solid fa-angle-right';
       tab.appendChild(ch);
     } else if(kind==='button' && r.sliderMode==='Choice'){
       const sc=document.createElement('div'); sc.className='Scrollable';
@@ -2524,7 +2499,7 @@ function S(inner){
       selOverlay.style.opacity='0';
       return;
     }
-    const color = row.classList.contains('red-row') ? '229, 72, 72' : menuColor();
+    const color = row.classList.contains('red-row') ? '229, 72, 72' : bubbleColor();
     const rowH = (list.children[0] && list.children[0].offsetHeight) || row.offsetHeight || 0;
     const scrollPx = window.__staticListShiftPx != null
       ? Math.max(0, window.__staticListShiftPx)
