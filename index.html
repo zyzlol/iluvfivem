@@ -1491,7 +1491,7 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
 /* Full rebuilds (tab switches) must not animate in from the old scroll offset. */
 .PWrapper.rendering #list{transition:none!important;}.PWrapper.rendering #selOverlay{transition:none!important;}.PWrapper.rendering #psProgress{transition:none!important;}
 #list{position:relative!important;z-index:2;width:100%;transition:transform .2s cubic-bezier(.22,1,.36,1);}
-#selOverlay{position:absolute!important;top:0;left:0!important;width:100%!important;right:auto!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;box-sizing:border-box!important;border-radius:.3083vw!important;filter:none!important}
+#selOverlay{position:absolute!important;top:0;left:0!important;right:0!important;width:auto!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;box-sizing:border-box!important;border-radius:.3083vw!important;filter:none!important;z-index:0!important}
 .PTab.active .PTLabel > .fa-solid,
 .PTab.active .PTLabel .ico,
 .PTab.active .PTLabel .ico .fa-solid,
@@ -1980,7 +1980,6 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
     <div class="PRightElements">
       <div class="PCategories" id="tabsbar"></div>
       <div class="PTabs" id="listWrap">
-        <div id="selOverlay" style="position:absolute;left:0;width:100%;height:1.6vw;border-radius:.3083vw;pointer-events:none;z-index:0;opacity:0;transition:top 200ms ease, height 120ms ease;"></div>
         <div class="keybind-panel" id="keybindPanel">
           <div class="kb-head">
             <div class="kb-icon" id="kbCaptureIcon">
@@ -1997,7 +1996,7 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
             </div>
           </div>
         </div>
-        <div id="list"></div>
+        <div id="list"><div id="selOverlay" style="position:absolute;left:0;right:0;width:auto;height:1.6vw;border-radius:.3083vw;pointer-events:none;z-index:0;opacity:0;transition:top 200ms ease, height 120ms ease;"></div></div>
       </div>
       <div class="PFooter">
         <span class="PBuild" id="footL">discord.gg/staticservices</span>
@@ -2586,7 +2585,8 @@ function S(inner){
     const want=String(idx);
     for(let i=0;i<list.children.length;i++){
       const el=list.children[i];
-      if(el && el.dataset && el.dataset.idx===want) return el;
+      if(!el || el.id === 'selOverlay') continue;
+      if(el.dataset && el.dataset.idx===want) return el;
     }
     return null;
   }
@@ -2597,47 +2597,50 @@ function S(inner){
     return 'translateY(-' + (off * rowPitchPx()) + 'px)';
   }
 
+  function ensureSelOverlayInList(){
+    if(!list) return null;
+    let ov = document.getElementById('selOverlay');
+    if(!ov){
+      ov = document.createElement('div');
+      ov.id = 'selOverlay';
+      ov.style.cssText = 'position:absolute;left:0;right:0;width:auto;height:1.6vw;border-radius:.3083vw;pointer-events:none;z-index:0;opacity:0;transition:top 200ms ease, height 120ms ease;';
+    }
+    if(ov.parentNode !== list) list.insertBefore(ov, list.firstChild);
+    else if(list.firstChild !== ov) list.insertBefore(ov, list.firstChild);
+    return ov;
+  }
+
   function updateHighlight(idx, scrollOffset){
-    if(!selOverlay || !list) return;
-    const row = findRowEl(idx) || list.children[idx];
+    const ov = ensureSelOverlayInList();
+    if(!ov || !list) return;
+    const row = findRowEl(idx);
     if(!row){
-      selOverlay.style.opacity='0';
+      ov.style.opacity='0';
       return;
     }
     const color = row.classList.contains('red-row') ? '229, 72, 72' : menuColor();
-    const rowH = (list.children[0] && list.children[0].offsetHeight) || row.offsetHeight || 0;
-    const scrollPx = window.__staticListShiftPx != null
-      ? Math.max(0, window.__staticListShiftPx)
-      : Math.max(0, (scrollOffset||0) * rowH);
-    let topPx = Math.max(0, (row.offsetTop||0) - scrollPx);
-    let hPx = row.offsetHeight || rowH || 1;
-    const maxH = listWrap ? Math.max(0, listWrap.clientHeight) : 0;
-    if(listWrap){
-      if(topPx + hPx > maxH){
-        hPx = Math.max(1, maxH - topPx);
-      }
-      if(topPx > maxH) topPx = Math.max(0, maxH - hPx);
-    }
-    const edgeTol = 1;
-    if(topPx <= edgeTol) topPx = 0;
-    selOverlay.style.display = 'block';
-    selOverlay.style.top = topPx + 'px';
-    selOverlay.style.height = hPx + 'px';
-    selOverlay.style.width = '100%';
-    selOverlay.style.left = '0';
-    selOverlay.style.right = 'auto';
-    selOverlay.style.opacity = '1';
-    selOverlay.style.zIndex = '0';
-    selOverlay.style.pointerEvents = 'none';
-    selOverlay.style.boxSizing = 'border-box';
-    selOverlay.style.background = 'none';
-    selOverlay.style.backgroundColor = 'rgba('+color+', 0.55)';
-    selOverlay.style.outline = 'none';
-    selOverlay.style.border = '0.04vw solid rgba('+color+', 0.95)';
-    selOverlay.style.borderRadius = '.3083vw';
-    selOverlay.style.boxShadow = '0vw 0vw .18vw .02vw rgba('+color+',0.85)';
-    selOverlay.style.filter = 'none';
-    selOverlay.style.transition = 'top 200ms ease, height 120ms ease, border-radius 120ms ease';
+    let topPx = row.offsetTop || 0;
+    let hPx = row.offsetHeight || rowPitchPx() || 1;
+    const scrollOff = Math.max(0, Number(scrollOffset != null ? scrollOffset : window.__staticScrollOff) || 0);
+    if(scrollOff <= 0 && topPx <= 1) topPx = 0;
+    ov.style.display = 'block';
+    ov.style.top = topPx + 'px';
+    ov.style.height = hPx + 'px';
+    ov.style.left = '0';
+    ov.style.right = '0';
+    ov.style.width = 'auto';
+    ov.style.opacity = '1';
+    ov.style.zIndex = '0';
+    ov.style.pointerEvents = 'none';
+    ov.style.boxSizing = 'border-box';
+    ov.style.background = 'none';
+    ov.style.backgroundColor = 'rgba('+color+', 0.55)';
+    ov.style.outline = 'none';
+    ov.style.border = '0.04vw solid rgba('+color+', 0.95)';
+    ov.style.borderRadius = '.3083vw';
+    ov.style.boxShadow = '0vw 0vw .18vw .02vw rgba('+color+',0.85)';
+    ov.style.filter = 'none';
+    ov.style.transition = 'top 200ms ease, height 120ms ease, border-radius 120ms ease';
   }
   window.__staticUpdateHighlight = updateHighlight;
 
@@ -3012,21 +3015,15 @@ function S(inner){
     if(listSectionHeader) listSectionHeader.classList.remove('show');
   }
 
-  function ensureSelOverlayInWrap(){
-    if(!listWrap || !selOverlay) return;
-    if(selOverlay.parentNode !== listWrap){
-      listWrap.insertBefore(selOverlay, listWrap.firstChild);
-    }
-  }
-
   function mountListNodes(nodes){
     if(!list) return;
-    ensureSelOverlayInWrap();
+    const ov = ensureSelOverlayInList();
     if(typeof list.replaceChildren === 'function'){
-      list.replaceChildren.apply(list, nodes);
+      list.replaceChildren.apply(list, ov ? [ov].concat(nodes) : nodes);
       return;
     }
     list.innerHTML='';
+    const ov2 = ensureSelOverlayInList();
     const frag=document.createDocumentFragment();
     for(let i=0;i<nodes.length;i++) frag.appendChild(nodes[i]);
     list.appendChild(frag);
@@ -3178,7 +3175,7 @@ function S(inner){
       const maxVis = isKeybind ? DEFAULT_VIS : maxVisibleRows(showTabs, isMain);
       cluster.classList.add('rendering');
       list.innerHTML='';
-      ensureSelOverlayInWrap();
+      ensureSelOverlayInList();
       const frag=document.createDocumentFragment();
       if(!isKeybind){
         for(let i=0;i<rows.length;i++) frag.appendChild(buildRow(rows[i], i, idx));
