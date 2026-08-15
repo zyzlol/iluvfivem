@@ -417,7 +417,6 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         background: var(--menu-bg);
         border: .06vw solid var(--menu-border);
         border-radius: var(--menu-radius);
-        overflow-x: visible;
         overflow-y: hidden;
         padding: 0;
         box-sizing: border-box;
@@ -499,35 +498,39 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         font-size: .58vw; color: var(--text-secondary);
     }
 
-    /* Eshay: label icons are FA glyphs, inline next to the text. */
-    .PWrapper .PTabs .PTab .PTLabel > .fa-solid,
-    .PWrapper .PTabs .PTab .PTLabel > i {
-        display: inline;
-        position: static;
-        right: auto;
-        margin-right: .3vw;
-        font-size: .58vw;
-        color: var(--text-secondary);
-        line-height: 1;
-        transform: none;
-    }
-
-    .PWrapper .PTabs .PTab > .fa-solid.fa-chevron-right,
-    .PWrapper .PTabs .PTab > .fa-solid.fa-angle-right,
-    .PWrapper .PTabs .PTab i.chev-right,
-    .PWrapper .PTabs .PTab .chev-right {
-        position: absolute; display: flex;
-        right: .65vw;
-        top: auto;
-        font-family: "Font Awesome 6 Free";
-        font-weight: 900;
-        font-size: .58vw;
-        color: var(--text-secondary);
-        transform: none;
-        line-height: 1;
+    /* Eshay-sized inline SVG icons (embedded — reliable in DUI). */
+    .PWrapper .PTabs .PTab .PTLabel > .ico {
+        display: inline-flex;
         align-items: center;
         justify-content: center;
+        flex: none;
+        width: .58vw;
+        height: .58vw;
+        margin-right: .3vw;
+        color: var(--text-secondary);
+        line-height: 0;
+    }
+    .PWrapper .PTabs .PTab .PTLabel > .ico svg {
+        width: .58vw;
+        height: .58vw;
+        display: block;
+    }
+    .PWrapper .PTabs .PTab > .ico.chev-right {
+        position: absolute;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        right: .65vw;
+        width: .58vw;
+        height: .58vw;
+        color: var(--text-secondary);
+        line-height: 0;
         transition: transform .15s ease;
+    }
+    .PWrapper .PTabs .PTab > .ico.chev-right svg {
+        width: .58vw;
+        height: .58vw;
+        display: block;
     }
 
     .PWrapper .PTabs .PTab .TOptions .chev-right {
@@ -1477,13 +1480,11 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
 /* Full rebuilds (tab switches) must not animate in from the old scroll offset. */
 .PWrapper.rendering #list{transition:none!important;}.PWrapper.rendering #selOverlay{transition:none!important;}.PWrapper.rendering #psProgress{transition:none!important;}
 #list{position:relative;z-index:2;width:100%;transition:transform 200ms ease;}
-#selOverlay{position:absolute!important;left:0!important;right:0!important;width:auto!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;box-sizing:border-box!important;border-radius:.3083vw!important;transition:top 200ms ease, height 120ms ease;}
-/* Eshay: label icons stay text-secondary. */
-.PTab.active .PTLabel > .fa-solid,
-.PTab:hover .PTLabel > .fa-solid{
+#selOverlay{position:absolute!important;left:0!important;width:100%!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;box-sizing:border-box!important;border-radius:.3083vw!important;transition:top 200ms ease, height 120ms ease;}
+.PTab.active .PTLabel > .ico,
+.PTab:hover .PTLabel > .ico{
   color:var(--text-secondary);
 }
-.PTab > .ico{ display:none !important; }
 .Desc{display:none;}
 .Desc.show{display:flex!important;opacity:1;}
 /* ===== KEYBIND CAPTURE (matches spectate / keybind HUD / main UI) ===== */
@@ -1948,7 +1949,7 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
     <div class="PRightElements">
       <div class="PCategories" id="tabsbar"></div>
       <div class="PTabs" id="listWrap">
-        <div id="selOverlay" style="position:absolute;left:0;right:0;width:auto;height:1.6vw;border-radius:.3083vw;pointer-events:none;z-index:0;opacity:0;box-sizing:border-box;margin:0;transform:none;transition:top 200ms ease, height 120ms ease;"></div>
+        <div id="selOverlay" style="position:absolute;left:0;width:100%;height:1.6vw;border-radius:.3083vw;pointer-events:none;z-index:0;opacity:0;box-sizing:border-box;margin:0;transform:none;transition:top 200ms ease, height 120ms ease;"></div>
         <div class="keybind-panel" id="keybindPanel">
           <div class="kb-head">
             <div class="kb-icon" id="kbCaptureIcon">
@@ -2313,6 +2314,7 @@ function S(inner){
     sliders:S('<path d="M6 3.6v6.2M6 14.2v6.2M12 3.6v3.6M12 11.6v8.8M18 3.6v8.2M18 16.2v4.2"/><path d="M4.2 12.4h3.6M10.2 9.4h3.6M16.2 14.8h3.6"/>'),
     info:S('<rect x="4.2" y="4.2" width="15.6" height="15.6"/><path d="M12 10.4v5.2M12 8.2h.01"/>'),
     dot:F('<rect x="9.2" y="9.2" width="5.6" height="5.6"/>'),
+    'chevron-right':S('<path d="M9.4 6.4 15 12l-5.6 5.6"/>'),
     copy:S('<rect x="8.4" y="8.4" width="11.2" height="11.2"/><path d="M15.6 8.4V4.4H4.4v11.2h4"/>'),
     radio:S('<rect x="10.4" y="10.4" width="3.2" height="3.2"/><path d="M7.2 7.2 5.2 5.2M16.8 7.2 18.8 5.2M7.2 16.8 5.2 18.8M16.8 16.8 18.8 18.8"/>'),
     'user-plus':S('<circle cx="9" cy="8" r="2.6"/><path d="M4.2 19.5c0-2.6 2.2-4.2 4.8-4.2s4.8 1.6 4.8 4.2"/><path d="M18.2 7.6v6.2M15.1 10.7h6.2"/>'),
@@ -2338,15 +2340,24 @@ function S(inner){
     bike:'fa-motorcycle', wrench:'fa-wrench', hand:'fa-hand',
     edit:'fa-pen', target:'fa-bullseye', alert:'fa-triangle-exclamation'
   };
-  function faIconClass(key){
-    if(!key) return '';
-    const s=String(key).trim();
-    if(!s) return '';
-    if(/\bfa-/.test(s)){
-      return (/\bfa-solid\b|\bfas\b/.test(s)) ? s : ('fa-solid '+s);
+  function iconKeyFromSpec(spec){
+    if(!spec) return 'dot';
+    const s=String(spec).trim();
+    if(!s) return 'dot';
+    if(ICONS[s]) return s;
+    if(FA_FROM_KEY[s] && ICONS[s]) return s;
+    const faNames = s.match(/fa-([a-z0-9-]+)/gi) || [];
+    for(let i=faNames.length-1;i>=0;i--){
+      const fa=faNames[i].slice(3);
+      if(fa==='solid'||fa==='regular'||fa==='brands') continue;
+      for(const [k,v] of Object.entries(FA_FROM_KEY)){
+        if(v==='fa-'+fa && ICONS[k]) return k;
+      }
+      const alias={crosshairs:'crosshair',gear:'settings','magnifying-glass':'search','face-smile':'smile',pen:'edit',bolt:'zap',motorcycle:'bike','triangle-exclamation':'alert','circle-info':'info',bullseye:'target','shield-halved':'shield','shield-check':'shield-check'};
+      const key=alias[fa]||fa;
+      if(ICONS[key]) return key;
     }
-    const name=FA_FROM_KEY[s];
-    return name ? ('fa-solid '+name) : 'fa-solid fa-cube';
+    return 'dot';
   }
 
   // Action rows (saved configs: Load/Update/Delete, keybinds: Rebind/Delete) are cycled with
@@ -2387,8 +2398,9 @@ function S(inner){
 
     const lab=document.createElement('span'); lab.className='PTLabel';
     if(kind==='category' && r.icon){
-      const ico=document.createElement('i');
-      ico.className=faIconClass(r.icon);
+      const ico=document.createElement('span');
+      ico.className='ico';
+      ico.innerHTML=iconSvgHtml(iconKeyFromSpec(r.icon));
       lab.appendChild(ico);
     }
     let labelText = esc(r.label||'');
@@ -2431,8 +2443,9 @@ function S(inner){
         }
       }
     } else if(kind==='category'){
-      const ch=document.createElement('i');
-      ch.className='fa-solid fa-angle-right';
+      const ch=document.createElement('span');
+      ch.className='ico chev-right';
+      ch.innerHTML=iconSvgHtml('chevron-right');
       tab.appendChild(ch);
     } else if(kind==='button' && r.sliderMode==='Choice'){
       const sc=document.createElement('div'); sc.className='Scrollable';
@@ -2525,8 +2538,7 @@ function S(inner){
     selOverlay.style.top = topPx + 'px';
     selOverlay.style.height = hPx + 'px';
     selOverlay.style.setProperty('left', '0', 'important');
-    selOverlay.style.setProperty('right', '0', 'important');
-    selOverlay.style.setProperty('width', 'auto', 'important');
+    selOverlay.style.setProperty('width', '100%', 'important');
     selOverlay.style.setProperty('margin', '0', 'important');
     selOverlay.style.setProperty('max-height', 'none', 'important');
     selOverlay.style.setProperty('transform', 'none', 'important');
