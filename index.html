@@ -227,7 +227,7 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
             rgba(var(--menu-color),0.75) 100%);
         border-radius: 1vw;
         box-shadow: inset 0 .06vw 0 rgba(255,255,255,0.35);
-        transition: background .15s ease;
+        transition: top .2s ease, height .2s ease, background .15s ease;
         box-sizing: border-box;
     }
 
@@ -1459,8 +1459,8 @@ html[data-theme="blue"]{--menu-color:22, 137, 212;}
 html[data-theme="green"]{--menu-color:19, 95, 27;}
 html[data-theme="savage"]{--menu-color:254, 242, 5;}
 html[data-theme="baxci"]{--menu-color:87, 191, 242;}
-.PWrapper{opacity:0;visibility:hidden;pointer-events:none;transition:opacity .18s ease,visibility 0s linear .18s;}
-.PWrapper.open{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .18s ease,visibility 0s linear 0s;}
+.PWrapper{opacity:0;visibility:hidden;pointer-events:none;transition:opacity .3s ease,visibility 0s linear .3s;}
+.PWrapper.open{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .3s ease,visibility 0s linear 0s;}
 html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-events:auto;}
 .PWrapper.input-hidden{opacity:0!important;visibility:hidden!important;pointer-events:none!important;}
 .PWrapper.color-picker-open{opacity:.72;pointer-events:none;}
@@ -1471,13 +1471,10 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
 .PWrapper:not(.keybind-mode) .PBanner,.PWrapper:not(.keybind-mode) .PCategories,.PWrapper:not(.keybind-mode) .PTabs,.PWrapper:not(.keybind-mode) .PFooter{width:100%!important;max-width:100%!important;margin-left:0!important;margin-right:0!important;box-sizing:border-box!important;}
 .PWrapper .PCategories:empty,.PWrapper .PCategories:not(.show){display:none;}
 .PWrapper .PCategories.show{display:flex;}
-/* List scroll and selection bubble share a curve/duration, otherwise crossing a scroll
-   boundary glides the rows at one speed and snaps the highlight at another. */
-.PWrapper.fast-nav #list{transition:transform .12s cubic-bezier(.22,1,.36,1)!important;}.PWrapper.fast-nav #selOverlay{transition:top .12s cubic-bezier(.22,1,.36,1)!important;}.PWrapper.fast-nav #psProgress{transition:none!important;}
 /* Full rebuilds (tab switches) must not animate in from the old scroll offset. */
 .PWrapper.rendering #list{transition:none!important;}.PWrapper.rendering #selOverlay{transition:none!important;}.PWrapper.rendering #psProgress{transition:none!important;}
-#list{position:relative;z-index:2;width:100%;transition:transform .2s cubic-bezier(.22,1,.36,1);}
-#selOverlay{position:absolute!important;left:0!important;right:0!important;width:100%!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;box-sizing:border-box!important;border-radius:.3083vw!important;}
+#list{position:relative;z-index:2;width:100%;transition:transform 200ms ease;}
+#selOverlay{position:absolute!important;left:0!important;right:0!important;width:auto!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;box-sizing:border-box!important;border-radius:.3083vw!important;transition:top 200ms ease, height 120ms ease;}
 /* Eshay: label icons stay text-secondary. */
 .PTab.active .PTLabel > .fa-solid,
 .PTab:hover .PTLabel > .fa-solid{
@@ -1948,7 +1945,7 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
     <div class="PRightElements">
       <div class="PCategories" id="tabsbar"></div>
       <div class="PTabs" id="listWrap">
-        <div id="selOverlay" style="position:absolute;left:0;right:0;width:100%;height:1.6vw;border-radius:.3083vw;pointer-events:none;z-index:0;opacity:0;box-sizing:border-box;margin:0;transform:none;transition:top 200ms ease, height 120ms ease;"></div>
+        <div id="selOverlay" style="position:absolute;left:0;right:0;width:auto;height:1.6vw;border-radius:.3083vw;pointer-events:none;z-index:0;opacity:0;box-sizing:border-box;margin:0;transform:none;transition:top 200ms ease, height 120ms ease;"></div>
         <div class="keybind-panel" id="keybindPanel">
           <div class="kb-head">
             <div class="kb-icon" id="kbCaptureIcon">
@@ -2526,20 +2523,21 @@ function S(inner){
     selOverlay.style.height = hPx + 'px';
     selOverlay.style.setProperty('left', '0', 'important');
     selOverlay.style.setProperty('right', '0', 'important');
-    selOverlay.style.setProperty('width', '100%', 'important');
+    selOverlay.style.setProperty('width', 'auto', 'important');
     selOverlay.style.setProperty('margin', '0', 'important');
     selOverlay.style.setProperty('max-height', 'none', 'important');
     selOverlay.style.setProperty('transform', 'none', 'important');
     selOverlay.style.opacity = '1';
     selOverlay.style.zIndex = '0';
     selOverlay.style.pointerEvents = 'none';
-    selOverlay.style.background = 'none';
-    selOverlay.style.backgroundColor = 'rgba('+color+', 0.55)';
+    selOverlay.style.background = 'rgba('+color+', 0.60)';
+    selOverlay.style.backgroundColor = 'rgba('+color+', 0.60)';
+    selOverlay.style.backgroundClip = 'border-box';
     selOverlay.style.outline = 'none';
-    selOverlay.style.border = '0.04vw solid rgba('+color+', 0.95)';
+    selOverlay.style.border = '0.052vw solid rgba('+color+', 1)';
     selOverlay.style.borderRadius = '.3083vw';
-    selOverlay.style.boxShadow = '0vw 0vw .18vw .02vw rgba('+color+',0.85)';
-    selOverlay.style.transition = 'top 200ms ease, height 120ms ease, border-radius 120ms ease';
+    selOverlay.style.boxShadow = 'inset 0 0 0 .4vw rgba('+color+', 0.60), 0vw 0vw .2083vw .0339vw rgb('+color+')';
+    selOverlay.style.transition = 'top 200ms ease, height 120ms ease';
   }
 
   // Left rail stays full — no proportional thumb.
@@ -3102,10 +3100,7 @@ function S(inner){
     s.activeRow=Number(activeRow)||1;
     if(typeof footerRight==='string') s.footerRight=footerRight;
     const idx=Math.max(0, Math.min((s.activeRow||1)-1, Math.max(rows.length-1,0)));
-    const now=(performance&&performance.now)?performance.now():Date.now();
-    const fast=(now-_lastSelAt)<90;
-    cluster.classList.toggle('fast-nav', fast);
-    _lastSelAt=now;
+    _lastSelAt=(performance&&performance.now)?performance.now():Date.now();
     for(let i=0;i<list.children.length;i++) list.children[i].classList.toggle('active', i===idx);
 
     const showTabs = s.mode!=='main' && s.tabs && s.tabs.length>1;
@@ -3119,10 +3114,6 @@ function S(inner){
     updateScrollBar(scrollOffset, rows.length, maxVis, idx, rows);
     if(footR) footR.textContent=formatFootCount(rows, idx);
     setDesc(s.footerRight||'');
-    if(fast){
-      clearTimeout(window.__staticFastNavTimer);
-      window.__staticFastNavTimer=setTimeout(function(){ cluster.classList.remove('fast-nav'); }, 180);
-    }
     return true;
   };
 
