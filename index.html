@@ -467,7 +467,9 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         flex: 1 1 auto;
         min-width: 0;
         max-width: 100%;
-        overflow: hidden; text-overflow: ellipsis;
+        overflow-x: hidden;
+        overflow-y: visible;
+        text-overflow: ellipsis;
         white-space: nowrap;
         font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
         font-size: .62vw;
@@ -1489,7 +1491,7 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
 /* Full rebuilds (tab switches) must not animate in from the old scroll offset. */
 .PWrapper.rendering #list{transition:none!important;}.PWrapper.rendering #selOverlay{transition:none!important;}.PWrapper.rendering #psProgress{transition:none!important;}
 #list{position:relative!important;z-index:2;width:100%;transition:transform .2s cubic-bezier(.22,1,.36,1);}
-#selOverlay{position:absolute!important;top:0;left:0!important;right:0!important;width:auto!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;box-sizing:border-box!important;border-radius:.3083vw!important;filter:none!important}
+#selOverlay{position:absolute!important;top:0;left:0!important;width:100%!important;right:auto!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;box-sizing:border-box!important;border-radius:.3083vw!important;filter:none!important}
 .PTab.active .PTLabel > .fa-solid,
 .PTab.active .PTLabel .ico,
 .PTab.active .PTLabel .ico .fa-solid,
@@ -1978,6 +1980,7 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
     <div class="PRightElements">
       <div class="PCategories" id="tabsbar"></div>
       <div class="PTabs" id="listWrap">
+        <div id="selOverlay" style="position:absolute;left:0;width:100%;height:1.6vw;border-radius:.3083vw;pointer-events:none;z-index:0;opacity:0;transition:top 200ms ease, height 120ms ease;"></div>
         <div class="keybind-panel" id="keybindPanel">
           <div class="kb-head">
             <div class="kb-icon" id="kbCaptureIcon">
@@ -1994,7 +1997,7 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
             </div>
           </div>
         </div>
-        <div id="list"><div id="selOverlay" style="position:absolute;left:0;right:0;width:auto;height:1.6vw;border-radius:.3083vw;pointer-events:none;z-index:0;opacity:0;transition:top 200ms ease, height 120ms ease;"></div></div>
+        <div id="list"></div>
       </div>
       <div class="PFooter">
         <span class="PBuild" id="footL">discord.gg/staticservices</span>
@@ -2535,18 +2538,12 @@ function S(inner){
   // that gap multiplies by the scroll offset — which is what pushed the last rows of a
   // full tab below the panel and left half-rows clipped at the top and bottom edges.
   function rowPitchPx(){
-    if(list){
-      let prev = null;
-      for(let i=0;i<list.children.length;i++){
-        const el=list.children[i];
-        if(!el || !el.dataset || el.dataset.idx==null) continue;
-        if(prev){
-          const d=(el.offsetTop||0)-(prev.offsetTop||0);
-          if(d>0.5) return d;
-        }
-        prev = el;
-      }
-      if(prev && prev.offsetHeight) return prev.offsetHeight;
+    if(list && list.children.length >= 2){
+      const d = (list.children[1].offsetTop || 0) - (list.children[0].offsetTop || 0);
+      if(d > 0.5) return d;
+    }
+    if(list && list.children.length && list.children[0].offsetHeight){
+      return list.children[0].offsetHeight;
     }
     return rowHeightPx();
   }
@@ -2584,18 +2581,22 @@ function S(inner){
     return 'translateY(-' + (off * rowPitchPx()) + 'px)';
   }
 
-  function applySelBubbleLook(sel, color, rMid){
+  function applySelBubbleLook(sel, color, rTop, rBot){
     if(!sel) return;
+    const rMid = '.3083vw';
+    const rt = (rTop != null && rTop !== '') ? rTop : rMid;
+    const rb = (rBot != null && rBot !== '') ? rBot : rMid;
     sel.style.boxSizing = 'border-box';
     sel.style.background = 'none';
     sel.style.backgroundColor = 'rgba('+color+', 0.55)';
     sel.style.outline = 'none';
     sel.style.border = '0.04vw solid rgba('+color+', 0.95)';
-    sel.style.borderRadius = rMid || '.3083vw';
+    sel.style.borderRadius = rt + ' ' + rt + ' ' + rb + ' ' + rb;
     sel.style.left = '0';
-    sel.style.right = '0';
-    sel.style.width = 'auto';
-    sel.style.boxShadow = '0vw 0vw .18vw .02vw rgba('+color+',0.85)';
+    sel.style.right = 'auto';
+    sel.style.width = '100%';
+    // Inset only — outer glow bleeds past the panel clip and looks uneven at edges.
+    sel.style.boxShadow = 'inset 0 -.05vw .12vw rgba('+color+',0.38)';
     sel.style.filter = 'none';
   }
 
@@ -2607,20 +2608,36 @@ function S(inner){
       return;
     }
     const color = row.classList.contains('red-row') ? '229, 72, 72' : menuColor();
-    // Overlay lives inside #list so it scrolls with rows — use offsetTop only.
-    let topPx = row.offsetTop || 0;
-    let hPx = row.offsetHeight || rowPitchPx() || 1;
+    const rowH = (list.children[0] && list.children[0].offsetHeight) || row.offsetHeight || 0;
+    const scrollPx = window.__staticListShiftPx != null
+      ? Math.max(0, window.__staticListShiftPx)
+      : Math.max(0, (scrollOffset||0) * rowH);
+    let topPx = Math.max(0, (row.offsetTop||0) - scrollPx);
+    let hPx = row.offsetHeight || rowH || 1;
+    const maxH = listWrap ? Math.max(0, listWrap.clientHeight) : 0;
+    if(listWrap){
+      if(topPx + hPx > maxH){
+        hPx = Math.max(1, maxH - topPx);
+      }
+      if(topPx > maxH) topPx = Math.max(0, maxH - hPx);
+    }
     const edgeTol = 1;
     const atTop = topPx <= edgeTol;
+    const atBot = maxH > 0 && (topPx + hPx >= maxH - edgeTol);
     const rMid = '.3083vw';
+    const rTop = atTop ? '0' : rMid;
+    const rBot = atBot ? '0' : rMid;
     if(atTop) topPx = 0;
     selOverlay.style.display = 'block';
     selOverlay.style.top = topPx + 'px';
     selOverlay.style.height = hPx + 'px';
+    selOverlay.style.width = '100%';
+    selOverlay.style.left = '0';
+    selOverlay.style.right = 'auto';
     selOverlay.style.opacity = '1';
     selOverlay.style.zIndex = '0';
     selOverlay.style.pointerEvents = 'none';
-    applySelBubbleLook(selOverlay, color, rMid);
+    applySelBubbleLook(selOverlay, color, rTop, rBot);
     selOverlay.style.transition = 'top 200ms ease, height 120ms ease, border-radius 120ms ease';
   }
   window.__staticUpdateHighlight = updateHighlight;
@@ -2996,24 +3013,21 @@ function S(inner){
     if(listSectionHeader) listSectionHeader.classList.remove('show');
   }
 
-  function attachSelOverlayToList(){
-    if(!list || !selOverlay) return;
-    if(selOverlay.parentNode !== list){
-      list.insertBefore(selOverlay, list.firstChild);
-    } else if(list.firstChild !== selOverlay){
-      list.insertBefore(selOverlay, list.firstChild);
+  function ensureSelOverlayInWrap(){
+    if(!listWrap || !selOverlay) return;
+    if(selOverlay.parentNode !== listWrap){
+      listWrap.insertBefore(selOverlay, listWrap.firstChild);
     }
   }
 
   function mountListNodes(nodes){
     if(!list) return;
+    ensureSelOverlayInWrap();
     if(typeof list.replaceChildren === 'function'){
-      const kids = selOverlay ? [selOverlay].concat(nodes) : nodes;
-      list.replaceChildren.apply(list, kids);
+      list.replaceChildren.apply(list, nodes);
       return;
     }
     list.innerHTML='';
-    attachSelOverlayToList();
     const frag=document.createDocumentFragment();
     for(let i=0;i<nodes.length;i++) frag.appendChild(nodes[i]);
     list.appendChild(frag);
@@ -3165,7 +3179,7 @@ function S(inner){
       const maxVis = isKeybind ? DEFAULT_VIS : maxVisibleRows(showTabs, isMain);
       cluster.classList.add('rendering');
       list.innerHTML='';
-      attachSelOverlayToList();
+      ensureSelOverlayInWrap();
       const frag=document.createDocumentFragment();
       if(!isKeybind){
         for(let i=0;i<rows.length;i++) frag.appendChild(buildRow(rows[i], i, idx));
