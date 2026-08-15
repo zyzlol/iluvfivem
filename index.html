@@ -98,7 +98,7 @@ html.static-shark-ready #cluster:not(.open){opacity:0!important;visibility:hidde
 html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-optical-sizing:auto;}
     :root {
         --menu-color: 22, 137, 212;
-        --bubble-color: 59, 155, 255;
+        --bubble-color: 63, 142, 252;
         --menu-x: 4.5%;
         --menu-y: 26%;
         --menu-scale: 1;
@@ -494,16 +494,24 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
     }
 
     .PWrapper .PTabs .PTab i.chev-right,
-    .PWrapper .PTabs .PTab > i.fa-solid {
-        position: absolute;
-        display: flex;
+    .PWrapper .PTabs .PTab .chev-right {
+        position: absolute; display: flex;
+        right: .7vw;
+        top: 50%;
+        font-size: .58vw;
+        font-weight: 400;
+        color: var(--text-secondary);
+        transform: translateY(-50%);
+        line-height: 1;
         align-items: center;
         justify-content: center;
-        right: .65vw;
-        font-size: .58vw;
-        color: var(--text-secondary);
-        transition: transform .15s ease;
-        line-height: 1;
+        transition: color .15s ease;
+    }
+
+    .PWrapper .PTabs .PTab .TOptions .chev-right {
+        position: relative; right: auto; top: auto;
+        transform: none;
+        flex: 0 0 auto;
     }
     .PWrapper .PTabs .PTab .PTLabel > .fa-solid,
     .PWrapper .PTabs .PTab .PTLabel > .ico {
@@ -545,17 +553,6 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         font-size: .58vw !important;
         line-height: 1 !important;
         color: rgba(255,255,255,.72) !important;
-    }
-    .PWrapper .PTabs .PTab .chev-right {
-        position: absolute; display: flex;
-        right: .7vw;
-        top: 50%;
-        font-size: .58vw;
-        color: var(--text-secondary);
-        transform: translateY(-50%);
-        line-height: 1;
-        align-items: center;
-        justify-content: center;
     }
 
     .PWrapper .PTabs .PTab .TOptions {
@@ -1498,15 +1495,15 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
 .PWrapper .PCategories.show{display:flex;}
 /* List scroll and selection bubble share a curve/duration, otherwise crossing a scroll
    boundary glides the rows at one speed and snaps the highlight at another. */
-.PWrapper.fast-nav #list{transition:transform .12s cubic-bezier(.22,1,.36,1), opacity .12s ease!important;}
-.PWrapper.fast-nav #selOverlay{transition:top .12s cubic-bezier(.22,1,.36,1), height .12s cubic-bezier(.22,1,.36,1)!important;}
-.PWrapper.fast-nav #psProgress{transition:none!important;}
-.PWrapper.tab-switching #listWrap{transition:height .22s cubic-bezier(.22,1,.36,1)!important;}
-.PWrapper.tab-switching #list{will-change:opacity,transform;}
-/* Full rebuilds (section changes) must not animate in from the old scroll offset. */
+.PWrapper.fast-nav #list{transition:transform .12s cubic-bezier(.22,1,.36,1)!important;}.PWrapper.fast-nav #selOverlay{transition:top .12s cubic-bezier(.22,1,.36,1)!important;}.PWrapper.fast-nav #psProgress{transition:none!important;}
+/* Full rebuilds (tab switches) must not animate in from the old scroll offset. */
 .PWrapper.rendering #list{transition:none!important;}.PWrapper.rendering #selOverlay{transition:none!important;}.PWrapper.rendering #psProgress{transition:none!important;}
-#list{position:relative;z-index:2;width:100%;transition:transform .2s cubic-bezier(.22,1,.36,1), opacity .16s ease;}
-#selOverlay{position:absolute!important;left:0!important;right:0!important;width:100%!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;box-sizing:border-box!important;border-radius:.3083vw!important;pointer-events:none!important;z-index:0!important;transition:top 200ms ease, height 120ms ease;}
+.PWrapper.tab-switch #listWrap{animation:tabCtxIn .24s cubic-bezier(.22,1,.36,1) both;}
+.PWrapper.tab-switch.tab-back #listWrap{animation-name:tabCtxBack;}
+@keyframes tabCtxIn{from{opacity:0;transform:translateY(.36vw);}to{opacity:1;transform:translateY(0);}}
+@keyframes tabCtxBack{from{opacity:0;transform:translateY(-.3vw);}to{opacity:1;transform:translateY(0);}}
+#list{position:relative;z-index:2;width:100%;transition:transform .2s cubic-bezier(.22,1,.36,1);}
+#selOverlay{position:absolute!important;left:0!important;right:0!important;width:auto!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;box-sizing:border-box!important;border-radius:.3083vw!important;}
 .PTab.active .PTLabel > .fa-solid,
 .PTab.active .PTLabel .ico,
 .PTab.active .PTLabel .ico .fa-solid,
@@ -1979,7 +1976,7 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
     <div class="PRightElements">
       <div class="PCategories" id="tabsbar"></div>
       <div class="PTabs" id="listWrap">
-        <div id="selOverlay" style="position:absolute;left:0;right:0;width:100%;height:1.6vw;border-radius:.3083vw;pointer-events:none;z-index:0;opacity:0;box-sizing:border-box;margin:0;transform:none;transition:top 200ms ease, height 120ms ease;"></div>
+        <div id="selOverlay" style="position:absolute;left:0;right:0;width:auto;height:1.6vw;border-radius:.3083vw;pointer-events:none;z-index:0;opacity:0;box-sizing:border-box;margin:0;transform:none;transition:top 200ms ease, height 120ms ease;"></div>
         <div class="keybind-panel" id="keybindPanel">
           <div class="kb-head">
             <div class="kb-icon" id="kbCaptureIcon">
@@ -2237,102 +2234,11 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
   window.__staticLastState=null;
   let _lastSelAt=0;
 
-  function beginFastNav(ms){
-    ms = ms || 200;
-    if(!cluster) return;
-    cluster.classList.add('fast-nav');
-    clearTimeout(window.__staticFastNavTimer);
-    window.__staticFastNavTimer = setTimeout(function(){
-      if(cluster) cluster.classList.remove('fast-nav');
-    }, ms);
-  }
-
-  function isTabSwitch(prevCtx, s){
-    if(!prevCtx || !s) return false;
-    const pp = prevCtx.split('|');
-    if(pp.length < 3) return false;
-    if(pp[0]!==(s.mode||'') || pp[1]!==(s.section||'')) return false;
-    const prevTab = parseInt(pp[2], 10) || 1;
-    const newTab = s.tabIndex || 1;
-    if(prevTab === newTab) return false;
-    const tabDir = Number(s.tabDir);
-    if(tabDir === 1 || tabDir === -1){
-      window.__staticTabDir = tabDir;
-    } else {
-      const tabs = s.tabs || [];
-      if(tabs.length > 1 && prevTab === tabs.length && newTab === 1){
-        window.__staticTabDir = 1;
-      } else if(tabs.length > 1 && prevTab === 1 && newTab === tabs.length){
-        window.__staticTabDir = -1;
-      } else {
-        window.__staticTabDir = newTab > prevTab ? 1 : -1;
-      }
-    }
-    return true;
-  }
-
-  function listBaseTransform(){
-    const shift = Number(window.__staticListShiftPx) || 0;
-    return shift > 0 ? ('translateY(-' + shift + 'px)') : 'translateY(0)';
-  }
-
-  function withSlide(base, slidePx){
-    if(!slidePx) return base;
-    return base + ' translateX(' + slidePx + 'px)';
-  }
-
-  function animateTabSwitch(paintFn){
-    beginFastNav(360);
-    if(window.__staticNavRaf) cancelAnimationFrame(window.__staticNavRaf);
-    if(window.__staticTabSwitchTimer) clearTimeout(window.__staticTabSwitchTimer);
-
-    const tabDir = Number(window.__staticTabDir) || 0;
-    const slidePx = tabDir ? (tabDir > 0 ? -14 : 14) : 0;
-    cluster.classList.add('tab-switching');
-
-    if(list){
-      const base = listBaseTransform();
-      list.style.transition = 'opacity .15s ease, transform .22s cubic-bezier(.22,1,.36,1)';
-      list.style.opacity = '0';
-      list.style.transform = withSlide(base, slidePx);
-    }
-    if(selOverlay) selOverlay.style.opacity = '0';
-
-    window.__staticTabSwitchTimer = setTimeout(function(){
-      window.__staticTabSwitchTimer = 0;
-      paintFn();
-      if(!list){
-        cluster.classList.remove('tab-switching');
-        return;
-      }
-      const base = listBaseTransform();
-      const slideIn = slidePx ? -slidePx : 0;
-      list.style.transition = 'none';
-      list.style.opacity = '0';
-      list.style.transform = withSlide(base, slideIn);
-
-      requestAnimationFrame(function(){
-        requestAnimationFrame(function(){
-          list.style.transition = 'opacity .22s ease, transform .24s cubic-bezier(.22,1,.36,1)';
-          list.style.opacity = '1';
-          list.style.transform = base;
-          setTimeout(function(){
-            cluster.classList.remove('tab-switching');
-            if(list){
-              list.style.transition = '';
-              list.style.opacity = '';
-            }
-          }, 260);
-        });
-      });
-    }, 150);
-  }
-
   function menuColor(){
     return getComputedStyle(document.documentElement).getPropertyValue('--menu-color').trim() || '22, 137, 212';
   }
   function bubbleColor(){
-    return getComputedStyle(document.documentElement).getPropertyValue('--bubble-color').trim() || menuColor();
+    return getComputedStyle(document.documentElement).getPropertyValue('--bubble-color').trim() || '63, 142, 252';
   }
   function esc(s){ return String(s==null?'':s); }
 
@@ -2598,9 +2504,9 @@ function S(inner){
         }
       }
     } else if(kind==='category'){
-      const ch=document.createElement('i');
-      ch.className='fa-solid fa-chevron-right chev-right';
-      ch.setAttribute('aria-hidden','true');
+      const ch=document.createElement('span');
+      ch.className='chev-right';
+      ch.textContent='›';
       tab.appendChild(ch);
     } else if(kind==='button' && r.sliderMode==='Choice'){
       const sc=document.createElement('div'); sc.className='Scrollable';
@@ -2668,34 +2574,65 @@ function S(inner){
     return 'translateY(-' + (off * rowPitchPx()) + 'px)';
   }
 
-  function updateHighlight(idx, scrollOffset){
+  function menuCtxSig(s){
+    if(!s) return '';
+    return [
+      s.mode||'',
+      s.section||'',
+      s.tabIndex||1,
+      s.sectionTitle||'',
+      (s.tabs||[]).join(',')
+    ].join('|');
+  }
+
+  function applyTabSwitchAnim(s){
+    if(!cluster) return;
+    cluster.classList.remove('tab-switch','tab-back');
+    if(!s || !s.smoothTab) return;
+    cluster.classList.add('tab-switch');
+    if(Number(s.tabDir||0) < 0) cluster.classList.add('tab-back');
+    clearTimeout(window.__staticTabAnimTimer);
+    window.__staticTabAnimTimer = setTimeout(function(){
+      cluster.classList.remove('tab-switch','tab-back');
+    }, 280);
+  }
+
+  function updateHighlight(idx, scrollOffset, layoutPass){
     if(!selOverlay || !list) return;
     const row = findRowEl(idx) || list.children[idx];
-    if(!row){
+    if(!row || (!row.offsetHeight && !row.getBoundingClientRect().height)){
+      selOverlay.style.opacity='0';
+      if(!layoutPass) requestAnimationFrame(function(){ updateHighlight(idx, scrollOffset, 1); });
+      return;
+    }
+    const wrap = listWrap || list.parentElement;
+    if(!wrap){
       selOverlay.style.opacity='0';
       return;
     }
-    const color = row.classList.contains('red-row') ? '229, 72, 72' : menuColor();
-    const pitch = rowPitchPx();
-    const rowH = row.offsetHeight || pitch || 1;
+    const color = row.classList.contains('red-row') ? '229, 72, 72' : bubbleColor();
+    const rowH = (list.children[0] && list.children[0].offsetHeight) || row.offsetHeight || 0;
     const scrollPx = window.__staticListShiftPx != null
       ? Math.max(0, window.__staticListShiftPx)
-      : Math.max(0, (scrollOffset||0) * pitch);
-    const listTop = list ? (list.offsetTop || 0) : 0;
-    let topPx = listTop + Math.max(0, (row.offsetTop||0) - scrollPx);
-    let hPx = rowH;
-    const maxH = listWrap ? Math.max(0, listWrap.clientHeight) : 0;
-    if(listWrap){
-      if(topPx + hPx > maxH) hPx = Math.max(1, maxH - topPx);
-      if(topPx > maxH) topPx = Math.max(0, maxH - hPx);
-    }
+      : Math.max(0, (scrollOffset||0) * rowPitchPx());
+    let topPx = Math.max(0, (row.offsetTop||0) - scrollPx);
+    let hPx = row.offsetHeight || rowH || 1;
+    const maxH = Math.max(0, wrap.clientHeight);
+    if(topPx + hPx > maxH) hPx = Math.max(1, maxH - topPx);
+    if(topPx > maxH) topPx = Math.max(0, maxH - hPx);
+    const edgeTol = 1;
+    const atTop = topPx <= edgeTol;
+    const atBot = maxH > 0 && (topPx + hPx >= maxH - edgeTol);
+    const rMid = '.3083vw';
+    const rPanel = 'var(--menu-radius)';
+    if(atTop) topPx = 0;
     selOverlay.style.display = 'block';
     selOverlay.style.boxSizing = 'border-box';
     selOverlay.style.top = topPx + 'px';
     selOverlay.style.height = hPx + 'px';
     selOverlay.style.setProperty('left', '0', 'important');
     selOverlay.style.setProperty('right', '0', 'important');
-    selOverlay.style.setProperty('width', '100%', 'important');
+    selOverlay.style.setProperty('width', 'auto', 'important');
     selOverlay.style.setProperty('margin', '0', 'important');
     selOverlay.style.setProperty('max-height', 'none', 'important');
     selOverlay.style.setProperty('transform', 'none', 'important');
@@ -2706,9 +2643,18 @@ function S(inner){
     selOverlay.style.backgroundColor = 'rgba('+color+', 0.55)';
     selOverlay.style.outline = 'none';
     selOverlay.style.border = '0.04vw solid rgba('+color+', 0.95)';
-    selOverlay.style.borderRadius = '.3083vw';
+    if(atTop && atBot){
+      selOverlay.style.borderRadius = rPanel;
+    } else if(atTop){
+      selOverlay.style.borderRadius = rPanel + ' ' + rPanel + ' ' + rMid + ' ' + rMid;
+    } else if(atBot){
+      selOverlay.style.borderRadius = rMid + ' ' + rMid + ' ' + rPanel + ' ' + rPanel;
+    } else {
+      selOverlay.style.borderRadius = rMid;
+    }
     selOverlay.style.boxShadow = '0vw 0vw .18vw .02vw rgba('+color+',0.85)';
     selOverlay.style.transition = 'top 200ms ease, height 120ms ease, border-radius 120ms ease';
+    if(!layoutPass) requestAnimationFrame(function(){ updateHighlight(idx, scrollOffset, 1); });
   }
 
   // Left rail stays full — no proportional thumb.
@@ -3149,7 +3095,7 @@ function S(inner){
         window.__staticCtxSig = null;
         window.__staticListSig = null;
         window.__staticVirtSig = null;
-        cluster.classList.remove('open','rendering','fast-nav','tab-switching','input-hidden','color-picker-open','gun-picker-open');
+        cluster.classList.remove('open','rendering','fast-nav','input-hidden','color-picker-open','gun-picker-open');
         cluster.style.opacity='0';
         cluster.style.visibility='hidden';
         cluster.style.pointerEvents='none';
@@ -3170,42 +3116,30 @@ function S(inner){
       const tabs=s.tabs||[];
       const showTabs = !isKeybind && s.mode!=='main' && tabs.length>1;
       const showCats = !isKeybind && (showTabs || !!(s.sectionTitle||s.section));
-      const tabSig = (showTabs ? 't:' : 'c:') + (s.mode||'') + '|' + (s.sectionTitle||s.section||'') + '|' + (s.tabIndex||1) + '|' + tabs.join(',');
-      if(window.__staticTabSig !== tabSig){
-        window.__staticTabSig = tabSig;
-        tabsbar.innerHTML='';
-        tabsbar.classList.toggle('show', showCats);
-        if(showTabs){
-          tabs.forEach(function(name,i){
-            const d=document.createElement('div');
-            d.className='PCategory'+(i===((s.tabIndex||1)-1)?' active':'');
-            d.dataset.tab=String(i+1);
-            const span=document.createElement('span');
-            span.textContent=name;
-            d.appendChild(span);
-            d.addEventListener('mousedown', function(ev){
-              ev.preventDefault();
-              if(window.__staticColorPickerActive || window.__staticGunPickerActive) return;
-              window.__staticMenuTab=String(i+1);
-            });
-            tabsbar.appendChild(d);
-          });
-        } else if(showCats){
+      tabsbar.innerHTML='';
+      tabsbar.classList.toggle('show', showCats);
+      if(showTabs){
+        tabs.forEach(function(name,i){
           const d=document.createElement('div');
-          d.className='PCategory active';
+          d.className='PCategory'+(i===((s.tabIndex||1)-1)?' active':'');
+          d.dataset.tab=String(i+1);
           const span=document.createElement('span');
-          span.textContent=s.sectionTitle||s.section||'Menu';
+          span.textContent=name;
           d.appendChild(span);
+          d.addEventListener('mousedown', function(ev){
+            ev.preventDefault();
+            if(window.__staticColorPickerActive || window.__staticGunPickerActive) return;
+            window.__staticMenuTab=String(i+1);
+          });
           tabsbar.appendChild(d);
-        }
-      } else {
-        tabsbar.classList.toggle('show', showCats);
-        if(showTabs){
-          const active = (s.tabIndex||1)-1;
-          for(let i=0;i<tabsbar.children.length;i++){
-            tabsbar.children[i].classList.toggle('active', i===active);
-          }
-        }
+        });
+      } else if(showCats){
+        const d=document.createElement('div');
+        d.className='PCategory active';
+        const span=document.createElement('span');
+        span.textContent=s.sectionTitle||s.section||'Menu';
+        d.appendChild(span);
+        tabsbar.appendChild(d);
       }
 
       if(keybindPanel){
@@ -3233,10 +3167,11 @@ function S(inner){
         listSectionHeader.classList.remove('show');
       }
 
-      if(s.loading && !isKeybind && !(s.rows && s.rows.length)){
+      if(s.loading && !isKeybind){
         cluster.classList.add('rendering');
         window.__staticVirtSig = null;
         window.__staticListSig = null;
+        window.__staticCtxSig = null;
         if(list){
           list.innerHTML='<div class="menu-loading"><span>Loading</span></div>';
           setListShift(0, false);
@@ -3256,61 +3191,47 @@ function S(inner){
       const idx=Math.max(0, Math.min((s.activeRow||1)-1, Math.max(rows.length-1,0)));
       const isMain = s.mode==='main';
       const maxVis = isKeybind ? DEFAULT_VIS : maxVisibleRows(showTabs, isMain);
-      const prevCtx = window.__staticCtxSig;
-      const ctxSig = (s.mode||'')+'|'+(s.section||'')+'|'+(s.tabIndex||1)+'|'+(s.rowsVersion||0);
-      const forceList = prevCtx !== ctxSig;
-      const tabSwitch = forceList && !isKeybind && (!!s.smoothTab || isTabSwitch(prevCtx, s));
-      window.__staticCtxSig = ctxSig;
-
-      const paintListNow=function(smooth){
-        if(!smooth) cluster.classList.add('rendering');
-        let scrollOffset = 0;
-        try{
-          scrollOffset = isKeybind ? 0 : paintVisibleRows(rows, idx, maxVis, forceList);
-          if(isKeybind){
-            setListShift(0, false);
-          } else {
-            updateHighlight(idx, scrollOffset);
-            updateScrollBar(scrollOffset, rows.length, maxVis, idx, rows);
-          }
-        }catch(listErr){
-          console.error('[Static x Eshay] list paint failed', listErr);
-        }finally{
-          if(smooth){
-            requestAnimationFrame(function(){
-              if(!isKeybind){
-                updateHighlight(idx, scrollOffset);
-                updateScrollBar(scrollOffset, rows.length, maxVis, idx, rows);
-              } else if(selOverlay){ selOverlay.style.opacity='0'; }
-            });
-          } else {
-            requestAnimationFrame(function(){
-              cluster.classList.remove('rendering');
-              if(!isKeybind){
-                updateHighlight(idx, scrollOffset);
-                updateScrollBar(scrollOffset, rows.length, maxVis, idx, rows);
-              } else if(selOverlay){ selOverlay.style.opacity='0'; }
-            });
-          }
-        }
-      };
-
-      if(forceList && !isKeybind){
-        if(tabSwitch){
-          animateTabSwitch(function(){ paintListNow(true); });
-        } else {
-          if(window.__staticNavRaf) cancelAnimationFrame(window.__staticNavRaf);
-          if(window.__staticTabSwitchTimer) clearTimeout(window.__staticTabSwitchTimer);
-          if(selOverlay) selOverlay.style.opacity='0';
-          cluster.classList.add('rendering');
-          window.__staticNavRaf = requestAnimationFrame(function(){
-            window.__staticNavRaf = 0;
-            paintListNow(false);
-          });
-        }
-      } else {
-        paintListNow(false);
+      const ctxSig = menuCtxSig(s);
+      const ctxChanged = window.__staticCtxSig !== ctxSig;
+      if(ctxChanged){
+        window.__staticCtxSig = ctxSig;
+        window.__staticListSig = null;
+        window.__staticVirtSig = null;
       }
+      applyTabSwitchAnim(s);
+
+      cluster.classList.add('rendering');
+      if(ctxChanged && selOverlay) selOverlay.style.opacity='0';
+
+      let scrollOffset = 0;
+      if(isKeybind){
+        if(list) list.innerHTML='';
+        setListShift(0, false);
+        applyListHeight(0, maxVis, true, false);
+      } else if(!rows.length){
+        window.__staticListSig = null;
+        window.__staticVirtSig = null;
+        if(list) list.innerHTML='';
+        setListShift(0, false);
+        applyListHeight(0, maxVis, false, isMain);
+        if(selOverlay) selOverlay.style.opacity='0';
+      } else {
+        const rv = Number(s.rowsVersion||0);
+        const forceRebuild = ctxChanged || window.__staticRowsVersion !== rv;
+        window.__staticRowsVersion = rv;
+        scrollOffset = paintVisibleRows(rows, idx, maxVis, forceRebuild);
+        updateHighlight(idx, scrollOffset);
+        updateScrollBar(scrollOffset, rows.length, maxVis, idx, rows);
+      }
+      window.__staticScrollOff = scrollOffset;
+      window.__staticActiveIdx = idx;
+      requestAnimationFrame(function(){
+        cluster.classList.remove('rendering');
+        if(!isKeybind && rows.length){
+          updateHighlight(idx, scrollOffset);
+          updateScrollBar(scrollOffset, rows.length, maxVis, idx, rows);
+        } else if(selOverlay){ selOverlay.style.opacity='0'; }
+      });
 
       if(footR && !isKeybind){
         footR.textContent = formatFootCount(rows, idx);
@@ -3329,10 +3250,10 @@ function S(inner){
 
   window.staticSetActiveRow=function(activeRow, footerRight){
     const s=window.__staticLastState;
-    if(!s || !s.open || !list || !list.children.length) return false;
+    if(!s || !s.open || !list) return false;
     if(s.mode==='keybind' || s.inputOpen) return false;
     const rows=s.rows||[];
-    if(!rows.length || list.children.length!==rows.length) return false;
+    if(!rows.length || !list.children.length || list.children.length!==rows.length) return false;
     s.activeRow=Number(activeRow)||1;
     if(typeof footerRight==='string') s.footerRight=footerRight;
     const idx=Math.max(0, Math.min((s.activeRow||1)-1, Math.max(rows.length-1,0)));
@@ -3344,9 +3265,7 @@ function S(inner){
 
     const showTabs = s.mode!=='main' && s.tabs && s.tabs.length>1;
     const maxVis = maxVisibleRows(showTabs, s.mode==='main');
-    applyListHeight(rows.length, maxVis, false, s.mode==='main');
-    const scrollOffset=calcScrollOffset(idx, rows.length, maxVis);
-    setListShift(scrollOffset, true);
+    const scrollOffset = paintVisibleRows(rows, idx, maxVis, false);
     window.__staticScrollOff = scrollOffset;
     window.__staticActiveIdx = idx;
     updateHighlight(idx, scrollOffset);
@@ -3430,7 +3349,14 @@ function S(inner){
       }catch(_){}
     }
     else if(d.action==='setActiveRow'){
-      window.staticSetActiveRow(d.activeRow, d.footerRight);
+      if(!window.staticSetActiveRow(d.activeRow, d.footerRight)){
+        const s=window.__staticLastState;
+        if(s && s.open){
+          s.activeRow=Number(d.activeRow)||1;
+          if(typeof d.footerRight==='string') s.footerRight=d.footerRight;
+          window.staticRender(s);
+        }
+      }
     }
     else if(d.action==='setPlayerInfo'){ renderPlayerInfoPanel(d.playerInfo||null, d.open!==false); }
     else if(d.action==='setBanner' && d.url && bannerImg){ applyTheme(null, d.url); }
