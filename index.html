@@ -417,7 +417,7 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         background: var(--menu-bg);
         border: .06vw solid var(--menu-border);
         border-radius: var(--menu-radius);
-        overflow: hidden;
+        overflow-x: visible;
         overflow-y: hidden;
         padding: 0;
         box-sizing: border-box;
@@ -476,10 +476,11 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
     .PWrapper .PTabs .PTab .PTLabel .PTText {
         overflow: hidden; text-overflow: ellipsis;
         white-space: nowrap;
-        font-family: Inter;
+        font-family: Inter, sans-serif;
         font-size: .62vw;
         font-weight: 400;
         letter-spacing: .015vw;
+        font-optical-sizing: auto;
         color: inherit;
         line-height: 1;
         min-width: 0;
@@ -518,6 +519,8 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         position: absolute; display: flex;
         right: .65vw;
         top: auto;
+        font-family: "Font Awesome 6 Free";
+        font-weight: 900;
         font-size: .58vw;
         color: var(--text-secondary);
         transform: none;
@@ -2429,7 +2432,7 @@ function S(inner){
       }
     } else if(kind==='category'){
       const ch=document.createElement('i');
-      ch.className='fa-solid fa-chevron-right';
+      ch.className='fa-solid fa-angle-right';
       tab.appendChild(ch);
     } else if(kind==='button' && r.sliderMode==='Choice'){
       const sc=document.createElement('div'); sc.className='Scrollable';
@@ -2536,7 +2539,7 @@ function S(inner){
     selOverlay.style.outline = 'none';
     selOverlay.style.border = '0.052vw solid rgba('+color+', 1)';
     selOverlay.style.borderRadius = '.3083vw';
-    selOverlay.style.boxShadow = 'inset 0 0 0 .4vw rgba('+color+', 0.60), 0vw 0vw .2083vw .0339vw rgb('+color+')';
+    selOverlay.style.boxShadow = '0vw 0vw .2083vw .0339vw rgb('+color+')';
     selOverlay.style.transition = 'top 200ms ease, height 120ms ease';
   }
 
