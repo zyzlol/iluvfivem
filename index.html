@@ -1489,7 +1489,7 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
 /* Full rebuilds (tab switches) must not animate in from the old scroll offset. */
 .PWrapper.rendering #list{transition:none!important;}.PWrapper.rendering #selOverlay{transition:none!important;}.PWrapper.rendering #psProgress{transition:none!important;}
 #list{position:relative;z-index:2;width:100%;transition:transform .2s cubic-bezier(.22,1,.36,1);}
-#selOverlay{position:absolute!important;left:0!important;right:auto!important;width:100%!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;border-radius:.3083vw!important;}
+#selOverlay{position:absolute!important;left:0!important;right:auto!important;width:100%!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;box-sizing:border-box!important;border-radius:.3083vw!important;filter:none!important}
 .PTab.active .PTLabel > .fa-solid,
 .PTab.active .PTLabel .ico,
 .PTab.active .PTLabel .ico .fa-solid,
@@ -2579,6 +2579,19 @@ function S(inner){
     return 'translateY(-' + (off * rowPitchPx()) + 'px)';
   }
 
+  function applySelBubbleLook(sel, color, rMid){
+    if(!sel) return;
+    sel.style.boxSizing = 'border-box';
+    sel.style.background = 'none';
+    sel.style.backgroundColor = 'rgba('+color+', 0.55)';
+    sel.style.outline = 'none';
+    sel.style.border = '0.04vw solid rgba('+color+', 0.95)';
+    sel.style.borderRadius = rMid || '.3083vw';
+    // Eshay: inner top highlight + bottom depth — no outer glow (that reads as side margins).
+    sel.style.boxShadow = 'inset 0 .05vw 0 rgba('+color+', 0.5), inset 0 -.04vw 0 rgba(0,0,0,0.32)';
+    sel.style.filter = 'none';
+  }
+
   function updateHighlight(idx, scrollOffset){
     if(!selOverlay || !list) return;
     const row = findRowEl(idx) || list.children[idx];
@@ -2614,12 +2627,7 @@ function S(inner){
     selOverlay.style.opacity = '1';
     selOverlay.style.zIndex = '0';
     selOverlay.style.pointerEvents = 'none';
-    selOverlay.style.background = 'none';
-    selOverlay.style.backgroundColor = 'rgba('+color+', 0.55)';
-    selOverlay.style.outline = 'none';
-    selOverlay.style.border = '0.04vw solid rgba('+color+', 0.95)';
-    selOverlay.style.borderRadius = rMid;
-    selOverlay.style.boxShadow = '0vw 0vw .18vw .02vw rgba('+color+',0.85)';
+    applySelBubbleLook(selOverlay, color, rMid);
     selOverlay.style.transition = 'top 200ms ease, height 120ms ease, border-radius 120ms ease';
   }
   window.__staticUpdateHighlight = updateHighlight;
