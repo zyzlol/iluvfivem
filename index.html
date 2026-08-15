@@ -448,16 +448,39 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
 
     .PWrapper .PTabs .PTab .PTLabel {
         position: absolute; display: flex; align-items: center;
-        top: 0; bottom: 0; height: 100%;
-        left: .75vw; width: 55%;
-        font-size: .62vw; font-weight: 400;
-        color: var(--text-primary);
+        left: .7vw; top: 0; bottom: 0; right: 6.8vw;
+        width: auto; height: auto; max-width: none;
+        font-size: .62vw; font-weight: 500; line-height: 1;
+        color: rgba(255,255,255,0.92);
+        overflow: visible;
+        white-space: nowrap;
+        letter-spacing: .01vw;
+        margin: 0; padding: 0; box-sizing: border-box;
+        z-index: 2;
+        pointer-events: none;
+    }
+    .PWrapper .PTabs .PTab .PTLabel .PTText {
+        display: flex;
+        align-items: center;
+        flex: 1 1 auto;
+        min-width: 0;
+        max-width: 100%;
+        height: 100%;
         overflow: hidden; text-overflow: ellipsis;
         white-space: nowrap;
-        letter-spacing: .015vw;
+        font-size: .62vw;
+        font-weight: 500;
+        letter-spacing: .01vw;
+        color: rgba(255,255,255,0.92);
+        line-height: 1;
+        padding: 0;
+        box-sizing: border-box;
+        transform: translateY(-.02vw);
+        margin: 0;
     }
 
     .PWrapper .PTabs .PTab.active .PTLabel,
+    .PWrapper .PTabs .PTab.active .PTLabel .PTText,
     .PWrapper .PTabs .PTTab--active .PTLabel {
         color: #fff;
     }
@@ -467,8 +490,8 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         font-size: .58vw; color: var(--text-secondary);
     }
 
-    /* Eshay: Font Awesome <i> in rows (embedded FA woff2). */
-    .PWrapper .PTabs .PTab i {
+    .PWrapper .PTabs .PTab i.chev-right,
+    .PWrapper .PTabs .PTab > i.fa-solid {
         position: absolute;
         display: flex;
         align-items: center;
@@ -479,53 +502,46 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         transition: transform .15s ease;
         line-height: 1;
     }
-    .PWrapper .PTabs .PTab > .ico.chev-right {
-        position: absolute;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        right: .65vw;
-        top: 0;
-        bottom: 0;
-        width: .58vw;
-        height: .58vw;
-        margin: auto 0;
-        color: var(--text-secondary);
-        line-height: 0;
-        pointer-events: none;
-    }
-    .PWrapper .PTabs .PTab > .ico.chev-right svg {
-        width: .58vw;
-        height: .58vw;
-        display: block;
-    }
-    .PWrapper .PTabs .PTab .PTLabel > i {
-        position: static;
-        right: auto;
-        margin-right: .3vw;
-        display: inline;
-        font-size: .58vw;
-    }
+    .PWrapper .PTabs .PTab .PTLabel > .fa-solid,
     .PWrapper .PTabs .PTab .PTLabel > .ico {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        flex: none;
-        width: .58vw;
-        height: .58vw;
-        margin-right: .3vw;
-        color: var(--text-secondary);
-        line-height: 0;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        flex: 0 0 .72vw !important;
+        width: .72vw !important;
+        height: .72vw !important;
+        margin: 0 .22vw 0 0 !important;
+        padding: 0 !important;
+        position: static !important;
+        left: auto !important;
+        right: auto !important;
+        top: auto !important;
+        bottom: auto !important;
+        transform: none !important;
+        line-height: 1 !important;
+        font-size: .58vw !important;
+        color: rgba(255,255,255,.72) !important;
+        overflow: visible !important;
+        box-sizing: border-box !important;
     }
     .PWrapper .PTabs .PTab .PTLabel > .ico svg {
-        width: .58vw;
-        height: .58vw;
+        width: .58vw !important;
+        height: .58vw !important;
         display: block;
+        margin: 0;
+        overflow: visible;
+        stroke-width: 1.65;
     }
-    .PWrapper .PTabs .PTab .TOptions .chev-right {
-        position: relative; right: auto; top: auto;
-        transform: none;
-        flex: 0 0 auto;
+    .PWrapper .PTabs .PTab .chev-right {
+        position: absolute; display: flex;
+        right: .7vw;
+        top: 50%;
+        font-size: .58vw;
+        color: var(--text-secondary);
+        transform: translateY(-50%);
+        line-height: 1;
+        align-items: center;
+        justify-content: center;
     }
 
     .PWrapper .PTabs .PTab .TOptions {
@@ -2394,7 +2410,7 @@ function S(inner){
     if(kind==='category' && r.icon){
       const ico=document.createElement('span');
       ico.className='ico';
-      ico.innerHTML=iconSvgHtml(r.icon);
+      ico.innerHTML=iconSvgHtml(iconKeyFromSpec(String(r.icon)));
       lab.appendChild(ico);
     }
     let labelText = esc(r.label||'');
@@ -2991,6 +3007,18 @@ function S(inner){
       }
       cluster.classList.toggle('keybind-mode', isKeybind);
       cluster.classList.toggle('open', open);
+
+      if(!open){
+        if(selOverlay) selOverlay.style.opacity='0';
+        cluster.classList.remove('rendering','input-hidden','color-picker-open','gun-picker-open');
+        cluster.style.opacity='';
+        cluster.style.visibility='';
+        renderSidePanels(s);
+        renderInput(s);
+        if(typeof window.__staticApplyColorPicker==='function') window.__staticApplyColorPicker(s.colorPicker||{open:false});
+        if(typeof window.__staticApplyGunPicker==='function') window.__staticApplyGunPicker(s.gunPicker||{open:false});
+        return;
+      }
 
       const tabs=s.tabs||[];
       const showTabs = !isKeybind && s.mode!=='main' && tabs.length>1;
