@@ -1504,7 +1504,7 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
 /* Full rebuilds (section changes) must not animate in from the old scroll offset. */
 .PWrapper.rendering #list{transition:none!important;}.PWrapper.rendering #selOverlay{transition:none!important;}.PWrapper.rendering #psProgress{transition:none!important;}
 #list{position:relative;z-index:2;width:100%;transition:transform .2s cubic-bezier(.22,1,.36,1), opacity .16s ease;}
-#selOverlay{position:absolute!important;left:-0.06vw!important;right:-0.06vw!important;width:auto!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;box-sizing:border-box!important;border-radius:.3083vw!important;background:none!important;border:none!important;box-shadow:none!important;outline:none!important;transition:top 200ms ease, height 120ms ease;}
+#selOverlay{position:absolute!important;left:0!important;right:0!important;width:100%!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;box-sizing:border-box!important;border-radius:.3083vw!important;pointer-events:none!important;z-index:0!important;transition:top 200ms ease, height 120ms ease;}
 .PTab.active .PTLabel > .fa-solid,
 .PTab.active .PTLabel .ico,
 .PTab.active .PTLabel .ico .fa-solid,
@@ -1977,7 +1977,7 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
     <div class="PRightElements">
       <div class="PCategories" id="tabsbar"></div>
       <div class="PTabs" id="listWrap">
-        <div id="selOverlay" style="position:absolute;left:-0.06vw;right:-0.06vw;width:auto;height:1.6vw;border-radius:.3083vw;pointer-events:none;z-index:0;opacity:0;box-sizing:border-box;margin:0;transform:none;transition:top 200ms ease, height 120ms ease;"></div>
+        <div id="selOverlay" style="position:absolute;left:0;right:0;width:100%;height:1.6vw;border-radius:.3083vw;pointer-events:none;z-index:0;opacity:0;box-sizing:border-box;margin:0;transform:none;transition:top 200ms ease, height 120ms ease;"></div>
         <div class="keybind-panel" id="keybindPanel">
           <div class="kb-head">
             <div class="kb-icon" id="kbCaptureIcon">
@@ -2398,6 +2398,15 @@ function S(inner){
     gauge:'fa-sliders', rainbow:'fa-palette'
   };
 
+  function iconFaClass(spec){
+    const k=iconKeyFromSpec(spec);
+    if(FA_FROM_KEY[k]) return 'fa-solid ' + FA_FROM_KEY[k];
+    const s=String(spec||'').trim();
+    if(!s) return '';
+    if(/^fa-(solid|regular|brands)\s+fa-/.test(s)) return s;
+    if(/^fa-[a-z0-9-]+$/i.test(s)) return 'fa-solid ' + s;
+    return '';
+  }
   function iconSvgHtml(key){
     const k=iconKeyFromSpec(key);
     return (typeof ICONS!=='undefined' && (ICONS[k]||ICONS.dot)) || '';
@@ -2459,12 +2468,19 @@ function S(inner){
     }
 
     const lab=document.createElement('span'); lab.className='PTLabel';
-    // Category icons: embedded SVG (ICONS map). FA subset is for scroll arrows / chrome only.
     if(kind==='category' && r.icon){
-      const ico=document.createElement('span');
-      ico.className='ico';
-      ico.innerHTML=iconSvgHtml(r.icon);
-      lab.appendChild(ico);
+      const fa=iconFaClass(r.icon);
+      if(fa){
+        const ico=document.createElement('i');
+        ico.className=fa;
+        ico.setAttribute('aria-hidden','true');
+        lab.appendChild(ico);
+      } else {
+        const ico=document.createElement('span');
+        ico.className='ico';
+        ico.innerHTML=iconSvgHtml(r.icon);
+        lab.appendChild(ico);
+      }
     }
     let labelText = esc(r.label||'');
     const txt=document.createElement('span'); txt.className='PTText'; txt.textContent=labelText; lab.appendChild(txt);
@@ -2584,40 +2600,39 @@ function S(inner){
       return;
     }
     const color = row.classList.contains('red-row') ? '229, 72, 72' : menuColor();
-    const rowH = (list.children[0] && list.children[0].offsetHeight) || row.offsetHeight || 0;
+    const pitch = rowPitchPx();
+    const rowH = row.offsetHeight || pitch || 1;
     const scrollPx = window.__staticListShiftPx != null
       ? Math.max(0, window.__staticListShiftPx)
-      : Math.max(0, (scrollOffset||0) * rowH);
-    let topPx = Math.max(0, (row.offsetTop||0) - scrollPx);
-    let hPx = row.offsetHeight || rowH || 1;
+      : Math.max(0, (scrollOffset||0) * pitch);
+    const listTop = list ? (list.offsetTop || 0) : 0;
+    let topPx = listTop + Math.max(0, (row.offsetTop||0) - scrollPx);
+    let hPx = rowH;
     const maxH = listWrap ? Math.max(0, listWrap.clientHeight) : 0;
     if(listWrap){
       if(topPx + hPx > maxH) hPx = Math.max(1, maxH - topPx);
       if(topPx > maxH) topPx = Math.max(0, maxH - hPx);
     }
-    if(topPx <= 1) topPx = 0;
     selOverlay.style.display = 'block';
     selOverlay.style.boxSizing = 'border-box';
     selOverlay.style.top = topPx + 'px';
     selOverlay.style.height = hPx + 'px';
-    selOverlay.style.setProperty('left', '-0.06vw', 'important');
-    selOverlay.style.setProperty('right', '-0.06vw', 'important');
-    selOverlay.style.setProperty('width', 'auto', 'important');
+    selOverlay.style.setProperty('left', '0', 'important');
+    selOverlay.style.setProperty('right', '0', 'important');
+    selOverlay.style.setProperty('width', '100%', 'important');
     selOverlay.style.setProperty('margin', '0', 'important');
     selOverlay.style.setProperty('max-height', 'none', 'important');
     selOverlay.style.setProperty('transform', 'none', 'important');
     selOverlay.style.opacity = '1';
     selOverlay.style.zIndex = '0';
     selOverlay.style.pointerEvents = 'none';
-    selOverlay.style.setProperty('background', 'none', 'important');
-    selOverlay.style.setProperty('background-color', 'rgba('+color+', 0.55)', 'important');
-    selOverlay.style.setProperty('background-clip', 'border-box', 'important');
-    selOverlay.style.setProperty('border', 'none', 'important');
-    selOverlay.style.setProperty('outline', '0.04vw solid rgba('+color+', 0.95)', 'important');
-    selOverlay.style.setProperty('outline-offset', '-0.04vw', 'important');
-    selOverlay.style.setProperty('border-radius', '.3083vw', 'important');
-    selOverlay.style.setProperty('box-shadow', '0vw 0vw .18vw .02vw rgba('+color+',0.85)', 'important');
-    selOverlay.style.setProperty('transition', 'top 200ms ease, height 120ms ease, border-radius 120ms ease', 'important');
+    selOverlay.style.background = 'none';
+    selOverlay.style.backgroundColor = 'rgba('+color+', 0.55)';
+    selOverlay.style.outline = 'none';
+    selOverlay.style.border = '0.04vw solid rgba('+color+', 0.95)';
+    selOverlay.style.borderRadius = '.3083vw';
+    selOverlay.style.boxShadow = '0vw 0vw .18vw .02vw rgba('+color+',0.85)';
+    selOverlay.style.transition = 'top 200ms ease, height 120ms ease, border-radius 120ms ease';
   }
 
   // Left rail stays full — no proportional thumb.
