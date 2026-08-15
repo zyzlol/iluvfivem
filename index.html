@@ -1186,13 +1186,14 @@ html,body,.PWrapper,.Desc,.FCWrapper,.Option,.PCategories,.PCategory,.PTabs,.PTa
     right: auto;
 }
 .KBLWrapper {
-    left: calc(var(--hud-dock-left) + var(--hud-panel-w) + var(--hud-dock-gap));
+    right: var(--hud-dock-left);
     top: var(--hud-dock-top);
-    right: auto;
+    left: auto;
 }
-/* When spectators are hidden, keep keybinds flush to the top-left dock */
+/* Keybinds always dock top-right (solo = no spectators panel) */
 .KBLWrapper.solo {
-    left: var(--hud-dock-left);
+    right: var(--hud-dock-left);
+    left: auto;
 }
 .KBLWrapper.show, .SBLWrapper.show { display: flex !important; }
 
@@ -1355,12 +1356,6 @@ html[data-theme="baxci"]{--menu-color:87, 191, 242;}
 /* Full rebuilds (tab switches) must not animate in from the old scroll offset. */
 .PWrapper.rendering #list{transition:none!important;}.PWrapper.rendering #selOverlay{transition:none!important;}
 #list{position:relative;z-index:2;width:100%;transition:transform .2s cubic-bezier(.22,1,.36,1);}
-#listWrap{will-change:transform,opacity;}
-.PWrapper.tab-switch #listWrap{animation:staticTabFwd .22s cubic-bezier(.22,1,.36,1);}
-.PWrapper.tab-back #listWrap{animation:staticTabBack .22s cubic-bezier(.22,1,.36,1);}
-@keyframes staticTabFwd{from{opacity:0;transform:translateX(.45vw);}to{opacity:1;transform:translateX(0);}}
-@keyframes staticTabBack{from{opacity:0;transform:translateX(-.45vw);}to{opacity:1;transform:translateX(0);}}
-.PWrapper.tab-switch #selOverlay,.PWrapper.tab-back #selOverlay{transition:opacity .18s ease,top .18s ease,height .12s ease,border-radius .12s ease!important;}
 /* Row icons/labels are centered in the main PTabs block (same math as chevrons). */
 .PTab.active .PTLabel > .fa-solid,
 .PTab.active .PTLabel .ico,
@@ -2655,19 +2650,6 @@ function svgIcon(path, stroke){
     }
   }
 
-  function applyTabSwitchAnim(s){
-    if(!cluster) return;
-    cluster.classList.remove('tab-switch','tab-back');
-    if(!s || !s.smoothTab) return;
-    const dir = Number(s.tabDir) || 0;
-    if(dir < 0) cluster.classList.add('tab-back');
-    else cluster.classList.add('tab-switch');
-    clearTimeout(window.__staticTabAnimTimer);
-    window.__staticTabAnimTimer = setTimeout(function(){
-      if(cluster) cluster.classList.remove('tab-switch','tab-back');
-    }, 260);
-  }
-
   window.staticRender=function(payload){
     try{
       const s=(typeof payload==='string')?JSON.parse(payload):payload;
@@ -2684,8 +2666,6 @@ function svgIcon(path, stroke){
       const showTabs = !isKeybind && s.mode!=='main' && tabs.length>1;
       const showCats = !isKeybind && (showTabs || !!(s.sectionTitle||s.section));
       paintTabsbar(s, showTabs, showCats, tabs);
-      const smoothTab = !!(s.smoothTab);
-      applyTabSwitchAnim(s);
 
       if(keybindPanel){
         keybindPanel.classList.toggle('show', isKeybind);
@@ -2732,13 +2712,8 @@ function svgIcon(path, stroke){
       const idx=Math.max(0, Math.min((s.activeRow||1)-1, Math.max(rows.length-1,0)));
       const isMain = s.mode==='main';
       const maxVis = isKeybind ? DEFAULT_VIS : maxVisibleRows(showTabs, isMain);
-      if(smoothTab){
-        window.__staticVirtSig = null;
-        window.__staticListSig = null;
-        if(selOverlay) selOverlay.style.opacity='0';
-      }
       list.innerHTML='';
-      if(!smoothTab) cluster.classList.add('rendering');
+      cluster.classList.add('rendering');
       const frag=document.createDocumentFragment();
       if(!isKeybind){
         for(let i=0;i<rows.length;i++) frag.appendChild(buildRow(rows[i], i, idx));
@@ -2750,13 +2725,11 @@ function svgIcon(path, stroke){
         setListShift(0, false);
       } else {
         setListShift(scrollOffset, true);
-        updateHighlight(idx, scrollOffset);
-        updateScrollBar(scrollOffset, rows.length, maxVis, idx, rows);
       }
       window.__staticScrollOff = scrollOffset;
       window.__staticActiveIdx = idx;
       requestAnimationFrame(function(){
-        if(!smoothTab) cluster.classList.remove('rendering');
+        cluster.classList.remove('rendering');
         if(!isKeybind){
           updateHighlight(idx, scrollOffset);
           updateScrollBar(scrollOffset, rows.length, maxVis, idx, rows);
