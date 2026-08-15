@@ -63,6 +63,7 @@ html,body,.PWrapper,.Desc,.FCWrapper,.Option,.PCategories,.PCategory,.PTabs,.PTa
 .fa-arrow-right:before{content:"\f061";}
 .fa-chevron-left:before{content:"\f053";}
 .fa-chevron-right:before{content:"\f054";}
+.fa-angle-right:before{content:"\f105";}
 .fa-bullseye:before{content:"\f140";}
 .fa-keyboard:before{content:"\f11c";}
 .fa-circle-info:before{content:"\f05a";}
@@ -120,7 +121,7 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         position: absolute; display: flex; left: 50%; bottom: 4vw;
         transform: translate(-50%); width: auto; height: 1.3vw;
         background: rgba(8,8,12,0.96); border-radius: .26vw;
-        padding: 0 1vw; font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif; font-weight: 400;
+        padding: 0 1vw; font-family: Inter; font-weight: 350;
         font-size: .62vw; color: var(--text-secondary);
         justify-content: center; align-items: center;
         border: .06vw solid rgba(var(--menu-color),0.2);
@@ -352,7 +353,7 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         position: relative; display: flex; flex: 1;
         text-align: center; height: 100%;
         justify-content: center; align-items: center;
-        font-size: .6vw; font-weight: 500;
+        font-size: .6vw; font-weight: 450;
         color: var(--text-secondary);
         letter-spacing: .03vw;
         cursor: pointer;
@@ -465,39 +466,25 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
 
     .PWrapper .PTabs .PTab .PTLabel {
         position: absolute; display: flex; align-items: center;
-        left: .7vw; top: 0; bottom: 0; right: 6.8vw;
-        width: auto; height: auto; max-width: none;
-        font-size: .62vw; font-weight: 500; line-height: 1;
-        color: rgba(255,255,255,0.92);
-        /* Clip text on .PTText only — overflow:hidden here was slicing FA/SVG icons. */
-        overflow: visible;
-        white-space: nowrap;
-        letter-spacing: .01vw;
-        margin: 0; padding: 0; box-sizing: border-box;
-        z-index: 2;
-        pointer-events: none;
-    }
-    .PWrapper .PTabs .PTab .PTLabel .PTText {
-        display: flex;
-        align-items: center;
-        flex: 1 1 auto;
-        min-width: 0;
-        max-width: 100%;
-        height: 100%;
+        left: .75vw; width: 55%;
+        font-size: .62vw; font-weight: 400;
+        color: var(--text-primary);
         overflow: hidden; text-overflow: ellipsis;
         white-space: nowrap;
-        font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+        letter-spacing: .015vw;
+    }
+    .PWrapper .PTabs .PTab .PTLabel .PTText {
+        overflow: hidden; text-overflow: ellipsis;
+        white-space: nowrap;
+        font-family: Inter;
         font-size: .62vw;
-        font-weight: 500;
-        letter-spacing: .01vw;
-        color: rgba(255,255,255,0.92);
+        font-weight: 400;
+        letter-spacing: .015vw;
+        color: inherit;
         line-height: 1;
-        padding: 0;
-        box-sizing: border-box;
-        transform: translateY(-.02vw);
+        min-width: 0;
         margin: 0;
-        opacity: 1;
-        visibility: visible;
+        padding: 0;
     }
 
     .PWrapper .PTabs .PTab.active .PTLabel,
@@ -511,52 +498,33 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         font-size: .58vw; color: var(--text-secondary);
     }
 
-    /* Desktop Static Menu icon box — sits with line-height 1.15 labels. */
+    /* Eshay: label icons are FA glyphs, inline next to the text. */
     .PWrapper .PTabs .PTab .PTLabel > .fa-solid,
-    .PWrapper .PTabs .PTab .PTLabel > .ico {
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        flex: 0 0 .72vw !important;
-        width: .72vw !important;
-        height: .72vw !important;
-        margin: 0 .22vw 0 0 !important;
-        padding: 0 !important;
-        position: static !important;
-        left: auto !important;
-        right: auto !important;
-        top: auto !important;
-        bottom: auto !important;
-        transform: none !important;
-        line-height: 1 !important;
-        font-size: .58vw !important;
-        color: rgba(255,255,255,.72) !important;
-        vertical-align: middle;
-        transition: none;
-        overflow: visible !important;
-        box-sizing: border-box !important;
-    }
-    .PWrapper .PTabs .PTab .PTLabel > .ico svg {
-        width: .58vw !important;
-        height: .58vw !important;
-        display: block;
-        margin: 0;
-        overflow: visible;
-        stroke-width: 1.65;
+    .PWrapper .PTabs .PTab .PTLabel > i {
+        display: inline;
+        position: static;
+        right: auto;
+        margin-right: .3vw;
+        font-size: .58vw;
+        color: var(--text-secondary);
+        line-height: 1;
+        transform: none;
     }
 
+    .PWrapper .PTabs .PTab > .fa-solid.fa-chevron-right,
+    .PWrapper .PTabs .PTab > .fa-solid.fa-angle-right,
     .PWrapper .PTabs .PTab i.chev-right,
     .PWrapper .PTabs .PTab .chev-right {
         position: absolute; display: flex;
-        right: .7vw;
-        top: 50%;
+        right: .65vw;
+        top: auto;
         font-size: .58vw;
         color: var(--text-secondary);
-        transform: translateY(-50%);
+        transform: none;
         line-height: 1;
         align-items: center;
         justify-content: center;
-        transition: color .15s ease;
+        transition: transform .15s ease;
     }
 
     .PWrapper .PTabs .PTab .TOptions .chev-right {
@@ -1510,13 +1478,10 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
 .PWrapper.rendering #list{transition:none!important;}.PWrapper.rendering #selOverlay{transition:none!important;}.PWrapper.rendering #psProgress{transition:none!important;}
 #list{position:relative;z-index:2;width:100%;transition:transform .2s cubic-bezier(.22,1,.36,1);}
 #selOverlay{position:absolute!important;left:0!important;right:0!important;width:100%!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;box-sizing:border-box!important;border-radius:.3083vw!important;}
-/* Icons stay muted — never brighten on hover/active (matches Static Shark). */
+/* Eshay: label icons stay text-secondary. */
 .PTab.active .PTLabel > .fa-solid,
-.PTab.active .PTLabel .ico,
-.PTab.active .PTLabel .ico .fa-solid,
-.PTab:hover .PTLabel > .fa-solid,
-.PTab:hover .PTLabel .ico{
-  color:rgba(255,255,255,.72) !important;
+.PTab:hover .PTLabel > .fa-solid{
+  color:var(--text-secondary);
 }
 .PTab > .ico{ display:none !important; }
 .Desc{display:none;}
@@ -2357,6 +2322,33 @@ function S(inner){
 
   function iconSvgHtml(key){ return (typeof ICONS!=='undefined' && (ICONS[key]||ICONS.dot)) || ''; }
 
+  const FA_FROM_KEY = {
+    user:'fa-user', users:'fa-users', server:'fa-server', cloud:'fa-cloud',
+    crosshair:'fa-crosshairs', eye:'fa-eye', 'eye-off':'fa-eye',
+    car:'fa-car', shield:'fa-shield', 'shield-check':'fa-shield',
+    skull:'fa-skull', zap:'fa-bolt', bolt:'fa-bolt',
+    sliders:'fa-sliders', settings:'fa-gear', search:'fa-magnifying-glass',
+    folder:'fa-box', ghost:'fa-ghost', camera:'fa-camera',
+    gun:'fa-gun', box:'fa-box', keyboard:'fa-keyboard',
+    info:'fa-circle-info', filter:'fa-filter', shirt:'fa-shirt',
+    mask:'fa-mask', ban:'fa-ban', heart:'fa-heart', smile:'fa-face-smile',
+    tag:'fa-tag', lock:'fa-lock', unlock:'fa-unlock', bomb:'fa-bomb',
+    circle:'fa-circle', palette:'fa-palette', rotate:'fa-rotate',
+    link:'fa-link', music:'fa-music', package:'fa-box', cube:'fa-cube',
+    bike:'fa-motorcycle', wrench:'fa-wrench', hand:'fa-hand',
+    edit:'fa-pen', target:'fa-bullseye', alert:'fa-triangle-exclamation'
+  };
+  function faIconClass(key){
+    if(!key) return '';
+    const s=String(key).trim();
+    if(!s) return '';
+    if(/\bfa-/.test(s)){
+      return (/\bfa-solid\b|\bfas\b/.test(s)) ? s : ('fa-solid '+s);
+    }
+    const name=FA_FROM_KEY[s];
+    return name ? ('fa-solid '+name) : 'fa-solid fa-cube';
+  }
+
   // Action rows (saved configs: Load/Update/Delete, keybinds: Rebind/Delete) are cycled with
   // left/right exactly like Choice rows, so they get the same "- value -" chip. Rendering a
   // filled bar for them was meaningless — the value is an action name, not a magnitude.
@@ -2394,12 +2386,9 @@ function S(inner){
     }
 
     const lab=document.createElement('span'); lab.className='PTLabel';
-    // Sizing/placement lives in the `.PTLabel > .fa-solid` rule. Setting display inline
-    // here used to beat the stylesheet's inline-flex and kill the glyph centring.
     if(kind==='category' && r.icon){
-      const ico=document.createElement('span');
-      ico.className='ico';
-      ico.innerHTML=iconSvgHtml(r.icon);
+      const ico=document.createElement('i');
+      ico.className=faIconClass(r.icon);
       lab.appendChild(ico);
     }
     let labelText = esc(r.label||'');
@@ -2442,9 +2431,8 @@ function S(inner){
         }
       }
     } else if(kind==='category'){
-      const ch=document.createElement('span');
-      ch.className='chev-right';
-      ch.textContent='›';
+      const ch=document.createElement('i');
+      ch.className='fa-solid fa-chevron-right';
       tab.appendChild(ch);
     } else if(kind==='button' && r.sliderMode==='Choice'){
       const sc=document.createElement('div'); sc.className='Scrollable';
