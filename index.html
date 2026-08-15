@@ -2909,7 +2909,8 @@ function S(inner){
     const head = rows[0] ? String(rows[0].label||'') : '';
     const mid = rows[Math.floor(total/2)] ? String(rows[Math.floor(total/2)].label||'') : '';
     const tail = rows[total-1] ? String(rows[total-1].label||'') : '';
-    const contentSig = total + '|' + head + '|' + mid + '|' + tail;
+    const rv = (window.__staticLastState && window.__staticLastState.rowsVersion) || 0;
+    const contentSig = rv + ':' + total + '|' + head + '|' + mid + '|' + tail;
 
     if(useVirt){
       const start = scrollOffset;
@@ -2950,6 +2951,8 @@ function S(inner){
       setListShift(scrollOffset, true);
     }
 
+    const st = window.__staticLastState || {};
+    applyListHeight(total, maxVis, st.mode==='keybind', st.mode==='main');
     window.__staticScrollOff = scrollOffset;
     window.__staticActiveIdx = idx;
     syncListHeader();
@@ -2965,37 +2968,54 @@ function S(inner){
 
       const open=!!s.open;
       const isKeybind = s.mode==='keybind';
+      if(!open){
+        window.__staticTabSig = null;
+        window.__staticCtxSig = null;
+        window.__staticListSig = null;
+        window.__staticVirtSig = null;
+      }
       cluster.classList.toggle('keybind-mode', isKeybind);
       cluster.classList.toggle('open', open);
 
       const tabs=s.tabs||[];
       const showTabs = !isKeybind && s.mode!=='main' && tabs.length>1;
-      tabsbar.innerHTML='';
-      // Index always paints PCategories when inside a section (subtab strip).
       const showCats = !isKeybind && (showTabs || !!(s.sectionTitle||s.section));
-      tabsbar.classList.toggle('show', showCats);
-      if(showTabs){
-        tabs.forEach(function(name,i){
-          const d=document.createElement('div');
-          d.className='PCategory'+(i===((s.tabIndex||1)-1)?' active':'');
-          d.dataset.tab=String(i+1);
-          const span=document.createElement('span');
-          span.textContent=name;
-          d.appendChild(span);
-          d.addEventListener('mousedown', function(ev){
-            ev.preventDefault();
-            if(window.__staticColorPickerActive || window.__staticGunPickerActive) return;
-            window.__staticMenuTab=String(i+1);
+      const tabSig = (showTabs ? 't:' : 'c:') + (s.mode||'') + '|' + (s.sectionTitle||s.section||'') + '|' + (s.tabIndex||1) + '|' + tabs.join(',');
+      if(window.__staticTabSig !== tabSig){
+        window.__staticTabSig = tabSig;
+        tabsbar.innerHTML='';
+        tabsbar.classList.toggle('show', showCats);
+        if(showTabs){
+          tabs.forEach(function(name,i){
+            const d=document.createElement('div');
+            d.className='PCategory'+(i===((s.tabIndex||1)-1)?' active':'');
+            d.dataset.tab=String(i+1);
+            const span=document.createElement('span');
+            span.textContent=name;
+            d.appendChild(span);
+            d.addEventListener('mousedown', function(ev){
+              ev.preventDefault();
+              if(window.__staticColorPickerActive || window.__staticGunPickerActive) return;
+              window.__staticMenuTab=String(i+1);
+            });
+            tabsbar.appendChild(d);
           });
+        } else if(showCats){
+          const d=document.createElement('div');
+          d.className='PCategory active';
+          const span=document.createElement('span');
+          span.textContent=s.sectionTitle||s.section||'Menu';
+          d.appendChild(span);
           tabsbar.appendChild(d);
-        });
-      } else if(showCats){
-        const d=document.createElement('div');
-        d.className='PCategory active';
-        const span=document.createElement('span');
-        span.textContent=s.sectionTitle||s.section||'Menu';
-        d.appendChild(span);
-        tabsbar.appendChild(d);
+        }
+      } else {
+        tabsbar.classList.toggle('show', showCats);
+        if(showTabs){
+          const active = (s.tabIndex||1)-1;
+          for(let i=0;i<tabsbar.children.length;i++){
+            tabsbar.children[i].classList.toggle('active', i===active);
+          }
+        }
       }
 
       if(keybindPanel){
@@ -3046,24 +3066,17 @@ function S(inner){
       const idx=Math.max(0, Math.min((s.activeRow||1)-1, Math.max(rows.length-1,0)));
       const isMain = s.mode==='main';
       const maxVis = isKeybind ? DEFAULT_VIS : maxVisibleRows(showTabs, isMain);
-      list.innerHTML='';
       cluster.classList.add('rendering');
-      const frag=document.createDocumentFragment();
-      if(!isKeybind){
-        for(let i=0;i<rows.length;i++) frag.appendChild(buildRow(rows[i], i, idx));
-      }
-      list.appendChild(frag);
-      applyListHeight(rows.length, maxVis, isKeybind, isMain);
-      const scrollOffset = isKeybind ? 0 : calcScrollOffset(idx, rows.length, maxVis);
+      const ctxSig = (s.mode||'')+'|'+(s.section||'')+'|'+(s.tabIndex||1)+'|'+(s.rowsVersion||0);
+      const forceList = window.__staticCtxSig !== ctxSig;
+      window.__staticCtxSig = ctxSig;
+      const scrollOffset = isKeybind ? 0 : paintVisibleRows(rows, idx, maxVis, forceList);
       if(isKeybind){
         setListShift(0, false);
       } else {
-        setListShift(scrollOffset, true);
         updateHighlight(idx, scrollOffset);
         updateScrollBar(scrollOffset, rows.length, maxVis, idx, rows);
       }
-      window.__staticScrollOff = scrollOffset;
-      window.__staticActiveIdx = idx;
       requestAnimationFrame(function(){
         cluster.classList.remove('rendering');
         if(!isKeybind){
