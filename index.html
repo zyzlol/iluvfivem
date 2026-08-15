@@ -445,9 +445,9 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
 
     .PWrapper .PTabs .PTab .PTLabel {
         position: absolute; display: flex; align-items: center;
-        left: .7vw; top: 0; bottom: 0; right: 8.1vw;
+        left: .7vw; top: 0; bottom: 0; right: 6.8vw;
         width: auto; height: auto; max-width: none;
-        font-size: .62vw; font-weight: 500; line-height: 1.15;
+        font-size: .62vw; font-weight: 500; line-height: 1;
         color: rgba(255,255,255,0.92);
         /* Clip text on .PTText only — overflow:hidden here was slicing FA/SVG icons. */
         overflow: visible;
@@ -458,10 +458,12 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         pointer-events: none;
     }
     .PWrapper .PTabs .PTab .PTLabel .PTText {
-        display: block;
+        display: flex;
+        align-items: center;
         flex: 1 1 auto;
         min-width: 0;
         max-width: 100%;
+        height: 100%;
         overflow: hidden; text-overflow: ellipsis;
         white-space: nowrap;
         font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
@@ -469,9 +471,11 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         font-weight: 500;
         letter-spacing: .01vw;
         color: rgba(255,255,255,0.92);
-        line-height: 1.15;
-        transform: none;
-        margin: 0; padding: 0;
+        line-height: 1;
+        padding: 0;
+        box-sizing: border-box;
+        transform: translateY(-.02vw);
+        margin: 0;
         opacity: 1;
         visibility: visible;
     }
@@ -659,6 +663,21 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         justify-content: flex-start; align-items: center;
         background: rgba(255,255,255,0.06);
         border-radius: .26vw;
+    }
+
+    .PWrapper .PTabs .PTab .SliderValue {
+        position: absolute;
+        right: .42vw;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: .55vw;
+        font-weight: 600;
+        letter-spacing: .01vw;
+        color: rgba(255,255,255,.92);
+        line-height: 1;
+        white-space: nowrap;
+        pointer-events: none;
+        z-index: 2;
     }
 
     .PWrapper .PTabs .PTab .Slider .Progress {
@@ -1772,7 +1791,7 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
   </div>
 </div>
 <div class="inp-overlay" id="inp">
-  <div class="inp-panel">
+  <div class="inp-panel" id="inpPanel">
     <div class="inp-header" id="inpHeader">Input</div>
     <div class="inp-divider"></div>
     <div class="inp-body">
@@ -1864,9 +1883,11 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
   const listSectionHeader=document.getElementById('listSectionHeader');
   const listSectionHeaderLabel=document.getElementById('listSectionHeaderLabel');
   const inp=document.getElementById('inp');
+  const inpPanel=document.getElementById('inpPanel');
   const inpHeader=document.getElementById('inpHeader');
   const inpValue=document.getElementById('inpValue');
   const inpHint=document.getElementById('inpHint');
+  const inpPasteBtn=document.getElementById('inpPasteBtn');
 
   const ROW_H_VW = 1.6;
   const MAX_H_VW = 14.0625; // Eshay default panel cap (inside)
@@ -2065,24 +2086,16 @@ function svgIcon(path, stroke){
     }
 
     const lab=document.createElement('span'); lab.className='PTLabel';
-    // Sizing/placement lives in the `.PTLabel > .fa-solid` rule. Setting display inline
-    // here used to beat the stylesheet's inline-flex and kill the glyph centring.
     if(kind==='category' && r.icon){
-      const fa=FA_ICON_MAP[r.icon];
-      if(fa){
-        const i=document.createElement('i');
-        i.className='fa-solid '+fa;
-        lab.appendChild(i);
-      } else {
-        const ico=document.createElement('span');
-        ico.className='ico';
-        ico.innerHTML=iconSvgHtml(r.icon);
-        lab.appendChild(ico);
-      }
+      const ico=document.createElement('span');
+      ico.className='ico';
+      ico.innerHTML=iconSvgHtml(r.icon);
+      lab.appendChild(ico);
     }
     let labelText = esc(r.label||'');
     if(kind==='slider' && isActive && !isChoiceLikeRow(r)){
-      labelText = labelText + ': ' + esc(r.sliderText!=null?r.sliderText:(r.sliderValue!=null?r.sliderValue:''));
+      const v = r.sliderText!=null ? r.sliderText : (r.sliderValue!=null ? r.sliderValue : '');
+      if(v !== '') labelText = labelText + ': ' + esc(v);
     }
     const txt=document.createElement('span'); txt.className='PTText'; txt.textContent=labelText; lab.appendChild(txt);
     tab.appendChild(lab);
@@ -2118,6 +2131,13 @@ function svgIcon(path, stroke){
       ch.className='chev-right';
       ch.textContent='›';
       tab.appendChild(ch);
+    } else if(kind==='button' && r.sliderMode==='Choice'){
+      const sc=document.createElement('div'); sc.className='Scrollable';
+      const l=document.createElement('span'); l.textContent='-';
+      const m=document.createElement('span'); m.textContent=choiceChipText(r);
+      const rr=document.createElement('span'); rr.textContent='-';
+      sc.appendChild(l); sc.appendChild(m); sc.appendChild(rr);
+      tab.appendChild(sc);
     }
 
     tab.addEventListener('mousedown', function(ev){
@@ -2503,10 +2523,33 @@ function svgIcon(path, stroke){
     inp.classList.toggle('freecam', !!s.inputFreecam);
     if(cluster) cluster.classList.toggle('input-hidden', open && !s.inputFreecam);
     if(open){
-      if(inpHeader) inpHeader.textContent=s.inputTitle||'Input';
-      if(inpValue) inpValue.value=s.inputValue||'';
+      const title=s.inputTitle||'Input';
+      const value=s.inputValue||'';
+      const compact=!!s.inputCompact;
+      if(inpHeader) inpHeader.textContent=title;
+      applyInputValue(value);
+      if(inpValue){
+        inpValue.classList.toggle('confirm-compact', compact);
+        inpValue.placeholder = compact ? '' : 'Type here...';
+      }
       if(inpHint) inpHint.textContent=s.inputHint||'';
+      if(inpPanel){
+        inpPanel.classList.toggle('is-confirm', compact);
+      }
+      if(inpPasteBtn){
+        inpPasteBtn.classList.remove('show','focused','flash');
+      }
     }
+  }
+
+  function applyInputValue(value){
+    value = (value==null) ? '' : String(value);
+    if(inpValue){
+      inpValue.value = value;
+      inpValue.style.color = '#ffffff';
+      inpValue.style.webkitTextFillColor = '#ffffff';
+    }
+    if(inpPanel) inpPanel.classList.toggle('has-text', value.length>0);
   }
 
   function applyListHeight(rowCount, maxVis, isKeybind, isMain){
@@ -2767,7 +2810,11 @@ function svgIcon(path, stroke){
     if(d.action==='weaponWheelShow' && window.__staticWWShow){ window.__staticWWShow(d.weaponWheel||{}); }
     else if(d.action==='weaponWheelUpdate' && window.__staticWWUpdate){ window.__staticWWUpdate(d.weaponWheel||{}); }
     else if(d.action==='weaponWheelHide' && window.__staticWWHide){ window.__staticWWHide(); }
-    else if(d.action==='render' && d.payload){ window.staticRender(d.payload); }
+    else if(d.action==='render'){
+      var p=d.payload;
+      if(typeof p==='string'){ try{p=JSON.parse(p);}catch(_){return;} }
+      if(p) window.staticRender(p);
+    }
     else if(d.action==='forceVisible'){
       document.documentElement.classList.add('static-shark-ready');
     }
@@ -2794,12 +2841,18 @@ function svgIcon(path, stroke){
         else window.open(u, '_blank');
       }catch(_){ try{ window.open(u, '_blank'); }catch(__){} }
     }
-    else if(d.action==='closeInput' && inp){ inp.classList.remove('show'); if(cluster) cluster.classList.remove('input-hidden'); }
+    else if(d.action==='closeInput' && inp){ inp.classList.remove('show','freecam'); if(cluster) cluster.classList.remove('input-hidden'); }
+    else if(d.action==='updateInput'){
+      applyInputValue(d.value!=null ? d.value : d.text);
+    }
     else if(d.action==='openInput' && inp){
       inp.classList.add('show');
+      inp.classList.toggle('freecam', !!d.freecam);
+      if(cluster) cluster.classList.toggle('input-hidden', !d.freecam);
       if(inpHeader) inpHeader.textContent=d.title||'Input';
-      if(inpValue) inpValue.value=d.value||'';
+      applyInputValue(d.value!=null ? d.value : d.text);
       if(inpHint) inpHint.textContent=d.hint||'';
+      if(inpPanel) inpPanel.classList.toggle('is-confirm', !!d.compact);
     }
   });
 
