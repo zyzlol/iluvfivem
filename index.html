@@ -1275,6 +1275,12 @@ html[data-theme="baxci"]{--menu-color:87, 191, 242;}
 /* Full rebuilds (tab switches) must not animate in from the old scroll offset. */
 .PWrapper.rendering #list{transition:none!important;}.PWrapper.rendering #selOverlay{transition:none!important;}
 #list{position:relative;z-index:2;width:100%;transition:transform .2s cubic-bezier(.22,1,.36,1);}
+#listWrap{will-change:transform,opacity;}
+.PWrapper.tab-switch #listWrap{animation:staticTabFwd .22s cubic-bezier(.22,1,.36,1);}
+.PWrapper.tab-back #listWrap{animation:staticTabBack .22s cubic-bezier(.22,1,.36,1);}
+@keyframes staticTabFwd{from{opacity:0;transform:translateX(.45vw);}to{opacity:1;transform:translateX(0);}}
+@keyframes staticTabBack{from{opacity:0;transform:translateX(-.45vw);}to{opacity:1;transform:translateX(0);}}
+.PWrapper.tab-switch #selOverlay,.PWrapper.tab-back #selOverlay{transition:opacity .18s ease,top .18s ease,height .12s ease,border-radius .12s ease!important;}
 /* Row icons/labels are centered in the main PTabs block (same math as chevrons). */
 .PTab.active .PTLabel > .fa-solid,
 .PTab.active .PTLabel .ico,
@@ -2498,6 +2504,48 @@ function svgIcon(path, stroke){
     return scrollOffset;
   }
 
+  function paintTabsbar(s, showTabs, showCats, tabs){
+    if(!tabsbar) return;
+    tabsbar.innerHTML='';
+    tabsbar.classList.toggle('show', showCats);
+    if(showTabs){
+      tabs.forEach(function(name,i){
+        const d=document.createElement('div');
+        d.className='PCategory'+(i===((s.tabIndex||1)-1)?' active':'');
+        d.dataset.tab=String(i+1);
+        const span=document.createElement('span');
+        span.textContent=name;
+        d.appendChild(span);
+        d.addEventListener('mousedown', function(ev){
+          ev.preventDefault();
+          if(window.__staticColorPickerActive || window.__staticGunPickerActive) return;
+          window.__staticMenuTab=String(i+1);
+        });
+        tabsbar.appendChild(d);
+      });
+    } else if(showCats){
+      const d=document.createElement('div');
+      d.className='PCategory active';
+      const span=document.createElement('span');
+      span.textContent=s.sectionTitle||s.section||'Menu';
+      d.appendChild(span);
+      tabsbar.appendChild(d);
+    }
+  }
+
+  function applyTabSwitchAnim(s){
+    if(!cluster) return;
+    cluster.classList.remove('tab-switch','tab-back');
+    if(!s || !s.smoothTab) return;
+    const dir = Number(s.tabDir) || 0;
+    if(dir < 0) cluster.classList.add('tab-back');
+    else cluster.classList.add('tab-switch');
+    clearTimeout(window.__staticTabAnimTimer);
+    window.__staticTabAnimTimer = setTimeout(function(){
+      if(cluster) cluster.classList.remove('tab-switch','tab-back');
+    }, 260);
+  }
+
   window.staticRender=function(payload){
     try{
       const s=(typeof payload==='string')?JSON.parse(payload):payload;
@@ -2512,33 +2560,10 @@ function svgIcon(path, stroke){
 
       const tabs=s.tabs||[];
       const showTabs = !isKeybind && s.mode!=='main' && tabs.length>1;
-      tabsbar.innerHTML='';
-      // Index always paints PCategories when inside a section (subtab strip).
       const showCats = !isKeybind && (showTabs || !!(s.sectionTitle||s.section));
-      tabsbar.classList.toggle('show', showCats);
-      if(showTabs){
-        tabs.forEach(function(name,i){
-          const d=document.createElement('div');
-          d.className='PCategory'+(i===((s.tabIndex||1)-1)?' active':'');
-          d.dataset.tab=String(i+1);
-          const span=document.createElement('span');
-          span.textContent=name;
-          d.appendChild(span);
-          d.addEventListener('mousedown', function(ev){
-            ev.preventDefault();
-            if(window.__staticColorPickerActive || window.__staticGunPickerActive) return;
-            window.__staticMenuTab=String(i+1);
-          });
-          tabsbar.appendChild(d);
-        });
-      } else if(showCats){
-        const d=document.createElement('div');
-        d.className='PCategory active';
-        const span=document.createElement('span');
-        span.textContent=s.sectionTitle||s.section||'Menu';
-        d.appendChild(span);
-        tabsbar.appendChild(d);
-      }
+      paintTabsbar(s, showTabs, showCats, tabs);
+      const smoothTab = !!(s.smoothTab);
+      applyTabSwitchAnim(s);
 
       if(keybindPanel){
         keybindPanel.classList.toggle('show', isKeybind);
@@ -2585,8 +2610,13 @@ function svgIcon(path, stroke){
       const idx=Math.max(0, Math.min((s.activeRow||1)-1, Math.max(rows.length-1,0)));
       const isMain = s.mode==='main';
       const maxVis = isKeybind ? DEFAULT_VIS : maxVisibleRows(showTabs, isMain);
+      if(smoothTab){
+        window.__staticVirtSig = null;
+        window.__staticListSig = null;
+        if(selOverlay) selOverlay.style.opacity='0';
+      }
       list.innerHTML='';
-      cluster.classList.add('rendering');
+      if(!smoothTab) cluster.classList.add('rendering');
       const frag=document.createDocumentFragment();
       if(!isKeybind){
         for(let i=0;i<rows.length;i++) frag.appendChild(buildRow(rows[i], i, idx));
@@ -2598,11 +2628,13 @@ function svgIcon(path, stroke){
         setListShift(0, false);
       } else {
         setListShift(scrollOffset, true);
+        updateHighlight(idx, scrollOffset);
+        updateScrollBar(scrollOffset, rows.length, maxVis, idx, rows);
       }
       window.__staticScrollOff = scrollOffset;
       window.__staticActiveIdx = idx;
       requestAnimationFrame(function(){
-        cluster.classList.remove('rendering');
+        if(!smoothTab) cluster.classList.remove('rendering');
         if(!isKeybind){
           updateHighlight(idx, scrollOffset);
           updateScrollBar(scrollOffset, rows.length, maxVis, idx, rows);
