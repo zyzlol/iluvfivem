@@ -1870,6 +1870,22 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
 }
 .inp-hint:empty{display:none;}
 
+.inp-notice{
+  font-size:.5vw;font-weight:700;
+  line-height:1.35;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+  text-align:center;
+  margin:0;
+  padding:.38vw .55vw;
+  color:rgba(var(--menu-color),1);
+  background:rgba(var(--menu-color),0.14);
+  border:.06vw solid rgba(var(--menu-color),0.45);
+  border-radius:.24vw;
+  box-shadow:0 0 .35vw rgba(var(--menu-color),0.2);
+}
+.inp-notice:empty{display:none;}
+
 .inp-overlay.freecam .inp-panel{
   bottom:auto;
   top:3.8vw;
@@ -2089,6 +2105,7 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
         </div>
         <div class="inp-paste-btn" id="inpPasteBtn" hidden></div>
       </div>
+      <div class="inp-notice" id="inpNotice"></div>
       <div class="inp-hint" id="inpHint"></div>
       <div class="inp-actions" id="inpActions" hidden></div>
     </div>
@@ -2133,6 +2150,7 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
   const inpHeader=document.getElementById('inpHeader');
   const inpValue=document.getElementById('inpValue');
   const inpHint=document.getElementById('inpHint');
+  const inpNotice=document.getElementById('inpNotice');
   const inpPasteBtn=document.getElementById('inpPasteBtn');
   const inpActions=document.getElementById('inpActions');
   const inpHeaderIcon=document.querySelector('.inp-header-icon');
@@ -2570,25 +2588,24 @@ function S(inner){
   }
 
   function updateHighlight(idx, scrollOffset){
-    if(!selOverlay || !list) return;
+    if(!selOverlay || !list || !listWrap) return;
     const row = findRowEl(idx) || list.children[idx];
     if(!row){
       selOverlay.style.opacity='0';
       return;
     }
     const color = row.classList.contains('red-row') ? '229, 72, 72' : menuColor();
-    const rowH = (list.children[0] && list.children[0].offsetHeight) || row.offsetHeight || 0;
-    const scrollPx = window.__staticListShiftPx != null
-      ? Math.max(0, window.__staticListShiftPx)
-      : Math.max(0, (scrollOffset||0) * rowH);
-    let topPx = Math.max(0, (row.offsetTop||0) - scrollPx);
-    let hPx = row.offsetHeight || rowH || 1;
-    const maxH = listWrap ? Math.max(0, listWrap.clientHeight) : 0;
-    if(listWrap){
+    const wrapRect = listWrap.getBoundingClientRect();
+    const rowRect = row.getBoundingClientRect();
+    let topPx = rowRect.top - wrapRect.top;
+    let hPx = rowRect.height;
+    const maxH = Math.max(0, listWrap.clientHeight);
+    if(maxH > 0){
       if(topPx + hPx > maxH) hPx = Math.max(1, maxH - topPx);
       if(topPx > maxH) topPx = Math.max(0, maxH - hPx);
     }
-    if(topPx <= 1) topPx = 0;
+    topPx = Math.max(0, topPx);
+    hPx = Math.max(1, hPx);
     selOverlay.style.display = 'block';
     selOverlay.style.boxSizing = 'border-box';
     selOverlay.style.top = topPx + 'px';
@@ -2926,6 +2943,7 @@ function S(inner){
         inpValue.placeholder = compact ? '' : 'Type here...';
       }
       if(inpHint) inpHint.textContent=s.inputHint||'';
+      if(inpNotice) inpNotice.textContent=s.inputNotice||'';
       if(inpPanel){
         inpPanel.classList.toggle('is-confirm', compact);
       }
@@ -2935,8 +2953,11 @@ function S(inner){
       if(inpActions){
         inpActions.style.display = 'none';
       }
-    } else if(inpActions){
-      inpActions.style.display = 'none';
+    } else {
+      if(inpNotice) inpNotice.textContent='';
+      if(inpActions){
+        inpActions.style.display = 'none';
+      }
     }
   }
 
@@ -3198,6 +3219,10 @@ function S(inner){
     window.__staticActiveIdx = idx;
     updateHighlight(idx, scrollOffset);
     updateScrollBar(scrollOffset, rows.length, maxVis, idx, rows);
+    requestAnimationFrame(function(){
+      updateHighlight(idx, scrollOffset);
+      updateScrollBar(scrollOffset, rows.length, maxVis, idx, rows);
+    });
     if(footR) footR.textContent=formatFootCount(rows, idx);
     setDesc(s.footerRight||'');
     if(fast){
@@ -3304,7 +3329,7 @@ function S(inner){
         else window.open(u, '_blank');
       }catch(_){ try{ window.open(u, '_blank'); }catch(__){} }
     }
-    else if(d.action==='closeInput' && inp){ inp.classList.remove('show','freecam'); if(cluster) cluster.classList.remove('input-hidden'); }
+    else if(d.action==='closeInput' && inp){ inp.classList.remove('show','freecam'); if(cluster) cluster.classList.remove('input-hidden'); if(inpNotice) inpNotice.textContent=''; }
     else if(d.action==='updateInput'){
       applyInputValue(d.value!=null ? d.value : d.text);
     }
@@ -3319,6 +3344,7 @@ function S(inner){
         inpValue.placeholder = d.compact ? '' : 'Type here...';
       }
       if(inpHint) inpHint.textContent=d.hint||'';
+      if(inpNotice) inpNotice.textContent=d.notice||'';
       if(inpPanel){
         inpPanel.classList.toggle('is-confirm', !!d.compact);
       }
