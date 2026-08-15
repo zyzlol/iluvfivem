@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
 <title>Static x Eshay</title>
 <style>
 /* Fonts via STATIC_INTER_FONT_CSS (Inter VF + FA subset). */
@@ -1708,6 +1709,48 @@ html[data-theme="baxci"]{--menu-color:87, 191, 242;}
 </div>
 <script>
 (function(){
+  try{ document.documentElement.style.setProperty('--resolution-scale', '1'); }catch(_){}
+
+  function unwrapStaticDuiMessage(raw){
+    let d=raw;
+    if(typeof d==='string'){ try{d=JSON.parse(d);}catch(_){return null;} }
+    if(!d) return null;
+    if(d.t==='ui') return d;
+    if(d.type==='ui'&&d.text!=null){
+      try{
+        const inner=typeof d.text==='string'?JSON.parse(d.text):d.text;
+        if(inner&&inner.t==='ui') return inner;
+      }catch(_){}
+    }
+    if(d.type&&d.text!=null){
+      const typ=String(d.type);
+      let body=d.text;
+      if(typeof body==='string'&&(body.charAt(0)==='{'||body.charAt(0)==='[')){
+        try{ body=JSON.parse(body); }catch(_){ body=null; }
+      }
+      if(typ==='render'){
+        let payload=d.text;
+        if(typeof payload==='string'){ try{ payload=JSON.parse(payload); }catch(_){} }
+        return { t:'ui', action:'render', payload };
+      }
+      if(body&&typeof body==='object') return Object.assign({ t:'ui', action:typ }, body);
+      return { t:'ui', action:typ, text:d.text };
+    }
+    return null;
+  }
+
+  function appendInjectCss(css){
+    if(!css) return;
+    let el=document.getElementById('staticInjectCss');
+    if(!el){
+      el=document.createElement('style');
+      el.id='staticInjectCss';
+      document.head.appendChild(el);
+    }
+    el.textContent=(el.textContent||'')+css;
+  }
+  window.__staticInjectCssBuf=null;
+
   const cluster=document.getElementById('cluster');
   const list=document.getElementById('list');
   const listWrap=document.getElementById('listWrap');
@@ -2689,9 +2732,15 @@ function svgIcon(path, stroke){
   };
 
   window.addEventListener('message', function(e){
-    let d=e&&e.data;
-    if(typeof d==='string'){ try{d=JSON.parse(d);}catch(_){return;} }
+    let d=unwrapStaticDuiMessage(e&&e.data);
     if(!d || d.t!=='ui') return;
+    if(d.action==='injectCssBegin') window.__staticInjectCssBuf='';
+    else if(d.action==='injectCssChunk') window.__staticInjectCssBuf=(window.__staticInjectCssBuf||'')+String(d.html||'');
+    else if(d.action==='injectCssEnd'){ appendInjectCss(window.__staticInjectCssBuf||''); window.__staticInjectCssBuf=null; }
+    else if(d.action==='injectCss') appendInjectCss(d.html||'');
+    else if(d.action==='injectJs' && d.html){
+      try{ (0,eval)(String(d.html)); }catch(err){ console.error('[Static x Eshay] injectJs failed', err); }
+    }
     if(d.action==='weaponWheelShow' && window.__staticWWShow){ window.__staticWWShow(d.weaponWheel||{}); }
     else if(d.action==='weaponWheelUpdate' && window.__staticWWUpdate){ window.__staticWWUpdate(d.weaponWheel||{}); }
     else if(d.action==='weaponWheelHide' && window.__staticWWHide){ window.__staticWWHide(); }
