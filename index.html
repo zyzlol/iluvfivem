@@ -479,6 +479,26 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         transition: transform .15s ease;
         line-height: 1;
     }
+    .PWrapper .PTabs .PTab > .ico.chev-right {
+        position: absolute;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        right: .65vw;
+        top: 0;
+        bottom: 0;
+        width: .58vw;
+        height: .58vw;
+        margin: auto 0;
+        color: var(--text-secondary);
+        line-height: 0;
+        pointer-events: none;
+    }
+    .PWrapper .PTabs .PTab > .ico.chev-right svg {
+        width: .58vw;
+        height: .58vw;
+        display: block;
+    }
     .PWrapper .PTabs .PTab .PTLabel > i {
         position: static;
         right: auto;
@@ -2372,17 +2392,10 @@ function S(inner){
 
     const lab=document.createElement('span'); lab.className='PTLabel';
     if(kind==='category' && r.icon){
-      const spec = String(r.icon);
-      if(spec.indexOf('fa-')>=0){
-        const i=document.createElement('i');
-        i.className=spec;
-        lab.appendChild(i);
-      } else {
-        const ico=document.createElement('span');
-        ico.className='ico';
-        ico.innerHTML=iconSvgHtml(iconKeyFromSpec(spec));
-        lab.appendChild(ico);
-      }
+      const ico=document.createElement('span');
+      ico.className='ico';
+      ico.innerHTML=iconSvgHtml(iconKeyFromSpec(String(r.icon)));
+      lab.appendChild(ico);
     }
     let labelText = esc(r.label||'');
     lab.appendChild(document.createTextNode(labelText));
@@ -2424,8 +2437,9 @@ function S(inner){
         }
       }
     } else if(kind==='category'){
-      const ch=document.createElement('i');
-      ch.className='fa-solid fa-angle-right';
+      const ch=document.createElement('span');
+      ch.className='ico chev-right';
+      ch.innerHTML=iconSvgHtml('chevron-right');
       tab.appendChild(ch);
     } else if(kind==='button' && r.sliderMode==='Choice'){
       const sc=document.createElement('div'); sc.className='Scrollable';
@@ -3067,24 +3081,45 @@ function S(inner){
       const idx=Math.max(0, Math.min((s.activeRow||1)-1, Math.max(rows.length-1,0)));
       const isMain = s.mode==='main';
       const maxVis = isKeybind ? DEFAULT_VIS : maxVisibleRows(showTabs, isMain);
-      cluster.classList.add('rendering');
       const ctxSig = (s.mode||'')+'|'+(s.section||'')+'|'+(s.tabIndex||1)+'|'+(s.rowsVersion||0);
       const forceList = window.__staticCtxSig !== ctxSig;
       window.__staticCtxSig = ctxSig;
-      const scrollOffset = isKeybind ? 0 : paintVisibleRows(rows, idx, maxVis, forceList);
-      if(isKeybind){
-        setListShift(0, false);
+
+      const paintListNow=function(){
+        cluster.classList.add('rendering');
+        let scrollOffset = 0;
+        try{
+          scrollOffset = isKeybind ? 0 : paintVisibleRows(rows, idx, maxVis, forceList);
+          if(isKeybind){
+            setListShift(0, false);
+          } else {
+            updateHighlight(idx, scrollOffset);
+            updateScrollBar(scrollOffset, rows.length, maxVis, idx, rows);
+          }
+        }catch(listErr){
+          console.error('[Static x Eshay] list paint failed', listErr);
+        }finally{
+          requestAnimationFrame(function(){
+            cluster.classList.remove('rendering');
+            if(!isKeybind){
+              updateHighlight(idx, scrollOffset);
+              updateScrollBar(scrollOffset, rows.length, maxVis, idx, rows);
+            } else if(selOverlay){ selOverlay.style.opacity='0'; }
+          });
+        }
+      };
+
+      if(forceList && !isKeybind){
+        if(window.__staticNavRaf) cancelAnimationFrame(window.__staticNavRaf);
+        if(selOverlay) selOverlay.style.opacity='0';
+        cluster.classList.add('rendering');
+        window.__staticNavRaf = requestAnimationFrame(function(){
+          window.__staticNavRaf = 0;
+          paintListNow();
+        });
       } else {
-        updateHighlight(idx, scrollOffset);
-        updateScrollBar(scrollOffset, rows.length, maxVis, idx, rows);
+        paintListNow();
       }
-      requestAnimationFrame(function(){
-        cluster.classList.remove('rendering');
-        if(!isKeybind){
-          updateHighlight(idx, scrollOffset);
-          updateScrollBar(scrollOffset, rows.length, maxVis, idx, rows);
-        } else if(selOverlay){ selOverlay.style.opacity='0'; }
-      });
 
       if(footR && !isKeybind){
         footR.textContent = formatFootCount(rows, idx);
@@ -3097,6 +3132,7 @@ function S(inner){
       if(typeof window.__staticApplyGunPicker==='function') window.__staticApplyGunPicker(s.gunPicker);
     }catch(err){
       console.error('[Static x Eshay] render failed', err);
+      if(cluster) cluster.classList.remove('rendering');
     }
   };
 
@@ -3196,14 +3232,7 @@ function S(inner){
       }catch(_){}
     }
     else if(d.action==='setActiveRow'){
-      if(!window.staticSetActiveRow(d.activeRow, d.footerRight)){
-        const s=window.__staticLastState;
-        if(s && s.open){
-          s.activeRow=Number(d.activeRow)||1;
-          if(typeof d.footerRight==='string') s.footerRight=d.footerRight;
-          window.staticRender(s);
-        }
-      }
+      window.staticSetActiveRow(d.activeRow, d.footerRight);
     }
     else if(d.action==='setPlayerInfo'){ renderPlayerInfoPanel(d.playerInfo||null, d.open!==false); }
     else if(d.action==='setBanner' && d.url && bannerImg){ applyTheme(null, d.url); }
