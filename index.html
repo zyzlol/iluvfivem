@@ -1501,6 +1501,8 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
 .PWrapper.fast-nav #list{transition:transform .12s cubic-bezier(.22,1,.36,1), opacity .12s ease!important;}
 .PWrapper.fast-nav #selOverlay{transition:top .12s cubic-bezier(.22,1,.36,1), height .12s cubic-bezier(.22,1,.36,1)!important;}
 .PWrapper.fast-nav #psProgress{transition:none!important;}
+.PWrapper.tab-switching #listWrap{transition:height .22s cubic-bezier(.22,1,.36,1)!important;}
+.PWrapper.tab-switching #list{will-change:opacity,transform;}
 /* Full rebuilds (section changes) must not animate in from the old scroll offset. */
 .PWrapper.rendering #list{transition:none!important;}.PWrapper.rendering #selOverlay{transition:none!important;}.PWrapper.rendering #psProgress{transition:none!important;}
 #list{position:relative;z-index:2;width:100%;transition:transform .2s cubic-bezier(.22,1,.36,1), opacity .16s ease;}
@@ -2249,7 +2251,81 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
     if(!prevCtx || !s) return false;
     const pp = prevCtx.split('|');
     if(pp.length < 3) return false;
-    return pp[0]===(s.mode||'') && pp[1]===(s.section||'') && pp[2]!==String(s.tabIndex||1);
+    if(pp[0]!==(s.mode||'') || pp[1]!==(s.section||'')) return false;
+    const prevTab = parseInt(pp[2], 10) || 1;
+    const newTab = s.tabIndex || 1;
+    if(prevTab === newTab) return false;
+    const tabDir = Number(s.tabDir);
+    if(tabDir === 1 || tabDir === -1){
+      window.__staticTabDir = tabDir;
+    } else {
+      const tabs = s.tabs || [];
+      if(tabs.length > 1 && prevTab === tabs.length && newTab === 1){
+        window.__staticTabDir = 1;
+      } else if(tabs.length > 1 && prevTab === 1 && newTab === tabs.length){
+        window.__staticTabDir = -1;
+      } else {
+        window.__staticTabDir = newTab > prevTab ? 1 : -1;
+      }
+    }
+    return true;
+  }
+
+  function listBaseTransform(){
+    const shift = Number(window.__staticListShiftPx) || 0;
+    return shift > 0 ? ('translateY(-' + shift + 'px)') : 'translateY(0)';
+  }
+
+  function withSlide(base, slidePx){
+    if(!slidePx) return base;
+    return base + ' translateX(' + slidePx + 'px)';
+  }
+
+  function animateTabSwitch(paintFn){
+    beginFastNav(360);
+    if(window.__staticNavRaf) cancelAnimationFrame(window.__staticNavRaf);
+    if(window.__staticTabSwitchTimer) clearTimeout(window.__staticTabSwitchTimer);
+
+    const tabDir = Number(window.__staticTabDir) || 0;
+    const slidePx = tabDir ? (tabDir > 0 ? -14 : 14) : 0;
+    cluster.classList.add('tab-switching');
+
+    if(list){
+      const base = listBaseTransform();
+      list.style.transition = 'opacity .15s ease, transform .22s cubic-bezier(.22,1,.36,1)';
+      list.style.opacity = '0';
+      list.style.transform = withSlide(base, slidePx);
+    }
+    if(selOverlay) selOverlay.style.opacity = '0';
+
+    window.__staticTabSwitchTimer = setTimeout(function(){
+      window.__staticTabSwitchTimer = 0;
+      paintFn();
+      if(!list){
+        cluster.classList.remove('tab-switching');
+        return;
+      }
+      const base = listBaseTransform();
+      const slideIn = slidePx ? -slidePx : 0;
+      list.style.transition = 'none';
+      list.style.opacity = '0';
+      list.style.transform = withSlide(base, slideIn);
+
+      requestAnimationFrame(function(){
+        requestAnimationFrame(function(){
+          list.style.transition = 'opacity .22s ease, transform .24s cubic-bezier(.22,1,.36,1)';
+          list.style.opacity = '1';
+          list.style.transform = base;
+          setTimeout(function(){
+            cluster.classList.remove('tab-switching');
+            if(list){
+              list.style.transition = '';
+              list.style.opacity = '';
+            }
+          }, 260);
+        });
+      });
+    }, 150);
   }
 
   function menuColor(){
@@ -3073,7 +3149,7 @@ function S(inner){
         window.__staticCtxSig = null;
         window.__staticListSig = null;
         window.__staticVirtSig = null;
-        cluster.classList.remove('open','rendering','fast-nav','input-hidden','color-picker-open','gun-picker-open');
+        cluster.classList.remove('open','rendering','fast-nav','tab-switching','input-hidden','color-picker-open','gun-picker-open');
         cluster.style.opacity='0';
         cluster.style.visibility='hidden';
         cluster.style.pointerEvents='none';
@@ -3221,20 +3297,10 @@ function S(inner){
 
       if(forceList && !isKeybind){
         if(tabSwitch){
-          beginFastNav(220);
-          if(window.__staticNavRaf) cancelAnimationFrame(window.__staticNavRaf);
-          if(list) list.style.opacity='0.35';
-          window.__staticNavRaf = requestAnimationFrame(function(){
-            window.__staticNavRaf = 0;
-            paintListNow(true);
-            if(list){
-              requestAnimationFrame(function(){
-                list.style.opacity='1';
-              });
-            }
-          });
+          animateTabSwitch(function(){ paintListNow(true); });
         } else {
           if(window.__staticNavRaf) cancelAnimationFrame(window.__staticNavRaf);
+          if(window.__staticTabSwitchTimer) clearTimeout(window.__staticTabSwitchTimer);
           if(selOverlay) selOverlay.style.opacity='0';
           cluster.classList.add('rendering');
           window.__staticNavRaf = requestAnimationFrame(function(){
