@@ -2581,23 +2581,30 @@ function S(inner){
     return 'translateY(-' + (off * rowPitchPx()) + 'px)';
   }
 
-  function applySelBubbleLook(sel, color, rTop, rBot){
+  function applySelBubbleLook(sel, color){
     if(!sel) return;
-    const rMid = '.3083vw';
-    const rt = (rTop != null && rTop !== '') ? rTop : rMid;
-    const rb = (rBot != null && rBot !== '') ? rBot : rMid;
     sel.style.boxSizing = 'border-box';
     sel.style.background = 'none';
     sel.style.backgroundColor = 'rgba('+color+', 0.55)';
     sel.style.outline = 'none';
     sel.style.border = '0.04vw solid rgba('+color+', 0.95)';
-    sel.style.borderRadius = rt + ' ' + rt + ' ' + rb + ' ' + rb;
+    sel.style.borderRadius = '.3083vw';
     sel.style.left = '0';
     sel.style.right = 'auto';
     sel.style.width = '100%';
-    // Inset only — outer glow bleeds past the panel clip and looks uneven at edges.
-    sel.style.boxShadow = 'inset 0 -.05vw .12vw rgba('+color+',0.38)';
+    sel.style.boxShadow = '0vw 0vw .18vw .02vw rgba('+color+',0.85)';
     sel.style.filter = 'none';
+  }
+
+  function measureBubbleBox(row){
+    if(!listWrap || !row) return null;
+    const wr = listWrap.getBoundingClientRect();
+    const rr = row.getBoundingClientRect();
+    return {
+      top: rr.top - wr.top,
+      height: rr.height,
+      maxH: listWrap.clientHeight || wr.height || 0
+    };
   }
 
   function updateHighlight(idx, scrollOffset){
@@ -2608,14 +2615,11 @@ function S(inner){
       return;
     }
     const color = row.classList.contains('red-row') ? '229, 72, 72' : menuColor();
-    const rowH = (list.children[0] && list.children[0].offsetHeight) || row.offsetHeight || 0;
-    const scrollPx = window.__staticListShiftPx != null
-      ? Math.max(0, window.__staticListShiftPx)
-      : Math.max(0, (scrollOffset||0) * rowH);
-    let topPx = Math.max(0, (row.offsetTop||0) - scrollPx);
-    let hPx = row.offsetHeight || rowH || 1;
-    const maxH = listWrap ? Math.max(0, listWrap.clientHeight) : 0;
-    if(listWrap){
+    const measured = measureBubbleBox(row);
+    let topPx = measured ? measured.top : Math.max(0, (row.offsetTop||0) - (window.__staticListShiftPx||0));
+    let hPx = measured ? measured.height : (row.offsetHeight || rowPitchPx() || 1);
+    const maxH = measured ? measured.maxH : (listWrap ? Math.max(0, listWrap.clientHeight) : 0);
+    if(listWrap && maxH > 0){
       if(topPx + hPx > maxH){
         hPx = Math.max(1, maxH - topPx);
       }
@@ -2623,10 +2627,6 @@ function S(inner){
     }
     const edgeTol = 1;
     const atTop = topPx <= edgeTol;
-    const atBot = maxH > 0 && (topPx + hPx >= maxH - edgeTol);
-    const rMid = '.3083vw';
-    const rTop = atTop ? '0' : rMid;
-    const rBot = atBot ? '0' : rMid;
     if(atTop) topPx = 0;
     selOverlay.style.display = 'block';
     selOverlay.style.top = topPx + 'px';
@@ -2637,7 +2637,7 @@ function S(inner){
     selOverlay.style.opacity = '1';
     selOverlay.style.zIndex = '0';
     selOverlay.style.pointerEvents = 'none';
-    applySelBubbleLook(selOverlay, color, rTop, rBot);
+    applySelBubbleLook(selOverlay, color);
     selOverlay.style.transition = 'top 200ms ease, height 120ms ease, border-radius 120ms ease';
   }
   window.__staticUpdateHighlight = updateHighlight;
