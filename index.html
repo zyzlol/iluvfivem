@@ -215,17 +215,18 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         align-self: center;
     }
 
-    /* solid capsule thumb — absolute so top/height % sit in the track */
+    /* solid capsule thumb — always fill the track */
     .PWrapper .PElements .PScroll .PSProgress {
         position: absolute; display: block;
-        left: 0; right: 0; width: 100%;
-        min-height: .5vw;
+        left: 0; right: 0; top: 0; width: 100%;
+        height: 100%;
+        min-height: 100%;
         background: linear-gradient(180deg,
             rgba(var(--menu-color),1) 0%,
             rgba(var(--menu-color),0.75) 100%);
         border-radius: 1vw;
         box-shadow: inset 0 .06vw 0 rgba(255,255,255,0.35);
-        transition: top .12s cubic-bezier(.22,1,.36,1), height .12s cubic-bezier(.22,1,.36,1), background .15s ease;
+        transition: background .15s ease;
         box-sizing: border-box;
     }
 
@@ -464,36 +465,35 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
 
     .PWrapper .PTabs .PTab .PTLabel {
         position: absolute; display: flex; align-items: center;
-        left: .7vw; top: 0; bottom: 0; right: 6.8vw;
+        left: .75vw; top: 0; bottom: 0; right: 6.8vw;
         width: auto; height: auto; max-width: none;
-        font-size: .62vw; font-weight: 500; line-height: 1;
-        color: rgba(255,255,255,0.92);
-        /* Clip text on .PTText only — overflow:hidden here was slicing FA/SVG icons. */
+        font-size: .62vw; font-weight: 400; line-height: 1;
+        color: var(--text-primary);
         overflow: visible;
         white-space: nowrap;
-        letter-spacing: .01vw;
+        letter-spacing: .015vw;
         margin: 0; padding: 0; box-sizing: border-box;
         z-index: 2;
         pointer-events: none;
+        transform: none;
     }
     .PWrapper .PTabs .PTab .PTLabel .PTText {
-        display: flex;
-        align-items: center;
+        display: inline-block;
         flex: 1 1 auto;
         min-width: 0;
         max-width: 100%;
-        height: 100%;
+        height: auto;
         overflow: hidden; text-overflow: ellipsis;
         white-space: nowrap;
-        font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
-        font-size: .62vw;
-        font-weight: 500;
-        letter-spacing: .01vw;
-        color: rgba(255,255,255,0.92);
+        font-family: inherit;
+        font-size: inherit;
+        font-weight: inherit;
+        letter-spacing: inherit;
+        color: inherit;
         line-height: 1;
         padding: 0;
         box-sizing: border-box;
-        transform: translateY(-.02vw);
+        transform: none;
         margin: 0;
         opacity: 1;
         visibility: visible;
@@ -519,7 +519,7 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         flex: 0 0 .72vw !important;
         width: .72vw !important;
         height: .72vw !important;
-        margin: 0 .22vw 0 0 !important;
+        margin: 0 .3vw 0 0 !important;
         padding: 0 !important;
         position: static !important;
         left: auto !important;
@@ -541,7 +541,7 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         display: block;
         margin: 0;
         overflow: visible;
-        stroke-width: 2.2;
+        stroke-width: 1.65;
     }
 
     .PWrapper .PTabs .PTab i.chev-right,
@@ -829,15 +829,13 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         position: absolute; display: none;
         width: 13.6vw; right: -15.2vw; top: 0;
         flex-direction: column;
-        background:
-            linear-gradient(180deg, rgba(255,255,255,0.035) 0%, transparent 24%),
-            linear-gradient(180deg, rgba(18,20,26,0.96) 0%, rgba(10,11,15,0.96) 100%);
+        background: var(--menu-bg);
         border: .06vw solid var(--menu-border);
-        border-radius: calc(var(--menu-radius) * 1.15);
+        border-radius: var(--menu-radius);
         padding: .5vw .65vw .55vw;
         box-shadow:
-            0 .4vw 1.35vw rgba(0,0,0,0.55),
-            inset 0 .06vw 0 rgba(255,255,255,0.045);
+            inset 0 .05vw .1vw rgba(255,255,255,0.02),
+            0 .15vw .6vw rgba(0,0,0,0.4);
         overflow: hidden;
         z-index: 8;
         pointer-events: none;
@@ -845,14 +843,7 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
     }
 
     .PWrapper .Metadata::before {
-        content: "";
-        position: absolute;
-        left: 0; right: 0; top: 0; height: .1vw;
-        background: linear-gradient(90deg,
-            rgb(var(--menu-color)) 0%,
-            rgba(var(--menu-color),0.35) 45%,
-            transparent 90%);
-        pointer-events: none;
+        display: none;
     }
 
     .PWrapper .Metadata.show {
@@ -879,9 +870,9 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         display: flex; align-items: center; justify-content: center;
         width: .72vw; height: .72vw;
         border-radius: .16vw;
-        background: rgba(var(--menu-color),0.12);
-        border: .06vw solid rgba(var(--menu-color),0.28);
-        color: rgb(var(--menu-color));
+        background: rgba(255,255,255,0.04);
+        border: none;
+        color: rgba(255,255,255,0.72);
         flex-shrink: 0;
         box-shadow: none;
         box-sizing: border-box;
@@ -896,20 +887,18 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         display: flex; align-items: center;
         height: .72vw; min-width: 0;
         margin: 0; padding: 0;
-        font-size: .55vw; font-weight: 700;
-        letter-spacing: .06em;
-        text-transform: uppercase;
-        color: #fff;
+        font-size: .62vw; font-weight: 500;
+        letter-spacing: .01vw;
+        text-transform: none;
+        color: rgba(255,255,255,0.92);
         line-height: 1;
         white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         transform: none;
     }
 
     .PWrapper .Metadata .Line {
-        width: 100%; height: .06vw;
-        background: linear-gradient(90deg,
-            transparent 0%, rgba(255,255,255,0.12) 12%,
-            rgba(255,255,255,0.12) 88%, transparent 100%);
+        width: 100%; height: .04vw;
+        background: rgba(255,255,255,0.02);
         margin: 0 0 .18vw;
         flex-shrink: 0;
     }
@@ -927,19 +916,19 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         justify-content: space-between; align-items: center;
         gap: .45vw;
         padding: .28vw .08vw;
-        border-radius: calc(var(--menu-radius) * .75);
+        border-radius: 0;
         box-sizing: border-box;
     }
 
     .PWrapper .Metadata .Values .Value + .Value {
-        border-top: .04vw solid rgba(255,255,255,0.05);
+        border-top: .04vw solid rgba(255,255,255,0.02);
     }
 
     .PWrapper .Metadata .Values .Value .Key {
         font-weight: 500; font-size: .52vw;
-        letter-spacing: .045vw;
-        text-transform: uppercase;
-        color: rgba(255,255,255,0.48);
+        letter-spacing: .01vw;
+        text-transform: none;
+        color: var(--text-secondary);
         line-height: 1;
         flex: 0 1 auto;
         min-width: 0;
@@ -953,8 +942,8 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
     }
 
     .PWrapper .Metadata .Values .Value .Val span {
-        font-weight: 560; font-size: .56vw;
-        color: rgba(255,255,255,0.92);
+        font-weight: 500; font-size: .56vw;
+        color: var(--text-primary);
         font-variant-numeric: tabular-nums;
         line-height: 1;
         white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
@@ -969,11 +958,11 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
     .PWrapper .Metadata .Values .Value .Val .Status {
         position: relative;
         width: .28vw; height: .78vw;
-        background: rgba(0,0,0,0.42);
-        border-radius: .18vw;
+        background: rgba(0,0,0,0.35);
+        border-radius: 1vw;
         overflow: hidden;
         flex-shrink: 0;
-        box-shadow: inset 0 0 0 .04vw rgba(255,255,255,0.06);
+        box-shadow: inset 0 0 0 .04vw rgba(255,255,255,0.05), inset 0 .06vw .12vw rgba(0,0,0,0.6);
     }
 
     .PWrapper .Metadata .Values .Value .Val .Status .Progress {
@@ -1078,8 +1067,8 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
     min-width: 0;
     min-height: 1.28vw;
     max-height: 3.2vw;
-    gap: .38vw;
-    padding: .32vw .55vw .38vw .42vw;
+    gap: 0;
+    padding: .32vw .55vw .38vw .55vw;
     box-sizing: border-box;
     pointer-events: none;
     overflow: hidden;
@@ -1095,20 +1084,8 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
 }
 
 .Notification::before {
-    content: "";
-    display: block;
-    flex: 0 0 .1vw;
-    width: .1vw;
-    height: .52vw;
-    border-radius: .08vw;
-    background: var(--n-accent);
-    box-shadow: 0 0 .2vw var(--n-accent);
-    position: static;
-    left: auto;
-    top: auto;
-    transform: none;
-    opacity: 1;
-    z-index: 2;
+    content: none;
+    display: none;
 }
 
 .Notification.success { --n-accent: rgb(var(--menu-color)); }
@@ -1196,8 +1173,8 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
     left: 0;
     right: 0;
     bottom: 0;
-    height: .055vw;
-    background: rgba(255,255,255,.05);
+    height: .04vw;
+    background: transparent;
     overflow: hidden;
     z-index: 3;
 }
@@ -1206,7 +1183,7 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
     width: 100%;
     height: 100%;
     background: var(--n-accent);
-    opacity: .85;
+    opacity: .45;
     transform-origin: left center;
     animation-name: notifyBarShrink;
     animation-timing-function: linear;
@@ -1373,11 +1350,11 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
 .KBLWrapper .Header .Icon, .SBLWrapper .Header .Icon {
     display: flex; align-items: center; justify-content: center;
     width: .72vw; height: .72vw;
-    color: rgb(var(--menu-color));
+    color: rgba(255,255,255,.78);
     flex-shrink: 0;
-    border-radius: .16vw;
-    background: rgba(var(--menu-color),0.12);
-    border: .06vw solid rgba(var(--menu-color),0.28);
+    border-radius: 0;
+    background: none;
+    border: none;
     box-sizing: border-box;
     line-height: 0;
 }
@@ -1531,7 +1508,7 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
 /* Full rebuilds (tab switches) must not animate in from the old scroll offset. */
 .PWrapper.rendering #list{transition:none!important;}.PWrapper.rendering #selOverlay{transition:none!important;}.PWrapper.rendering #psProgress{transition:none!important;}
 #list{position:relative;z-index:2;width:100%;transition:transform .2s cubic-bezier(.22,1,.36,1);}
-#selOverlay{position:absolute!important;left:0!important;right:0!important;width:100%!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;box-sizing:border-box!important;border-radius:.3083vw!important;}
+#selOverlay{position:absolute!important;left:0!important;right:0!important;width:100%!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;box-sizing:border-box!important;border-radius:.3083vw!important;border:.052vw solid rgba(var(--menu-color),1)!important;box-shadow:0 0 .2083vw .0339vw rgb(var(--menu-color))!important;}
 /* Icons stay muted — never brighten on hover/active (matches Static Shark). */
 .PTab.active .PTLabel > .fa-solid,
 .PTab.active .PTLabel .ico,
@@ -1619,11 +1596,11 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
   justify-content:center;
   width:.72vw;
   height:.72vw;
-  color:rgb(var(--menu-color));
+  color:rgba(255,255,255,.78);
   flex-shrink:0;
-  border-radius:.16vw;
-  background:rgba(var(--menu-color),0.12);
-  border:.06vw solid rgba(var(--menu-color),0.28);
+  border-radius:0;
+  background:none;
+  border:none;
   box-sizing:border-box;
   line-height:0;
 }
@@ -1802,15 +1779,15 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
 .inp-header-icon{
   display:inline-flex;align-items:center;justify-content:center;
   width:.72vw;height:.72vw;min-width:14px;min-height:14px;
-  border-radius:.16vw;
-  background:rgba(var(--menu-color),0.12);
-  border:.06vw solid rgba(var(--menu-color),0.28);
-  color:rgb(var(--menu-color));
+  border-radius:0;
+  background:none;
+  border:none;
+  color:rgba(255,255,255,.78);
   flex-shrink:0;
   box-shadow:none;
   box-sizing:border-box;
   line-height:0;
-  overflow:hidden;
+  overflow:visible;
 }
 .inp-header-icon svg{
   width:.5vw;height:.5vw;min-width:11px;min-height:11px;
@@ -1916,7 +1893,7 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
 .kb-display.show{display:block;}
 .kb-display-panel{border-radius:var(--r);overflow:hidden;background:var(--bg);border:1px solid var(--accent-border);box-shadow:0 0 14px var(--accent-menu-shadow);}
 .kb-display-head{display:flex;align-items:center;gap:6px;height:34px;padding:0 10px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#fff;background:var(--bg);border-bottom:1px solid var(--accent);box-sizing:border-box;}
-.kb-display-icon{width:14px;height:14px;display:flex;align-items:center;justify-content:center;color:var(--accent);flex-shrink:0;border-radius:3px;background:var(--accent-icon-bg);border:1px solid var(--accent-icon-border);line-height:0;box-sizing:border-box;}
+.kb-display-icon{width:14px;height:14px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.78);flex-shrink:0;border-radius:0;background:none;border:none;line-height:0;box-sizing:border-box;}
 .kb-display-icon svg{width:10px;height:10px;display:block;margin:0;fill:currentColor;}
 .kb-display-sub{display:none;}
 .kb-display-list{max-height:140px;overflow:auto;background:var(--bg);}
@@ -1930,7 +1907,7 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
 .ac-display.show{display:block;}
 .ac-display-panel{border-radius:6px;overflow:hidden;background:rgba(0,0,0,.78);border:1px solid var(--accent-hud-border);}
 .ac-display-head{display:flex;align-items:center;gap:6px;height:32px;padding:0 9px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#fff;background:var(--bg);border-bottom:2px solid var(--accent);box-sizing:border-box;}
-.ac-display-icon{width:14px;height:14px;display:flex;align-items:center;justify-content:center;color:var(--accent);flex-shrink:0;border-radius:2px;background:var(--accent-icon-bg);border:1px solid var(--accent-icon-border);line-height:0;box-sizing:border-box;}
+.ac-display-icon{width:14px;height:14px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.78);flex-shrink:0;border-radius:0;background:none;border:none;line-height:0;box-sizing:border-box;}
 .ac-display-icon svg{width:10px;height:10px;display:block;margin:0;fill:currentColor;}
 .ac-display-list{background:rgba(0,0,0,.62);}
 .ac-display-row{padding:7px 9px;border-bottom:1px solid rgba(255,255,255,.04);font-size:10.5px;font-weight:700;line-height:1.2;color:rgba(255,255,255,.95);}
@@ -1958,7 +1935,7 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
 .gun-picker-rail{display:none;}
 .gun-picker-menu{width:100%;border-radius:var(--r);overflow:hidden;background:var(--bg);border:1px solid var(--accent-border);box-shadow:0 0 18px var(--accent-menu-shadow);}
 .gun-picker-head{display:flex;align-items:center;gap:8px;height:36px;padding:0 12px;background:var(--bg);border-bottom:1px solid rgba(255,255,255,.06);box-sizing:border-box;}
-.gun-picker-head-icon{width:14px;height:14px;display:flex;align-items:center;justify-content:center;color:var(--accent);flex-shrink:0;border-radius:2px;background:var(--accent-icon-bg);border:1px solid var(--accent-icon-border);line-height:0;box-sizing:border-box;}
+.gun-picker-head-icon{width:14px;height:14px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.78);flex-shrink:0;border-radius:0;background:none;border:none;line-height:0;box-sizing:border-box;}
 .gun-picker-head-icon svg{width:10px;height:10px;display:block;margin:0;fill:currentColor;}
 .gun-picker-head span{display:flex;align-items:center;height:14px;margin:0;padding:0;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#fff;line-height:1;}
 .gun-picker-listWrap{position:relative;background:var(--bg);overflow:hidden;}
@@ -2285,118 +2262,97 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
   }
   window.applyBannerTheme = function(url, theme){ applyTheme(theme||'blue', url); };
 
-function svgIcon(path, stroke){
-    if(stroke){
-      return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="'+path+'"/></svg>';
-    }
-    return '<svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="'+path+'"/></svg>';
+function S(inner){
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true">'+inner+'</svg>';
   }
-  function svgIcons(paths, stroke){
-    const attrs = stroke
-      ? ' viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"'
-      : ' viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"';
-    return '<svg'+attrs+'>'+paths.map(function(p){ return '<path d="'+p+'"/>'; }).join('')+'</svg>';
+  function F(inner){
+    return '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">'+inner+'</svg>';
   }
   const ICONS={
-    user:svgIcon('M20 21a8 8 0 0 0-16 0M12 11a4 4 0 1 0-4-4 4 4 0 0 0 4 4Z',true),
-    users:svgIcons(['M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2','M9 11a4 4 0 1 0-4-4 4 4 0 0 0 4 4Z','M22 21v-2a4 4 0 0 0-3-3.87','M16 3.13a4 4 0 0 1 0 7.75'],true),
-    crosshair:svgIcons(['M12 2v4','M12 18v4','M2 12h4','M18 12h4','M12 8a4 4 0 1 0 4 4 4 4 0 0 0-4-4Z'],true),
-    eye:svgIcons(['M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z','M12 15a3 3 0 1 0-3-3 3 3 0 0 0 3 3Z'],true),
-    'eye-off':svgIcons(['M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-10-8-10-8a18.45 18.45 0 0 1 5.06-5.94','M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 10 8 10 8a18.5 18.5 0 0 1-2.16 3.19','M1 1l22 22','M14.12 14.12a3 3 0 1 1-4.24-4.24'],true),
-    car:svgIcons(['M5 17h14','M5 17a2 2 0 1 0 4 0 2 2 0 0 0-4 0','M15 17a2 2 0 1 0 4 0 2 2 0 0 0-4 0','M5 17l-1.5-5.5h15L17 17','M7 11.5h10','M9 6.5h6'],true),
-    bike:svgIcons(['M5.5 17.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z','M18.5 17.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z','M5.5 14.5h5l2-4h3.5','M12 10.5l2.5-2.5','M15 6h2.5'],true),
-    grid:svgIcon('M4 4h6v6H4V4Zm10 0h6v6h-6V4ZM4 14h6v6H4v-6Zm10 0h6v6h-6v-6Z'),
-    shield:svgIcon('M12 2 4 5v6c0 5.25 3.4 10.15 8 11 4.6-.85 8-5.75 8-11V5l-8-3Z'),
-    'shield-check':svgIcons(['M12 2 4 5v6c0 5.25 3.4 10.15 8 11 4.6-.85 8-5.75 8-11V5l-8-3Z','M9 12l2 2 4-4'],true),
-    skull:svgIcons(['M12 4a4 4 0 0 0-4 4v2h8V8a4 4 0 0 0-4-4Z','M8 14h8v3H8v-3Z','M10 17v2','M14 17v2','M9 10h.01','M15 10h.01'],true),
-    zap:svgIcon('M13 2 3 14h7l-1 8 10-12h-7l1-8Z'),
-    settings:svgIcons(['M12 15.5a3.5 3.5 0 1 0-3.5-3.5 3.5 3.5 0 0 0 3.5 3.5Z','M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c0 .66.39 1.26 1 1.51H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z'],true),
-    search:svgIcons(['M11 19a8 8 0 1 0-8-8 8 8 0 0 0 8 8Z','M21 21l-4.3-4.3'],true),
-    ghost:svgIcons(['M9 10h.01','M15 10h.01','M12 2a8 8 0 0 0-8 8v9l3-1.5 3 1.5 2-1 2 1 2-1 2 1.5 3-1.5V10a8 8 0 0 0-8-8Z','M10 15s1 1.5 2 1.5 2-1.5 2-1.5'],true),
-    heart:svgIcon('M12 21s-7-4.35-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 11c0 5.65-7 10-7 10Z'),
-    camera:svgIcons(['M4 7h2l2-2h8l2 2h2v11H4V7Z','M12 16a3 3 0 1 0-3-3 3 3 0 0 0 3 3Z'],true),
-    shirt:svgIcons(['M16 3 12 7 8 3 4 7v13h16V7l-4-4Z','M12 7v3'],true),
-    refresh:svgIcons(['M21 12a9 9 0 1 1-2.64-6.36','M21 3v6h-6'],true),
-    map:svgIcons(['M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2Z','M9 4v16','M15 6v16'],true),
-    bomb:svgIcons(['M12 2v2','M10 6h4','M12 8a6 6 0 1 0 6 6','M15.5 4.5l1 1','M17 3l1 1'],true),
-    hand:svgIcons(['M18 11V6a2 2 0 0 0-4 0v5','M14 10V5a2 2 0 0 0-4 0v6','M10 10V7a2 2 0 0 0-4 0v8a6 6 0 0 0 12 0v-4a2 2 0 0 0-4 0v1'],true),
-    'hand-stop':svgIcons(['M18 11V6a2 2 0 0 0-4 0v5','M14 10V5a2 2 0 0 0-4 0v6','M10 10V7a2 2 0 0 0-4 0v8a6 6 0 0 0 12 0v-4a2 2 0 0 0-4 0v1','M4 20h16'],true),
-    gun:svgIcons(['M3 11h11v2H3v-2Z','M14 9h2l3-2v6l-3-2h-2V9Z','M19 7h2v2h-2V7Z','M5 13v2'],true),
-    edit:svgIcons(['M12 20h9','M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5Z'],true),
-    mask:svgIcons(['M12 4c-4.5 0-7.5 2.2-7.5 4.5V12c0 3.2 3.4 6.5 7.5 6.5s7.5-3.3 7.5-6.5V8.5C19.5 6.2 16.5 4 12 4Z','M9 10h.01','M15 10h.01','M8 14c1 1.5 2.5 2 4 2s3-.5 4-2'],true),
-    ban:svgIcons(['M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Z','M4.93 4.93l14.14 14.14'],true),
-    bullet:svgIcons(['M7 3h10v5H7V3Z','M9 8h6v12H9V8Z','M10 5h1','M13 5h1'],true),
-    fist:svgIcons(['M8 8V6a2 2 0 0 1 4 0v2h1V7a2 2 0 0 1 4 0v3h1a2 2 0 0 1 2 2v4a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5v-3a2 2 0 0 1 2-2h2Z','M10 13h1','M13 13h1'],true),
-    wrench:svgIcon('M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77A6 6 0 0 1 12 18a6 6 0 0 1-6-6 6 6 0 0 1 7.7-5.7Z',true),
-    engine:svgIcons(['M5 10h2V8h2V6h6v2h2v2h2v4h-2v2h-2v2H9v-2H7v-2H5v-4Z','M10 10h4v4h-4v-4Z'],true),
-    'stop-circle':svgIcon('M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Zm4 13H8V9h8v6Z'),
-    tag:svgIcons(['M3 10.5 10.5 3h6L21 7.5 16.5 12l-6 6-7.5-7.5Z','M7.5 7.5h.01'],true),
-    gauge:svgIcons(['M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Z','M12 6v6l4 2','M12 2v2','M4.93 4.93l1.41 1.41','M19.07 4.93l-1.41 1.41'],true),
-    circle:svgIcon('M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Z'),
-    unlock:svgIcons(['M7 10V7a5 5 0 0 1 9.9-1','M7 10h10v10H7V10Z','M12 14v3'],true),
-    lock:svgIcons(['M7 10h10v10H7V10Z','M8 10V7a4 4 0 0 1 8 0v3','M12 14v3'],true),
-    rotate:svgIcons(['M21 12a9 9 0 1 1-3-6.7','M21 3v6h-6'],true),
-    palette:svgIcons(['M12 3a9 9 0 0 0 0 18h1.5a2.5 2.5 0 0 0 0-5H12a2 2 0 0 1-2-2 2 2 0 0 1 2-2h1a2.5 2.5 0 0 0 2.5-2.5A9 9 0 0 0 12 3Z','M7 10h.01','M10 7h.01','M14 7h.01','M17 10h.01'],true),
-    rainbow:svgIcon('M4 14h16v2H4v-2Zm0-4h16v2H4v-2Zm0-4h16v2H4V6Z'),
-    target:svgIcons(['M12 14a2 2 0 1 0-2-2 2 2 0 0 0 2 2Z','M12 12a6 6 0 1 0-6-6 6 6 0 0 0 6 6Z','M12 2v2','M12 20v2','M2 12h2','M20 12h2'],true),
-    line:svgIcon('M4 20L20 4',true),
-    block:svgIcons(['M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Z','M4.93 4.93l14.14 14.14','M8 12h8'],true),
-    angry:svgIcons(['M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Z','M8 9l2 1','M14 9l-2 1','M8 16c1.2 1.6 2.7 2 4 2s2.8-.4 4-2','M9 9h.01','M15 9h.01'],true),
-    box:svgIcons(['M12 2 2 7l10 5 10-5-10-5Z','M2 7l10 5 10-5','M12 12v10'],true),
-    cage:svgIcons(['M4 4h16v16H4V4Z','M8 4v16','M12 4v16','M16 4v16','M4 8h16','M4 16h16'],true),
-    alert:svgIcons(['M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z','M12 9v4','M12 17h.01'],true),
-    music:svgIcons(['M9 18V5l12-2v13','M9 18a3 3 0 1 0-3-3 3 3 0 0 0 3 3Z','M18 16a3 3 0 1 0-3-3 3 3 0 0 0 3 3Z'],true),
-    'user-x':svgIcons(['M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2','M9 11a4 4 0 1 0-4-4 4 4 0 0 0 4 4Z','M17 8l4 4','M21 8l-4 4'],true),
-    chair:svgIcons(['M6 12V8a4 4 0 0 1 8 0v4','M4 12h16v4H4v-4Z','M8 16v3','M16 16v3','M6 19h12'],true),
-    wind:svgIcon('M9.59 4.59A2 2 0 1 1 11 8H2M12.59 19.41A2 2 0 1 0 14 16H2M17.73 7.73A2.5 2.5 0 1 1 19 12H2',true),
-    parachute:svgIcons(['M12 11V3','M12 3l8 8','M12 3 4 11','M6 11a6 6 0 0 0 12 0','M12 11v4','M10 18h4'],true),
-    sun:svgIcons(['M12 4V2','M12 20v-2','M4.93 4.93 3.52 3.52','M20.48 20.48l-1.41-1.41','M4 12H2','M22 12h-2','M4.93 19.07 3.52 20.48','M20.48 3.52l-1.41 1.41','M12 18a6 6 0 1 0-6-6 6 6 0 0 0 6 6Z'],true),
-    sparkle:svgIcons(['M12 3v3','M12 18v3','M3 12h3','M18 12h3','M5.6 5.6l2.1 2.1','M16.3 16.3l2.1 2.1','M18.4 5.6l-2.1 2.1','M7.7 16.3l-2.1 2.1','M12 8a4 4 0 1 0 4 4 4 4 0 0 0-4-4Z'],true),
-    plane:svgIcon('M2 16l20-8-8 8-2 6-2-6-8 0 2-6Z'),
-    ship:svgIcons(['M2 20c2-1 4-1 6 0s4 1 6 0 4-1 6 0','M4 18l1.5-6h13L20 18','M12 6V3','M9 3h6','M12 6l-2 3h4l-2-3'],true),
-    server:svgIcons(['M4 4h16v5H4V4Z','M4 15h16v5H4v-5Z','M7 6.5h.01','M7 17.5h.01'],true),
-    terminal:svgIcons(['M4 5h16v14H4V5Z','M8 9l3 3-3 3','M13 15h5'],true),
-    droplet:svgIcon('M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0L12 2.69Z'),
-    'map-pin':svgIcons(['M12 21s7-4.5 7-11a7 7 0 1 0-14 0c0 6.5 7 11 7 11Z','M12 13a3 3 0 1 0-3-3 3 3 0 0 0 3 3Z'],true),
-    list:svgIcons(['M8 6h13','M8 12h13','M8 18h13','M3 6h.01','M3 12h.01','M3 18h.01'],true),
-    bug:svgIcons(['M8 8V6a4 4 0 1 1 8 0v2','M4 10h16','M6 14h12','M8 18h8','M12 4V2','M6 6l-2-2','M18 6l2-2','M6 18l-2 2','M18 18l2 2'],true),
-    keyboard:svgIcons(['M4 7h16v10H4V7Z','M7 10h2','M11 10h2','M15 10h2','M7 14h10'],true),
-    filter:svgIcon('M3 5h18l-7 8v5l-4 2v-7L3 5Z'),
-    stop:svgIcon('M6 6h12v12H6V6Z'),
-    'car-search':svgIcons(['M5 17h14','M5 17a2 2 0 1 0 4 0 2 2 0 0 0-4 0','M15 17a2 2 0 1 0 4 0 2 2 0 0 0-4 0','M5 17l-1.5-5.5h15L17 17','M14 11a3 3 0 1 0-6 0 3 3 0 0 0 6 0Z','M16.5 16.5 19 19'],true),
-    smile:svgIcons(['M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Z','M9 9h.01','M15 9h.01','M8 14s1.5 2 4 2 4-2 4-2'],true),
-    'hand-wave':svgIcons(['M18 11V6a2 2 0 0 0-4 0v5','M14 10V5a2 2 0 0 0-4 0v6','M10 10V7a2 2 0 0 0-4 0v8a6 6 0 0 0 12 0v-4a2 2 0 0 0-4 0v1','M20 8l2-2'],true),
-    bolt:svgIcon('M13 2 3 14h7l-1 8 10-12h-7l1-8Z'),
-    folder:svgIcons(['M4 6h7l2 2h7v10H4V6Z','M4 6v12h16V8h-7l-2-2H4Z'],true),
-    cloud:svgIcons(['M20 17.5a4.5 4.5 0 0 0-1-8.9 7 7 0 0 0-13.6 1.9A4.5 4.5 0 0 0 6.5 19H19a4 4 0 0 0 1-1.5Z'],true),
-    package:svgIcons(['M12 3 2 8l10 5 10-5-10-5Z','M2 8l10 5 10-5','M12 13v8','M7 10.5v5','M17 10.5v5','M12 8v5'],true),
-    image:svgIcons(['M4 5h16v14H4V5Z','M8 11l2 2 3-3 3 4v2H6V9l2 2Z','M9 8h.01'],true),
-    link:svgIcons(['M10 13a5 5 0 0 1 0-7l1-1a5 5 0 0 1 7 7l-1 1','M14 11a5 5 0 0 1 0 7l-1 1a5 5 0 0 1-7-7l1-1'],true),
-    toggle:svgIcon('M17 7H7a5 5 0 0 0 0 10h10a5 5 0 0 0 0-10Zm0 8H7a3 3 0 0 1 0-6h10a3 3 0 0 1 0 6Z'),
-    sliders:svgIcons(['M4 21v-7','M4 10V3','M12 21v-9','M12 8V3','M20 21v-5','M20 12V3','M2 14h4','M10 8h4','M18 16h4'],true),
-    info:svgIcons(['M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Z','M12 8v4','M12 16h.01'],true),
-    dot:svgIcon('M12 8a4 4 0 1 0 4 4 4 4 0 0 0-4-4Z'),
-    'cloud':svgIcon('M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z',true),
-    'copy':svgIcons(['M8 8v10a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V8','M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2'],true),
-    'radio':svgIcons(['M4.9 19.1C1 15.2 1 8.8 4.9 4.9','M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.4','M12 12h.01','M16.2 7.8c2.3 2.3 2.3 6.1 0 8.4','M19.1 4.9C23 8.8 23 15.1 19.1 19'],true),
-    'user-plus':svgIcons(['M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2','M9 11a4 4 0 1 0-4-4 4 4 0 0 0 4 4Z','M19 8v6','M22 11h-6'],true),
-    'car-burst':svgIcons(['M5 17h14','M5 17a2 2 0 1 0 4 0 2 2 0 0 0-4 0','M15 17a2 2 0 1 0 4 0 2 2 0 0 0-4 0','M5 17l-1.5-5.5h15L17 17','M7 11.5h10','M9 6.5h6','M12 3v3','M8 5l1.5 2','M16 5l-1.5 2'],true)
+    user:F('<circle cx="12" cy="7.4" r="3.15"/><path d="M5.2 20.2c0-3.15 3.05-5.15 6.8-5.15s6.8 2 6.8 5.15V21H5.2z"/>'),
+    users:S('<circle cx="9" cy="8" r="2.6"/><path d="M4.2 19.5c0-2.6 2.2-4.2 4.8-4.2s4.8 1.6 4.8 4.2"/><circle cx="16.4" cy="8.4" r="2.15"/><path d="M14.1 15.4c1.35-.7 2.95-.7 4.5.15 1.1.6 1.8 1.55 1.8 3.95"/>'),
+    crosshair:S('<path d="M12 3v4M12 17v4M3 12h4M17 12h4"/><rect x="9.2" y="9.2" width="5.6" height="5.6"/>'),
+    eye:S('<path d="M3 12s3.4-6.2 9-6.2S21 12 21 12s-3.4 6.2-9 6.2S3 12 3 12z"/><rect x="10.2" y="10.2" width="3.6" height="3.6"/>'),
+    'eye-off':S('<path d="M4 12s3.2-5.4 8-5.4c1.15 0 2.2.25 3.15.7M20 12s-1.2 2.1-3.1 3.7M3 3l18 18"/><path d="M9.2 9.4 14.7 14.9"/>'),
+    car:S('<path d="M4 15.2h16"/><path d="M5.2 15.2 6.6 10h10.8l1.4 5.2"/><path d="M8.2 10V8.1h7.6V10"/><rect x="5.4" y="15.2" width="3.1" height="3.1"/><rect x="15.5" y="15.2" width="3.1" height="3.1"/>'),
+    bike:S('<circle cx="6.4" cy="16.2" r="3"/><circle cx="17.6" cy="16.2" r="3"/><path d="M6.4 16.2h5.1l2.1-4.6h3.4M12.2 9.2l2.2-2.4h3"/>'),
+    grid:S('<rect x="3.5" y="3.5" width="7" height="7"/><rect x="13.5" y="3.5" width="7" height="7"/><rect x="3.5" y="13.5" width="7" height="7"/><rect x="13.5" y="13.5" width="7" height="7"/>'),
+    shield:F('<path d="M12 2.4 4.4 5.2v6.1c0 4.85 3.15 8.85 7.6 9.7 4.45-.85 7.6-4.85 7.6-9.7V5.2z"/>'),
+    'shield-check':S('<path d="M12 3.2 5 5.8v5.6c0 4.2 2.85 7.7 7 8.45 4.15-.75 7-4.25 7-8.45V5.8z"/><path d="M8.8 12.1 11 14.3l4.3-4.4"/>'),
+    skull:S('<path d="M8.2 8.2c0-2.3 1.7-4.1 3.8-4.1s3.8 1.8 3.8 4.1v2.1H8.2z"/><path d="M8.2 12.4h7.6v2.8H8.2z"/><path d="M10 15.2v2.4M14 15.2v2.4"/><rect x="9.1" y="9.4" width="1.5" height="1.5"/><rect x="13.4" y="9.4" width="1.5" height="1.5"/>'),
+    zap:F('<path d="M13.2 2.2 4.4 13.4h6.1l-1.15 8.4 9.25-12.1h-6.2z"/>'),
+    settings:S('<path d="M12 8.2 14.4 4.8l3.3 1.3.9 3.5 3.2 1.6L20.4 14l-3.2 1.6-.9 3.5-3.3 1.3L12 16.9 9.6 20.4l-3.3-1.3-.9-3.5L2.2 14l1.4-2.8 3.2-1.6.9-3.5 3.3-1.3z"/><circle cx="12" cy="12" r="2.15"/>'),
+    search:S('<circle cx="10.6" cy="10.6" r="5.4"/><path d="M14.7 14.7 20.2 20.2"/>'),
+    ghost:S('<path d="M6.4 10.2c0-3.2 2.5-5.8 5.6-5.8s5.6 2.6 5.6 5.8v8.2l-2.1-1.1-1.7 1.1-1.8-1-1.8 1-1.7-1.1-2.1 1.1z"/><rect x="9" y="9.4" width="1.5" height="1.5"/><rect x="13.5" y="9.4" width="1.5" height="1.5"/>'),
+    heart:F('<path d="M12 20.4 4.8 13.6C3.1 11.9 3.2 9 5.1 7.4c1.7-1.5 4.2-1.3 5.6.4L12 9.1l1.3-1.3c1.4-1.7 3.9-1.9 5.6-.4 1.9 1.6 2 4.5.3 6.2z"/>'),
+    camera:S('<path d="M4 8.2h2.1l1.5-1.8h8.8l1.5 1.8H20V19H4z"/><circle cx="12" cy="13.1" r="2.7"/>'),
+    shirt:S('<path d="M8.2 4.2 12 7.4 15.8 4.2 20 7.6V20H4V7.6z"/><path d="M12 7.4v3.2"/>'),
+    refresh:S('<path d="M19.6 12a7.6 7.6 0 1 1-2.2-5.4"/><path d="M19.6 4.4v5.2h-5.2"/>'),
+    map:S('<path d="M8.6 4.4 3.6 6.2v13.4l5-1.7 6.8 1.7 5-1.7V4.6l-5 1.6z"/><path d="M8.6 4.4v13.5M15.4 6.2v13.4"/>'),
+    bomb:S('<circle cx="11.2" cy="14.2" r="5.1"/><path d="M14.4 9.6 17 7M16.2 5.4h2.6v2.2"/>'),
+    hand:S('<path d="M8.2 11.2V7.4M11.2 10.6V6.2M14.2 10.8V7M16.8 11.4V8.4M7.2 11.4h10.2v5.1c0 2.3-1.8 4.1-4.1 4.1H11c-2.2 0-3.8-1.8-3.8-4.1z"/>'),
+    'hand-stop':S('<path d="M8.2 11.2V7.4M11.2 10.6V6.2M14.2 10.8V7M16.8 11.4V8.4M7.2 11.4h10.2v5.1c0 2.3-1.8 4.1-4.1 4.1H11c-2.2 0-3.8-1.8-3.8-4.1z"/><path d="M5 21h14"/>'),
+    gun:S('<path d="M3.2 12.1h11.2v2.3H8.1L6.7 17.6H4.8l1.15-3.2H3.2z"/><path d="M14.4 10.6h4.6l2.6-1.7v5.4l-2.6-1.5h-4.6z"/><path d="M19.4 7.6h2.2v2"/>'),
+    edit:S('<path d="M4 20h16"/><path d="M15.6 4.6 19.4 8.4 8.2 19.6H4.4v-3.8z"/>'),
+    mask:S('<path d="M4.8 8.4c0-1.7 3.2-3.6 7.2-3.6s7.2 1.9 7.2 3.6V12c0 2.8-3.1 5.4-7.2 5.4S4.8 14.8 4.8 12z"/><rect x="8.2" y="10" width="1.6" height="1.6"/><rect x="14.2" y="10" width="1.6" height="1.6"/><path d="M8.6 13.8c1 .9 2.2 1.3 3.4 1.3s2.4-.4 3.4-1.3"/>'),
+    ban:S('<circle cx="12" cy="12" r="8.2"/><path d="M6.2 6.2 17.8 17.8"/>'),
+    bullet:S('<path d="M9.2 8.2h5.6v12.2H9.2z"/><path d="M8.2 4.2h7.6v4H8.2z"/><path d="M10.2 5.6h1.2M12.6 5.6h1.2"/>'),
+    fist:S('<path d="M7.4 10.2V8.1h3.1v2.1h1.3V7.6h3.1v3.4h1.4V9.2h2.4v5.1c0 2.5-2 4.5-4.5 4.5H9.6c-2.3 0-4.1-1.9-4.1-4.3v-2.6h1.9z"/>'),
+    wrench:S('<path d="M14.6 6.2l1.7 1.7 3.6-3.6 1.5 1.5-3.6 3.6 1.6 1.6-2.2 2.2-1.6-1.6-6.4 6.4H6.2v-3z"/>'),
+    engine:S('<path d="M4.6 10.2h2.1V8.2h2.1V6.4h6.4v1.8h2.1v2h2.1v4.2h-2.1v1.8h-2.1v1.8H8.8v-1.8H6.7v-1.8H4.6z"/><rect x="9.6" y="10.2" width="4.8" height="3.6"/>'),
+    'stop-circle':S('<circle cx="12" cy="12" r="8.2"/><rect x="8.4" y="8.4" width="7.2" height="7.2"/>'),
+    tag:S('<path d="M3.6 11.2 11.2 3.6h6.2L20.4 6.6 13.2 13.8l-7.2-2.6z"/><rect x="13.4" y="6.2" width="1.6" height="1.6"/>'),
+    gauge:S('<path d="M4.6 16.4a8.2 8.2 0 1 1 14.8 0"/><path d="M12 13.2 16.2 9"/><path d="M12 5.2v1.8"/>'),
+    circle:S('<circle cx="12" cy="12" r="8.2"/>'),
+    unlock:S('<path d="M8.2 10.4V7.6a3.8 3.8 0 0 1 7.5-.7"/><rect x="6.6" y="10.4" width="10.8" height="9.2"/><path d="M12 13.6v2.6"/>'),
+    lock:S('<rect x="6.6" y="10.6" width="10.8" height="9"/><path d="M8.4 10.6V7.8a3.6 3.6 0 0 1 7.2 0v2.8"/><path d="M12 13.8v2.4"/>'),
+    rotate:S('<path d="M19.6 12a7.6 7.6 0 1 1-2.4-5.6"/><path d="M19.6 4.2v5.2h-5.2"/>'),
+    palette:S('<path d="M12 3.4a8.6 8.6 0 0 0 0 17.2h1.4a2.2 2.2 0 0 0 0-4.4H12a1.8 1.8 0 0 1 0-3.6h.9a2.3 2.3 0 0 0 2.3-2.3A8.6 8.6 0 0 0 12 3.4z"/><rect x="8.2" y="9.4" width="1.4" height="1.4"/><rect x="11.3" y="6.8" width="1.4" height="1.4"/><rect x="15" y="9.4" width="1.4" height="1.4"/>'),
+    rainbow:S('<path d="M4.4 16.6h15.2M4.4 12.6h15.2M4.4 8.6h15.2"/>'),
+    target:S('<rect x="10.4" y="10.4" width="3.2" height="3.2"/><rect x="7.2" y="7.2" width="9.6" height="9.6"/><path d="M12 3.2v2.4M12 18.4v2.4M3.2 12h2.4M18.4 12h2.4"/>'),
+    line:S('<path d="M4.4 19.6 19.6 4.4"/>'),
+    block:S('<circle cx="12" cy="12" r="8.2"/><path d="M6.2 6.2 17.8 17.8M8.2 12h7.6"/>'),
+    angry:S('<rect x="4.2" y="4.2" width="15.6" height="15.6"/><path d="M8 9.2 10.2 10.4M16 9.2 13.8 10.4M8.4 15.6h7.2"/><rect x="8.2" y="11.2" width="1.5" height="1.5"/><rect x="14.3" y="11.2" width="1.5" height="1.5"/>'),
+    box:S('<path d="M12 3.4 3.6 7.6 12 11.8l8.4-4.2z"/><path d="M3.6 7.6V16.4L12 20.6l8.4-4.2V7.6"/><path d="M12 11.8V20.6"/>'),
+    cage:S('<rect x="4.2" y="4.2" width="15.6" height="15.6"/><path d="M8.4 4.2v15.6M12 4.2v15.6M15.6 4.2v15.6M4.2 8.4h15.6M4.2 15.6h15.6"/>'),
+    alert:S('<path d="M12 3.6 2.8 19.6h18.4z"/><path d="M12 9.4v5.2M12 16.8h.01"/>'),
+    music:S('<path d="M9.2 18.4V6.2l11.2-1.8v12.2"/><rect x="6.4" y="15.6" width="5.4" height="3.6"/><rect x="15.2" y="13.8" width="5.4" height="3.6"/>'),
+    'user-x':S('<circle cx="9" cy="8" r="2.6"/><path d="M4.2 19.5c0-2.6 2.2-4.2 4.8-4.2s4.8 1.6 4.8 4.2"/><path d="M16.2 8.2 20.4 12.4M20.4 8.2 16.2 12.4"/>'),
+    chair:S('<path d="M7.2 11.6V8.2h6.4v3.4"/><rect x="4.4" y="11.6" width="15.2" height="3.2"/><path d="M8.2 14.8v3.6M15.8 14.8v3.6M6.4 18.4h11.2"/>'),
+    wind:S('<path d="M3.4 8.6h10.2M16.2 8.6h3.2M3.4 12.4h13.4M3.4 16.2h9.4M15.4 16.2h4"/>'),
+    parachute:S('<path d="M12 3.4v7.4M4.6 10.8h14.8M4.6 10.8c0 3.4 3.3 5.2 7.4 5.2s7.4-1.8 7.4-5.2"/><path d="M12 16v2.6M9.6 20.2h4.8"/>'),
+    sun:S('<rect x="9.2" y="9.2" width="5.6" height="5.6"/><path d="M12 3.2v2.2M12 18.6v2.2M3.2 12h2.2M18.6 12h2.2M5.6 5.6l1.6 1.6M16.8 16.8l1.6 1.6M18.4 5.6l-1.6 1.6M7.2 16.8 5.6 18.4"/>'),
+    sparkle:F('<path d="M12 2.4 13.6 9.2 20.4 10.8 13.6 12.4 12 19.2 10.4 12.4 3.6 10.8 10.4 9.2z"/>'),
+    plane:F('<path d="M3.2 15.4 20.8 8.6l-7.2 7.2-1.6 5.2-1.7-5.1H3.2z"/>'),
+    ship:S('<path d="M3.4 19.4c1.8-.8 3.6-.8 5.4 0s3.6.8 5.4 0 3.6-.8 5.4 0"/><path d="M5.2 17.4 6.4 12h11.2l1.2 5.4"/><path d="M12 12V4.6M9.4 4.6h5.2"/>'),
+    server:S('<rect x="4.2" y="3.8" width="15.6" height="6.2"/><rect x="4.2" y="14" width="15.6" height="6.2"/><rect x="6.4" y="6" width="1.6" height="1.6"/><rect x="6.4" y="16.2" width="1.6" height="1.6"/>'),
+    terminal:S('<rect x="3.6" y="4.6" width="16.8" height="14.8"/><path d="M7.2 9.2 10.4 12 7.2 14.8M12.2 15.2h5"/>'),
+    droplet:F('<path d="M12 3.2 17.6 9.2A6.4 6.4 0 1 1 6.4 9.2z"/>'),
+    'map-pin':S('<path d="M12 20.6s6.2-4.2 6.2-9.4A6.2 6.2 0 0 0 5.8 11.2c0 5.2 6.2 9.4 6.2 9.4z"/><circle cx="12" cy="11" r="2.1"/>'),
+    list:S('<path d="M8.4 6.4h12M8.4 12h12M8.4 17.6h12"/><rect x="3.4" y="5.6" width="2" height="2"/><rect x="3.4" y="11.2" width="2" height="2"/><rect x="3.4" y="16.8" width="2" height="2"/>'),
+    bug:S('<path d="M8.4 8.4V6.6a3.6 3.6 0 0 1 7.2 0v1.8"/><path d="M6.4 10.4h11.2M7.6 14h8.8M8.8 17.6h6.4"/><path d="M12 4.4V3M5.2 6.4 3.6 4.8M18.8 6.4 20.4 4.8M5.2 18.4 3.6 20M18.8 18.4 20.4 20"/>'),
+    keyboard:S('<rect x="3.6" y="6.8" width="16.8" height="10.4"/><path d="M6.6 10h2M11 10h2M15.4 10h2M6.6 14.2h10.8"/>'),
+    filter:S('<path d="M4 5.4h16l-6.2 7.2v5.2l-3.6 1.8v-7z"/>'),
+    stop:F('<rect x="5.6" y="5.6" width="12.8" height="12.8"/>'),
+    'car-search':S('<path d="M4 15.2h10.6"/><path d="M5.2 15.2 6.5 10.4h7.4l1.2 4.8"/><rect x="5.4" y="15.2" width="2.8" height="2.8"/><circle cx="16.6" cy="15.4" r="3"/><path d="M18.8 17.6 21.2 20"/>'),
+    smile:S('<rect x="4.2" y="4.2" width="15.6" height="15.6"/><rect x="8.2" y="9.2" width="1.5" height="1.5"/><rect x="14.3" y="9.2" width="1.5" height="1.5"/><path d="M8.4 14.2c1.1 1.4 2.4 1.9 3.6 1.9s2.5-.5 3.6-1.9"/>'),
+    'hand-wave':S('<path d="M8.2 11.2V7.4M11.2 10.6V6.2M14.2 10.8V7M16.8 11.4V8.4M7.2 11.4h10.2v5.1c0 2.3-1.8 4.1-4.1 4.1H11c-2.2 0-3.8-1.8-3.8-4.1z"/><path d="M19.2 6.6 21.2 4.6"/>'),
+    bolt:F('<path d="M13.2 2.2 4.4 13.4h6.1l-1.15 8.4 9.25-12.1h-6.2z"/>'),
+    folder:S('<path d="M3.8 6.4h6.4l1.8 1.8H20.2V19H3.8z"/>'),
+    cloud:S('<path d="M7.2 17.8h10.2c2.1 0 3.6-1.6 3.6-3.5s-1.6-3.4-3.6-3.4h-.7C16.2 8.2 14 6.4 11.4 6.4 8.4 6.4 6.2 8.6 6 11.4 4.2 11.7 3 13.4 3 15.2c0 1.6 1.3 2.6 4.2 2.6z"/>'),
+    package:S('<path d="M12 3.4 3.6 7.6 12 11.8l8.4-4.2z"/><path d="M3.6 7.6V16.2L12 20.4l8.4-4.2V7.6"/><path d="M12 11.8V20.4M7.4 9.8v5M16.6 9.8v5"/>'),
+    image:S('<rect x="3.8" y="5.2" width="16.4" height="13.6"/><path d="M7.4 14.2 10 11.6l2.8 2.8 2.6-2.2 3.2 3.6"/><rect x="7.6" y="8" width="1.8" height="1.8"/>'),
+    link:S('<path d="M9.4 14.6 7.8 16.2a3.2 3.2 0 0 1-4.5-4.5l3.2-3.2a3.2 3.2 0 0 1 4.5 0"/><path d="M14.6 9.4 16.2 7.8a3.2 3.2 0 0 1 4.5 4.5l-3.2 3.2a3.2 3.2 0 0 1-4.5 0"/>'),
+    toggle:S('<rect x="3.4" y="8.2" width="17.2" height="7.6" rx="0"/><rect x="12.6" y="9.6" width="6.4" height="4.8"/>'),
+    sliders:S('<path d="M6 3.6v6.2M6 14.2v6.2M12 3.6v3.6M12 11.6v8.8M18 3.6v8.2M18 16.2v4.2"/><path d="M4.2 12.4h3.6M10.2 9.4h3.6M16.2 14.8h3.6"/>'),
+    info:S('<rect x="4.2" y="4.2" width="15.6" height="15.6"/><path d="M12 10.4v5.2M12 8.2h.01"/>'),
+    dot:F('<rect x="9.2" y="9.2" width="5.6" height="5.6"/>'),
+    copy:S('<rect x="8.4" y="8.4" width="11.2" height="11.2"/><path d="M15.6 8.4V4.4H4.4v11.2h4"/>'),
+    radio:S('<rect x="10.4" y="10.4" width="3.2" height="3.2"/><path d="M7.2 7.2 5.2 5.2M16.8 7.2 18.8 5.2M7.2 16.8 5.2 18.8M16.8 16.8 18.8 18.8"/>'),
+    'user-plus':S('<circle cx="9" cy="8" r="2.6"/><path d="M4.2 19.5c0-2.6 2.2-4.2 4.8-4.2s4.8 1.6 4.8 4.2"/><path d="M18.2 7.6v6.2M15.1 10.7h6.2"/>'),
+    'car-burst':S('<path d="M4 15.2h16"/><path d="M5.2 15.2 6.6 10h10.8l1.4 5.2"/><rect x="5.4" y="15.2" width="3.1" height="3.1"/><rect x="15.5" y="15.2" width="3.1" height="3.1"/><path d="M12 3.2v3.2M8.2 5.2 9.6 7.4M15.8 5.2 14.4 7.4"/>')
   };
   window.ICONS=ICONS;
-
-
-  const FA_ICON_MAP={
-    user:'fa-user',users:'fa-users',server:'fa-server',cloud:'fa-cloud',
-    crosshair:'fa-crosshairs',eye:'fa-eye',car:'fa-car',shield:'fa-shield',
-    skull:'fa-skull',zap:'fa-bolt',sliders:'fa-sliders',settings:'fa-gear',
-    search:'fa-magnifying-glass',ghost:'fa-ghost',camera:'fa-camera',ban:'fa-ban',
-    gun:'fa-gun',box:'fa-box',keyboard:'fa-keyboard',info:'fa-circle-info',
-    filter:'fa-filter',hand:'fa-hand',edit:'fa-pen',shirt:'fa-shirt',mask:'fa-mask',
-    wrench:'fa-wrench',lock:'fa-lock',unlock:'fa-unlock',bomb:'fa-bomb',
-    circle:'fa-circle',alert:'fa-triangle-exclamation',palette:'fa-palette',
-    rotate:'fa-rotate',tag:'fa-tag',bike:'fa-motorcycle',heart:'fa-heart',
-    smile:'fa-face-smile',link:'fa-link',music:'fa-music',package:'fa-cube'
-  };
 
   function iconSvgHtml(key){ return (typeof ICONS!=='undefined' && (ICONS[key]||ICONS.dot)) || ''; }
 
@@ -2440,17 +2396,10 @@ function svgIcon(path, stroke){
     // Sizing/placement lives in the `.PTLabel > .fa-solid` rule. Setting display inline
     // here used to beat the stylesheet's inline-flex and kill the glyph centring.
     if(kind==='category' && r.icon){
-      const fa=FA_ICON_MAP[r.icon];
-      if(fa){
-        const i=document.createElement('i');
-        i.className='fa-solid '+fa;
-        lab.appendChild(i);
-      } else {
-        const ico=document.createElement('span');
-        ico.className='ico';
-        ico.innerHTML=iconSvgHtml(r.icon);
-        lab.appendChild(ico);
-      }
+      const ico=document.createElement('span');
+      ico.className='ico';
+      ico.innerHTML=iconSvgHtml(r.icon);
+      lab.appendChild(ico);
     }
     let labelText = esc(r.label||'');
     const txt=document.createElement('span'); txt.className='PTText'; txt.textContent=labelText; lab.appendChild(txt);
@@ -2596,17 +2545,16 @@ function svgIcon(path, stroke){
     selOverlay.style.zIndex = '0';
     selOverlay.style.pointerEvents = 'none';
     selOverlay.style.background = 'none';
-    selOverlay.style.backgroundColor = 'rgba('+color+', 0.55)';
+    selOverlay.style.backgroundColor = 'rgba('+color+', 0.60)';
     selOverlay.style.outline = 'none';
-    selOverlay.style.border = '0.04vw solid rgba('+color+', 0.95)';
+    selOverlay.style.border = '0.052vw solid rgba('+color+', 1)';
     selOverlay.style.borderRadius = '.3083vw';
-    selOverlay.style.boxShadow = '0vw 0vw .18vw .02vw rgba('+color+',0.85)';
+    selOverlay.style.boxShadow = '0vw 0vw .2083vw .0339vw rgb('+color+')';
     selOverlay.style.transition = 'top 200ms ease, height 120ms ease, border-radius 120ms ease';
   }
 
-  // Thumb tracks the list window (scrollOffset), not the hovered index — otherwise
-  // hold-scroll leaves the bar a few rows behind the translateY.
-  function updateScrollBar(scrollOffset, total, maxVis, activeIdx, rowList){
+  // Left rail stays full — no proportional thumb.
+  function updateScrollBar(){
     if(!psProgress) return;
     const rail = document.getElementById('pScroll');
     if(rail){
@@ -2614,20 +2562,8 @@ function svgIcon(path, stroke){
       rail.style.height = '';
       rail.style.bottom = '';
     }
-    const rows = rowList || [];
-    const I = Math.max(1, Number(maxVis) || Math.floor(14.0625 / 1.5625));
-    const rawTotal = Math.max(1, Number(total) || rows.length || 0);
-    if(rawTotal <= I){
-      psProgress.style.height = '100%';
-      psProgress.style.top = '0%';
-      return;
-    }
-    const rawMaxOff = Math.max(1, rawTotal - I);
-    const off = Math.max(0, Math.min(Number(scrollOffset) || 0, rawMaxOff));
-    const F = (I / rawTotal) * 100;
-    const te = (off / rawMaxOff) * (100 - F);
-    psProgress.style.height = F + '%';
-    psProgress.style.top = te + '%';
+    psProgress.style.height = '100%';
+    psProgress.style.top = '0%';
   }
 
   function setDesc(text){
@@ -3105,7 +3041,7 @@ function svgIcon(path, stroke){
         listSectionHeader.classList.remove('show');
       }
 
-      if(s.loading && !isKeybind){
+      if(s.loading && !isKeybind && !(s.rows && s.rows.length)){
         cluster.classList.add('rendering');
         window.__staticVirtSig = null;
         window.__staticListSig = null;
