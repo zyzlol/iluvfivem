@@ -25,7 +25,6 @@ html,body,.PWrapper,.Desc,.FCWrapper,.Option,.PCategories,.PCategory,.PTabs,.PTa
   font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif !important;
   -webkit-font-smoothing:antialiased;
   -moz-osx-font-smoothing:grayscale;
-  font-optical-sizing:auto;
 }
 .fa-solid,.fas{
   font-family:"Font Awesome 6 Free" !important;
@@ -170,35 +169,31 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         overflow: visible;
     }
 
-    /* arrow caps — small framed buttons, glyphs centered */
-    .PWrapper .PElements .PScroll i {
-        display: flex !important;
-        justify-content: center !important;
-        align-items: center !important;
+    /* arrow caps — embedded SVG (FA glyphs fail in FiveM DUI) */
+    .PWrapper .PElements .PScroll .scroll-ico {
+        display: flex;
+        justify-content: center;
+        align-items: center;
         width: .62vw;
         height: .62vw;
         flex-shrink: 0;
-        font-size: .44vw;
         color: rgba(255,255,255,0.35);
         background: rgba(255,255,255,0.04);
         border-radius: .16vw;
         transition: color .15s ease, background .15s ease;
         overflow: hidden;
-        line-height: 0 !important;
-        padding: 0 !important;
-        margin: 0 !important;
+        line-height: 0;
+        padding: 0;
+        margin: 0;
         box-sizing: border-box;
-        text-align: center;
     }
-    .PWrapper .PElements .PScroll i::before {
-        display: block !important;
-        line-height: 1 !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        transform: none !important;
+    .PWrapper .PElements .PScroll .scroll-ico svg {
+        width: .44vw;
+        height: .44vw;
+        display: block;
     }
 
-    .PWrapper .PElements .PScroll:hover i {
+    .PWrapper .PElements .PScroll:hover .scroll-ico {
         color: rgb(var(--menu-color));
         background: rgba(var(--menu-color),0.14);
     }
@@ -471,18 +466,17 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         overflow: hidden; text-overflow: ellipsis;
         white-space: nowrap;
         letter-spacing: .015vw;
+        line-height: 1;
     }
     .PWrapper .PTabs .PTab .PTLabel .PTText {
         overflow: hidden; text-overflow: ellipsis;
         white-space: nowrap;
-        font-family: Inter, sans-serif;
-        font-size: .62vw;
-        font-weight: 400;
-        letter-spacing: .015vw;
-        font-optical-sizing: auto;
+        font: inherit;
         color: inherit;
-        line-height: 1;
+        letter-spacing: inherit;
+        line-height: inherit;
         min-width: 0;
+        flex: 1 1 auto;
         margin: 0;
         padding: 0;
     }
@@ -1480,7 +1474,7 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
 /* Full rebuilds (tab switches) must not animate in from the old scroll offset. */
 .PWrapper.rendering #list{transition:none!important;}.PWrapper.rendering #selOverlay{transition:none!important;}.PWrapper.rendering #psProgress{transition:none!important;}
 #list{position:relative;z-index:2;width:100%;transition:transform 200ms ease;}
-#selOverlay{position:absolute!important;left:0!important;width:100%!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;box-sizing:border-box!important;border-radius:.3083vw!important;transition:top 200ms ease, height 120ms ease;}
+#selOverlay{position:absolute!important;left:0!important;right:0!important;width:auto!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;box-sizing:border-box!important;border-radius:.3083vw!important;transition:top 200ms ease, height 120ms ease;}
 .PTab.active .PTLabel > .ico,
 .PTab:hover .PTLabel > .ico{
   color:var(--text-secondary);
@@ -1942,14 +1936,14 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
   </div>
   <div class="PElements">
     <div class="PScroll" id="pScroll">
-      <i class="fa-solid fa-angle-up" id="scrollUp"></i>
+      <span class="scroll-ico" id="scrollUp"></span>
       <div class="PSProgressWrapper"><div class="PSProgress" id="psProgress"></div></div>
-      <i class="fa-solid fa-angle-down" id="scrollDown"></i>
+      <span class="scroll-ico" id="scrollDown"></span>
     </div>
     <div class="PRightElements">
       <div class="PCategories" id="tabsbar"></div>
       <div class="PTabs" id="listWrap">
-        <div id="selOverlay" style="position:absolute;left:0;width:100%;height:1.6vw;border-radius:.3083vw;pointer-events:none;z-index:0;opacity:0;box-sizing:border-box;margin:0;transform:none;transition:top 200ms ease, height 120ms ease;"></div>
+        <div id="selOverlay" style="position:absolute;left:0;right:0;width:auto;height:1.6vw;border-radius:.3083vw;pointer-events:none;z-index:0;opacity:0;box-sizing:border-box;margin:0;transform:none;transition:top 200ms ease, height 120ms ease;"></div>
         <div class="keybind-panel" id="keybindPanel">
           <div class="kb-head">
             <div class="kb-icon" id="kbCaptureIcon">
@@ -2315,6 +2309,8 @@ function S(inner){
     info:S('<rect x="4.2" y="4.2" width="15.6" height="15.6"/><path d="M12 10.4v5.2M12 8.2h.01"/>'),
     dot:F('<rect x="9.2" y="9.2" width="5.6" height="5.6"/>'),
     'chevron-right':S('<path d="M9.4 6.4 15 12l-5.6 5.6"/>'),
+    'angle-up':S('<path d="M7.4 14.6 12 9.4l4.6 5.2"/>'),
+    'angle-down':S('<path d="M7.4 9.4 12 14.6l4.6-5.2"/>'),
     copy:S('<rect x="8.4" y="8.4" width="11.2" height="11.2"/><path d="M15.6 8.4V4.4H4.4v11.2h4"/>'),
     radio:S('<rect x="10.4" y="10.4" width="3.2" height="3.2"/><path d="M7.2 7.2 5.2 5.2M16.8 7.2 18.8 5.2M7.2 16.8 5.2 18.8M16.8 16.8 18.8 18.8"/>'),
     'user-plus':S('<circle cx="9" cy="8" r="2.6"/><path d="M4.2 19.5c0-2.6 2.2-4.2 4.8-4.2s4.8 1.6 4.8 4.2"/><path d="M18.2 7.6v6.2M15.1 10.7h6.2"/>'),
@@ -2323,6 +2319,14 @@ function S(inner){
   window.ICONS=ICONS;
 
   function iconSvgHtml(key){ return (typeof ICONS!=='undefined' && (ICONS[key]||ICONS.dot)) || ''; }
+
+  function mountScrollIcons(){
+    var up = document.getElementById('scrollUp');
+    var dn = document.getElementById('scrollDown');
+    if(up) up.innerHTML = iconSvgHtml('angle-up');
+    if(dn) dn.innerHTML = iconSvgHtml('angle-down');
+  }
+  mountScrollIcons();
 
   const FA_FROM_KEY = {
     user:'fa-user', users:'fa-users', server:'fa-server', cloud:'fa-cloud',
@@ -2538,7 +2542,8 @@ function S(inner){
     selOverlay.style.top = topPx + 'px';
     selOverlay.style.height = hPx + 'px';
     selOverlay.style.setProperty('left', '0', 'important');
-    selOverlay.style.setProperty('width', '100%', 'important');
+    selOverlay.style.setProperty('right', '0', 'important');
+    selOverlay.style.setProperty('width', 'auto', 'important');
     selOverlay.style.setProperty('margin', '0', 'important');
     selOverlay.style.setProperty('max-height', 'none', 'important');
     selOverlay.style.setProperty('transform', 'none', 'important');
