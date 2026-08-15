@@ -88,6 +88,9 @@ html,body,.PWrapper,.Desc,.FCWrapper,.Option,.PCategories,.PCategory,.PTabs,.PTa
 .fa-music:before{content:"\f001";}
 .fa-cube:before{content:"\f1b2";}
 
+/* Hide chrome until the first keybind/main paint — prevents a 1-frame empty menu flash. */
+html:not(.static-shark-ready) #cluster{opacity:0!important;visibility:hidden!important;pointer-events:none!important;transition:none!important;}
+html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-optical-sizing:auto;}
     :root {
         --menu-color: 22, 137, 212;
         --menu-x: 4.5%;
@@ -388,13 +391,13 @@ html,body,.PWrapper,.Desc,.FCWrapper,.Option,.PCategories,.PCategory,.PTabs,.PTa
         position: relative; display: flex;
         width: 100%; height: auto;
         max-height: 14.0625vw;
-        justify-content: flex-start; align-items: stretch;
+        justify-content: flex-start; align-items: center;
         flex-direction: column;
         background: var(--menu-bg);
         border: .06vw solid var(--menu-border);
         border-radius: var(--menu-radius);
-        /* Clip selection bubble to the panel curve so top/bottom rows sit flush */
         overflow: hidden;
+        overflow-y: hidden;
         padding: 0;
         box-sizing: border-box;
         box-shadow:
@@ -1342,6 +1345,7 @@ html[data-theme="savage"]{--menu-color:254, 242, 5;}
 html[data-theme="baxci"]{--menu-color:87, 191, 242;}
 .PWrapper{opacity:0;visibility:hidden;pointer-events:none;transition:opacity .18s ease,visibility 0s linear .18s;}
 .PWrapper.open{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .18s ease,visibility 0s linear 0s;}
+html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-events:auto;}
 .PWrapper.input-hidden{opacity:0!important;visibility:hidden!important;pointer-events:none!important;}
 .PWrapper.color-picker-open{opacity:.72;pointer-events:none;}
 .PWrapper.gun-picker-open{opacity:.88;}
@@ -1357,8 +1361,8 @@ html[data-theme="baxci"]{--menu-color:87, 191, 242;}
 /* Full rebuilds (tab switches) must not animate in from the old scroll offset. */
 .PWrapper.rendering #list{transition:none!important;}.PWrapper.rendering #selOverlay{transition:none!important;}.PWrapper.rendering #psProgress{transition:none!important;}
 #list{position:relative;z-index:2;width:100%;transition:transform .2s cubic-bezier(.22,1,.36,1);}
-#selOverlay{position:absolute!important;left:-0.06vw!important;right:-0.06vw!important;width:auto!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;box-sizing:border-box!important;border-radius:.3083vw!important;}
-/* Row icons/labels are centered in the main PTabs block (same math as chevrons). */
+#selOverlay{position:absolute!important;left:0!important;right:0!important;width:100%!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;box-sizing:border-box!important;border-radius:.3083vw!important;}
+/* Icons stay muted — never brighten on hover/active (matches Static Shark). */
 .PTab.active .PTLabel > .fa-solid,
 .PTab.active .PTLabel .ico,
 .PTab.active .PTLabel .ico .fa-solid,
@@ -1668,7 +1672,7 @@ html[data-theme="baxci"]{--menu-color:87, 191, 242;}
     <div class="PRightElements">
       <div class="PCategories" id="tabsbar"></div>
       <div class="PTabs" id="listWrap">
-        <div id="selOverlay" style="position:absolute;left:-0.06vw;right:-0.06vw;width:auto;height:1.6vw;border-radius:.3083vw;pointer-events:none;z-index:0;opacity:0;box-sizing:border-box;margin:0;transform:none;transition:top 200ms ease, height 120ms ease;"></div>
+        <div id="selOverlay" style="position:absolute;left:0;right:0;width:100%;height:1.6vw;border-radius:.3083vw;pointer-events:none;z-index:0;opacity:0;box-sizing:border-box;margin:0;transform:none;transition:top 200ms ease, height 120ms ease;"></div>
         <div class="keybind-panel" id="keybindPanel">
           <div class="kb-head">
             <div class="kb-icon" id="kbCaptureIcon">
@@ -2197,9 +2201,9 @@ function svgIcon(path, stroke){
     selOverlay.style.boxSizing = 'border-box';
     selOverlay.style.top = topPx + 'px';
     selOverlay.style.height = hPx + 'px';
-    selOverlay.style.setProperty('left', '-0.06vw', 'important');
-    selOverlay.style.setProperty('right', '-0.06vw', 'important');
-    selOverlay.style.setProperty('width', 'auto', 'important');
+    selOverlay.style.setProperty('left', '0', 'important');
+    selOverlay.style.setProperty('right', '0', 'important');
+    selOverlay.style.setProperty('width', '100%', 'important');
     selOverlay.style.setProperty('margin', '0', 'important');
     selOverlay.style.setProperty('max-height', 'none', 'important');
     selOverlay.style.setProperty('transform', 'none', 'important');
@@ -2215,8 +2219,8 @@ function svgIcon(path, stroke){
     selOverlay.style.transition = 'top 200ms ease, height 120ms ease, border-radius 120ms ease';
   }
 
-  // Index scrollbar math (14.0625 / 1.5625 visible rows) — Eshay1.
-  function updateScrollBar(scrollOffset, total, maxVis, activeIdx, rowList){
+  // Left rail stays full — no proportional thumb.
+  function updateScrollBar(){
     if(!psProgress) return;
     const rail = document.getElementById('pScroll');
     if(rail){
@@ -2224,39 +2228,8 @@ function svgIcon(path, stroke){
       rail.style.height = '';
       rail.style.bottom = '';
     }
-    const rows = rowList || [];
-    const I = Math.max(1, Number(maxVis) || Math.floor(14.0625 / 1.5625));
-    const countable = [];
-    for(let i = 0; i < rows.length; i++){
-      const r = rows[i];
-      if(!r || r.kind === 'label' || r.menuSectionTitle || r.menuSectionHeader) continue;
-      countable.push(r);
-    }
-    const K = countable.length > 0 ? countable.length : Math.max(0, Number(total) || rows.length || 0);
-    let S = 0;
-    if(countable.length > 0){
-      const ai = Math.max(0, Math.min(Number(activeIdx) || 0, Math.max(rows.length - 1, 0)));
-      const active = rows[ai];
-      const found = countable.indexOf(active);
-      if(found >= 0) S = found;
-      else {
-        for(let i = ai; i >= 0; i--){
-          const f = countable.indexOf(rows[i]);
-          if(f >= 0){ S = f; break; }
-        }
-      }
-    } else {
-      S = Math.max(0, Number(activeIdx) || 0);
-    }
-    if(K <= I){
-      psProgress.style.height = '100%';
-      psProgress.style.top = '0%';
-      return;
-    }
-    const F = (I / K) * 100;
-    const te = (S / Math.max(K - 1, 1)) * (100 - F);
-    psProgress.style.height = F + '%';
-    psProgress.style.top = te + '%';
+    psProgress.style.height = '100%';
+    psProgress.style.top = '0%';
   }
 
   function setDesc(text){
@@ -2618,35 +2591,6 @@ function svgIcon(path, stroke){
     return scrollOffset;
   }
 
-  function paintTabsbar(s, showTabs, showCats, tabs){
-    if(!tabsbar) return;
-    tabsbar.innerHTML='';
-    tabsbar.classList.toggle('show', showCats);
-    if(showTabs){
-      tabs.forEach(function(name,i){
-        const d=document.createElement('div');
-        d.className='PCategory'+(i===((s.tabIndex||1)-1)?' active':'');
-        d.dataset.tab=String(i+1);
-        const span=document.createElement('span');
-        span.textContent=name;
-        d.appendChild(span);
-        d.addEventListener('mousedown', function(ev){
-          ev.preventDefault();
-          if(window.__staticColorPickerActive || window.__staticGunPickerActive) return;
-          window.__staticMenuTab=String(i+1);
-        });
-        tabsbar.appendChild(d);
-      });
-    } else if(showCats){
-      const d=document.createElement('div');
-      d.className='PCategory active';
-      const span=document.createElement('span');
-      span.textContent=s.sectionTitle||s.section||'Menu';
-      d.appendChild(span);
-      tabsbar.appendChild(d);
-    }
-  }
-
   window.staticRender=function(payload){
     try{
       const s=(typeof payload==='string')?JSON.parse(payload):payload;
@@ -2655,14 +2599,39 @@ function svgIcon(path, stroke){
       applyTheme(s.theme, s.bannerUrl);
 
       const open=!!s.open;
-      cluster.classList.toggle('open', open);
       const isKeybind = s.mode==='keybind';
       cluster.classList.toggle('keybind-mode', isKeybind);
+      cluster.classList.toggle('open', open);
 
       const tabs=s.tabs||[];
       const showTabs = !isKeybind && s.mode!=='main' && tabs.length>1;
+      tabsbar.innerHTML='';
+      // Index always paints PCategories when inside a section (subtab strip).
       const showCats = !isKeybind && (showTabs || !!(s.sectionTitle||s.section));
-      paintTabsbar(s, showTabs, showCats, tabs);
+      tabsbar.classList.toggle('show', showCats);
+      if(showTabs){
+        tabs.forEach(function(name,i){
+          const d=document.createElement('div');
+          d.className='PCategory'+(i===((s.tabIndex||1)-1)?' active':'');
+          d.dataset.tab=String(i+1);
+          const span=document.createElement('span');
+          span.textContent=name;
+          d.appendChild(span);
+          d.addEventListener('mousedown', function(ev){
+            ev.preventDefault();
+            if(window.__staticColorPickerActive || window.__staticGunPickerActive) return;
+            window.__staticMenuTab=String(i+1);
+          });
+          tabsbar.appendChild(d);
+        });
+      } else if(showCats){
+        const d=document.createElement('div');
+        d.className='PCategory active';
+        const span=document.createElement('span');
+        span.textContent=s.sectionTitle||s.section||'Menu';
+        d.appendChild(span);
+        tabsbar.appendChild(d);
+      }
 
       if(keybindPanel){
         keybindPanel.classList.toggle('show', isKeybind);
@@ -2679,6 +2648,9 @@ function svgIcon(path, stroke){
           keybindPanel.classList.remove('armed');
         }
       }
+      cluster.style.opacity='';
+      cluster.style.visibility='';
+      document.documentElement.classList.add('static-shark-ready');
 
       if(footL && !isKeybind) footL.textContent = s.footerLeft || 'Static Menu';
 
@@ -2699,7 +2671,7 @@ function svgIcon(path, stroke){
           const rc = Math.max(0, Number(s.rowCount) || 0);
           footR.textContent = rc > 0 ? ('0/' + rc) : '...';
         }
-        setDesc(s.footerRight || '');
+        setDesc(s.inputOpen ? '' : (s.footerRight || ''));
         renderInput(s);
         requestAnimationFrame(function(){ cluster.classList.remove('rendering'); });
         return;
@@ -2738,7 +2710,7 @@ function svgIcon(path, stroke){
       if(footR && !isKeybind){
         footR.textContent = formatFootCount(rows, idx);
       }
-      setDesc(isKeybind ? '' : (s.footerRight || ''));
+      setDesc((isKeybind || s.inputOpen) ? '' : (s.footerRight || ''));
       renderSidePanels(s);
       renderInput(s);
 
@@ -2796,6 +2768,9 @@ function svgIcon(path, stroke){
     else if(d.action==='weaponWheelUpdate' && window.__staticWWUpdate){ window.__staticWWUpdate(d.weaponWheel||{}); }
     else if(d.action==='weaponWheelHide' && window.__staticWWHide){ window.__staticWWHide(); }
     else if(d.action==='render' && d.payload){ window.staticRender(d.payload); }
+    else if(d.action==='forceVisible'){
+      document.documentElement.classList.add('static-shark-ready');
+    }
     else if(d.action==='setActiveRow'){
       if(!window.staticSetActiveRow(d.activeRow, d.footerRight)){
         const s=window.__staticLastState;
