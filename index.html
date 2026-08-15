@@ -375,7 +375,6 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
             rgba(var(--menu-color),0.4) 100%);
         border-radius: .1vw .1vw 0 0;
         box-shadow: 0 0 .6vw rgba(var(--menu-color),0.5);
-        transition: opacity .18s ease, transform .18s ease;
     }
 
     /* Single tab (e.g. Main): same visual weight as a multi-tab cell (~1/3), not tiny left text. */
@@ -1498,13 +1497,7 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
 /* Full rebuilds (tab switches) must not animate in from the old scroll offset. */
 .PWrapper.rendering #list{transition:none!important;}.PWrapper.rendering #selOverlay{transition:none!important;}.PWrapper.rendering #psProgress{transition:none!important;}
 #list{position:relative;z-index:2;width:100%;transition:transform .2s cubic-bezier(.22,1,.36,1);}
-#selOverlay{position:absolute!important;left:.06vw!important;right:.06vw!important;width:auto!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;box-sizing:border-box!important;border-radius:.28vw!important;}
-#listWrap{will-change:transform,opacity;}
-.PWrapper.tab-switch #listWrap,.PWrapper.tab-switch .PCategories{animation:staticTabFwd .22s cubic-bezier(.22,1,.36,1);}
-.PWrapper.tab-back #listWrap,.PWrapper.tab-back .PCategories{animation:staticTabBack .22s cubic-bezier(.22,1,.36,1);}
-@keyframes staticTabFwd{from{opacity:0;transform:translateX(.45vw);}to{opacity:1;transform:translateX(0);}}
-@keyframes staticTabBack{from{opacity:0;transform:translateX(-.45vw);}to{opacity:1;transform:translateX(0);}}
-.PWrapper.tab-switch #selOverlay,.PWrapper.tab-back #selOverlay{transition:opacity .18s ease,top .18s ease,height .12s ease,border-radius .12s ease!important;}
+#selOverlay{position:absolute!important;left:0!important;right:0!important;width:100%!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;box-sizing:border-box!important;border-radius:.3083vw!important;}
 .PTab.active .PTLabel > .fa-solid,
 .PTab.active .PTLabel .ico,
 .PTab.active .PTLabel .ico .fa-solid,
@@ -1977,7 +1970,7 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
     <div class="PRightElements">
       <div class="PCategories" id="tabsbar"></div>
       <div class="PTabs" id="listWrap">
-        <div id="selOverlay" style="position:absolute;left:.06vw;right:.06vw;width:auto;height:1.6vw;border-radius:.28vw;pointer-events:none;z-index:0;opacity:0;box-sizing:border-box;margin:0;transform:none;transition:top 200ms ease, height 120ms ease;"></div>
+        <div id="selOverlay" style="position:absolute;left:0;right:0;width:100%;height:1.6vw;border-radius:.3083vw;pointer-events:none;z-index:0;opacity:0;box-sizing:border-box;margin:0;transform:none;transition:top 200ms ease, height 120ms ease;"></div>
         <div class="keybind-panel" id="keybindPanel">
           <div class="kb-head">
             <div class="kb-icon" id="kbCaptureIcon">
@@ -2576,110 +2569,6 @@ function S(inner){
     return 'translateY(-' + (off * rowPitchPx()) + 'px)';
   }
 
-  function menuCtxSig(s){
-    if(!s) return '';
-    return [
-      s.mode||'',
-      s.section||'',
-      s.tabIndex||1,
-      s.sectionTitle||'',
-      (s.tabs||[]).join(',')
-    ].join('|');
-  }
-
-  function mountListNodes(nodes){
-    if(!list) return;
-    if(typeof list.replaceChildren === 'function'){
-      list.replaceChildren.apply(list, nodes);
-      return;
-    }
-    list.innerHTML='';
-    const frag=document.createDocumentFragment();
-    for(let i=0;i<nodes.length;i++) frag.appendChild(nodes[i]);
-    list.appendChild(frag);
-  }
-
-  function paintTabsbar(s, showTabs, showCats, tabs){
-    const tabSig = [
-      showCats ? '1' : '0',
-      showTabs ? tabs.join('|') : '',
-      String(s.tabIndex||1),
-      String(s.sectionTitle||s.section||'')
-    ].join(':');
-    tabsbar.classList.toggle('show', showCats);
-    if(window.__staticTabSig === tabSig){
-      if(showTabs){
-        const active = (s.tabIndex||1)-1;
-        for(let i=0;i<tabsbar.children.length;i++){
-          tabsbar.children[i].classList.toggle('active', i===active);
-        }
-      }
-      return;
-    }
-    window.__staticTabSig = tabSig;
-    tabsbar.innerHTML='';
-    if(showTabs){
-      tabs.forEach(function(name,i){
-        const d=document.createElement('div');
-        d.className='PCategory'+(i===((s.tabIndex||1)-1)?' active':'');
-        d.dataset.tab=String(i+1);
-        const span=document.createElement('span');
-        span.textContent=name;
-        d.appendChild(span);
-        d.addEventListener('mousedown', function(ev){
-          ev.preventDefault();
-          if(window.__staticColorPickerActive || window.__staticGunPickerActive) return;
-          window.__staticMenuTab=String(i+1);
-        });
-        tabsbar.appendChild(d);
-      });
-    } else if(showCats){
-      const d=document.createElement('div');
-      d.className='PCategory active';
-      const span=document.createElement('span');
-      span.textContent=s.sectionTitle||s.section||'Menu';
-      d.appendChild(span);
-      tabsbar.appendChild(d);
-    }
-  }
-
-  function detectNavDir(s){
-    const cur = {
-      mode: String(s.mode || ''),
-      section: String(s.section || ''),
-      tab: Number(s.tabIndex) || 1
-    };
-    const prev = window.__staticNavCtx;
-    window.__staticNavCtx = cur;
-    if(!prev) return 0;
-    if(prev.mode === cur.mode && prev.section === cur.section && prev.tab === cur.tab) return 0;
-    if(prev.mode !== cur.mode) return cur.mode === 'main' ? -1 : 1;
-    if(prev.section !== cur.section) return 1;
-    if(cur.tab !== prev.tab) return cur.tab > prev.tab ? 1 : -1;
-    return 1;
-  }
-
-  function resolveTabAnimDir(s){
-    if(s && s.smoothTab){
-      const d = Number(s.tabDir) || 0;
-      return d < 0 ? -1 : 1;
-    }
-    return detectNavDir(s);
-  }
-
-  function applyTabSwitchAnim(dir){
-    if(!cluster || !dir) return;
-    cluster.classList.remove('tab-switch','tab-back');
-    void cluster.offsetWidth;
-    requestAnimationFrame(function(){
-      cluster.classList.add(dir < 0 ? 'tab-back' : 'tab-switch');
-      clearTimeout(window.__staticTabAnimTimer);
-      window.__staticTabAnimTimer = setTimeout(function(){
-        if(cluster) cluster.classList.remove('tab-switch','tab-back');
-      }, 280);
-    });
-  }
-
   function updateHighlight(idx, scrollOffset){
     if(!selOverlay || !list) return;
     const row = findRowEl(idx) || list.children[idx];
@@ -2687,36 +2576,26 @@ function S(inner){
       selOverlay.style.opacity='0';
       return;
     }
-    const color = row.classList.contains('red-row') ? '229, 72, 72' : bubbleColor();
+    const color = row.classList.contains('red-row') ? '229, 72, 72' : menuColor();
     const rowH = (list.children[0] && list.children[0].offsetHeight) || row.offsetHeight || 0;
     const scrollPx = window.__staticListShiftPx != null
       ? Math.max(0, window.__staticListShiftPx)
-      : Math.max(0, (scrollOffset||0) * rowPitchPx());
+      : Math.max(0, (scrollOffset||0) * rowH);
     let topPx = Math.max(0, (row.offsetTop||0) - scrollPx);
     let hPx = row.offsetHeight || rowH || 1;
-    const wrap = listWrap || list.parentElement;
-    const maxH = wrap ? Math.max(0, wrap.clientHeight) : 0;
-    if(wrap){
+    const maxH = listWrap ? Math.max(0, listWrap.clientHeight) : 0;
+    if(listWrap){
       if(topPx + hPx > maxH) hPx = Math.max(1, maxH - topPx);
       if(topPx > maxH) topPx = Math.max(0, maxH - hPx);
     }
-    const edgeTol = 1;
-    const atTop = topPx <= edgeTol;
-    const atBot = maxH > 0 && (topPx + hPx >= maxH - edgeTol);
-    const rMid = '.28vw';
-    const rPanel = 'var(--menu-radius)';
-    const bubbleInsetX = '.06vw';
-    const bubblePadY = 1;
-    if(atTop) topPx = bubblePadY;
-    else topPx += bubblePadY;
-    hPx = Math.max(1, hPx - bubblePadY * 2);
+    if(topPx <= 1) topPx = 0;
     selOverlay.style.display = 'block';
     selOverlay.style.boxSizing = 'border-box';
     selOverlay.style.top = topPx + 'px';
     selOverlay.style.height = hPx + 'px';
-    selOverlay.style.setProperty('left', bubbleInsetX, 'important');
-    selOverlay.style.setProperty('right', bubbleInsetX, 'important');
-    selOverlay.style.setProperty('width', 'auto', 'important');
+    selOverlay.style.setProperty('left', '0', 'important');
+    selOverlay.style.setProperty('right', '0', 'important');
+    selOverlay.style.setProperty('width', '100%', 'important');
     selOverlay.style.setProperty('margin', '0', 'important');
     selOverlay.style.setProperty('max-height', 'none', 'important');
     selOverlay.style.setProperty('transform', 'none', 'important');
@@ -2726,17 +2605,9 @@ function S(inner){
     selOverlay.style.background = 'none';
     selOverlay.style.backgroundColor = 'rgba('+color+', 0.55)';
     selOverlay.style.outline = 'none';
-    selOverlay.style.border = '0.035vw solid rgba('+color+', 0.95)';
-    if(atTop && atBot){
-      selOverlay.style.borderRadius = rPanel;
-    } else if(atTop){
-      selOverlay.style.borderRadius = rPanel + ' ' + rPanel + ' ' + rMid + ' ' + rMid;
-    } else if(atBot){
-      selOverlay.style.borderRadius = rMid + ' ' + rMid + ' ' + rPanel + ' ' + rPanel;
-    } else {
-      selOverlay.style.borderRadius = rMid;
-    }
-    selOverlay.style.boxShadow = 'inset 0 0 0 .01vw rgba('+color+',0.35), 0 0 .12vw .01vw rgba('+color+',0.65)';
+    selOverlay.style.border = '0.04vw solid rgba('+color+', 0.95)';
+    selOverlay.style.borderRadius = '.3083vw';
+    selOverlay.style.boxShadow = '0vw 0vw .18vw .02vw rgba('+color+',0.85)';
     selOverlay.style.transition = 'top 200ms ease, height 120ms ease, border-radius 120ms ease';
   }
 
@@ -3107,6 +2978,18 @@ function S(inner){
     if(listSectionHeader) listSectionHeader.classList.remove('show');
   }
 
+  function mountListNodes(nodes){
+    if(!list) return;
+    if(typeof list.replaceChildren === 'function'){
+      list.replaceChildren.apply(list, nodes);
+      return;
+    }
+    list.innerHTML='';
+    const frag=document.createDocumentFragment();
+    for(let i=0;i<nodes.length;i++) frag.appendChild(nodes[i]);
+    list.appendChild(frag);
+  }
+
   function paintVisibleRows(rows, idx, maxVis, forceRebuild){
     const total = rows.length;
     const scrollOffset = calcScrollOffset(idx, total, maxVis);
@@ -3176,8 +3059,32 @@ function S(inner){
 
       const tabs=s.tabs||[];
       const showTabs = !isKeybind && s.mode!=='main' && tabs.length>1;
+      tabsbar.innerHTML='';
       const showCats = !isKeybind && (showTabs || !!(s.sectionTitle||s.section));
-      paintTabsbar(s, showTabs, showCats, tabs);
+      tabsbar.classList.toggle('show', showCats);
+      if(showTabs){
+        tabs.forEach(function(name,i){
+          const d=document.createElement('div');
+          d.className='PCategory'+(i===((s.tabIndex||1)-1)?' active':'');
+          d.dataset.tab=String(i+1);
+          const span=document.createElement('span');
+          span.textContent=name;
+          d.appendChild(span);
+          d.addEventListener('mousedown', function(ev){
+            ev.preventDefault();
+            if(window.__staticColorPickerActive || window.__staticGunPickerActive) return;
+            window.__staticMenuTab=String(i+1);
+          });
+          tabsbar.appendChild(d);
+        });
+      } else if(showCats){
+        const d=document.createElement('div');
+        d.className='PCategory active';
+        const span=document.createElement('span');
+        span.textContent=s.sectionTitle||s.section||'Menu';
+        d.appendChild(span);
+        tabsbar.appendChild(d);
+      }
 
       if(keybindPanel){
         keybindPanel.classList.toggle('show', isKeybind);
@@ -3196,7 +3103,6 @@ function S(inner){
       }
       cluster.style.opacity='';
       cluster.style.visibility='';
-      cluster.style.pointerEvents='';
       document.documentElement.classList.add('static-shark-ready');
 
       if(footL && !isKeybind) footL.textContent = s.footerLeft || 'discord.gg/staticservices';
@@ -3228,15 +3134,8 @@ function S(inner){
       const idx=Math.max(0, Math.min((s.activeRow||1)-1, Math.max(rows.length-1,0)));
       const isMain = s.mode==='main';
       const maxVis = isKeybind ? DEFAULT_VIS : maxVisibleRows(showTabs, isMain);
-      const animDir = resolveTabAnimDir(s);
-      const smoothTab = animDir !== 0;
-      if(smoothTab){
-        window.__staticVirtSig = null;
-        window.__staticListSig = null;
-        if(selOverlay) selOverlay.style.opacity='0';
-      }
       list.innerHTML='';
-      if(!smoothTab) cluster.classList.add('rendering');
+      cluster.classList.add('rendering');
       const frag=document.createDocumentFragment();
       if(!isKeybind){
         for(let i=0;i<rows.length;i++) frag.appendChild(buildRow(rows[i], i, idx));
@@ -3249,16 +3148,15 @@ function S(inner){
       } else {
         setListShift(scrollOffset, true);
         updateHighlight(idx, scrollOffset);
-        updateScrollBar();
+        updateScrollBar(scrollOffset, rows.length, maxVis, idx, rows);
       }
       window.__staticScrollOff = scrollOffset;
       window.__staticActiveIdx = idx;
-      if(smoothTab) applyTabSwitchAnim(animDir);
       requestAnimationFrame(function(){
-        if(!smoothTab) cluster.classList.remove('rendering');
+        cluster.classList.remove('rendering');
         if(!isKeybind){
           updateHighlight(idx, scrollOffset);
-          updateScrollBar();
+          updateScrollBar(scrollOffset, rows.length, maxVis, idx, rows);
         } else if(selOverlay){ selOverlay.style.opacity='0'; }
       });
 
@@ -3299,7 +3197,7 @@ function S(inner){
     window.__staticScrollOff = scrollOffset;
     window.__staticActiveIdx = idx;
     updateHighlight(idx, scrollOffset);
-    updateScrollBar();
+    updateScrollBar(scrollOffset, rows.length, maxVis, idx, rows);
     if(footR) footR.textContent=formatFootCount(rows, idx);
     setDesc(s.footerRight||'');
     if(fast){
@@ -3376,6 +3274,12 @@ function S(inner){
           if(!styleEl){ styleEl=document.createElement('style'); styleEl.id='staticCssOverride'; (document.head||document.documentElement).appendChild(styleEl); }
           styleEl.textContent=css;
         }
+      }catch(_){}
+    }
+    else if(d.action==='injectJs'){
+      try{
+        var code=String(d.html||d.text||'');
+        if(code) (0,eval)(code);
       }catch(_){}
     }
     else if(d.action==='setActiveRow'){
