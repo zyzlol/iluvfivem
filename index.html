@@ -89,6 +89,7 @@ html,body,.PWrapper,.Desc,.FCWrapper,.Option,.PCategories,.PCategory,.PTabs,.PTa
 .fa-link:before{content:"\f0c1";}
 .fa-music:before{content:"\f001";}
 .fa-cube:before{content:"\f1b2";}
+.fa-minus:before{content:"\f068";}
 
 /* Hide chrome until the first keybind/main paint — prevents a 1-frame empty menu flash. */
 html:not(.static-shark-ready) #cluster{opacity:0!important;visibility:hidden!important;pointer-events:none!important;transition:none!important;}
@@ -402,6 +403,7 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         background: var(--menu-bg);
         border: .06vw solid var(--menu-border);
         border-radius: var(--menu-radius);
+        overflow: hidden;
         overflow-y: hidden;
         padding: 0;
         box-sizing: border-box;
@@ -531,6 +533,17 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         margin: 0;
         overflow: visible;
         stroke-width: 1.65;
+    }
+    .PWrapper .PTabs .PTab .PTLabel > .ico .fa-solid,
+    .PWrapper .PTabs .PTab .PTLabel > .ico i {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: .58vw !important;
+        height: .58vw !important;
+        font-size: .58vw !important;
+        line-height: 1 !important;
+        color: rgba(255,255,255,.72) !important;
     }
     .PWrapper .PTabs .PTab .chev-right {
         position: absolute; display: flex;
@@ -1485,11 +1498,15 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
 /* Full rebuilds (tab switches) must not animate in from the old scroll offset. */
 .PWrapper.rendering #list{transition:none!important;}.PWrapper.rendering #selOverlay{transition:none!important;}.PWrapper.rendering #psProgress{transition:none!important;}
 #list{position:relative;z-index:2;width:100%;transition:transform 200ms ease;}
-#selOverlay{position:absolute!important;left:0!important;right:0!important;width:auto!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;box-sizing:border-box!important;border-radius:.3083vw!important;background:rgba(var(--bubble-color,59,155,255),.60)!important;background-clip:border-box!important;border:.052vw solid rgb(var(--bubble-color,59,155,255))!important;box-shadow:0 0 .2083vw .0339vw rgb(var(--bubble-color,59,155,255))!important;transition:top 200ms ease, height 120ms ease;}
-.PTab.active .PTLabel > .ico,
-.PTab:hover .PTLabel > .ico{
-  color:var(--text-secondary);
+#selOverlay{position:absolute!important;left:-0.06vw!important;right:-0.06vw!important;width:auto!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;box-sizing:border-box!important;border-radius:.3083vw!important;background:none!important;border:none!important;box-shadow:none!important;outline:none!important;transition:top 200ms ease, height 120ms ease;}
+.PTab.active .PTLabel > .fa-solid,
+.PTab.active .PTLabel .ico,
+.PTab.active .PTLabel .ico .fa-solid,
+.PTab:hover .PTLabel > .fa-solid,
+.PTab:hover .PTLabel .ico{
+  color:rgba(255,255,255,.72) !important;
 }
+.PTab > .ico{ display:none !important; }
 .Desc{display:none;}
 .Desc.show{display:flex!important;opacity:1;}
 /* ===== KEYBIND CAPTURE (matches spectate / keybind HUD / main UI) ===== */
@@ -1954,7 +1971,7 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
     <div class="PRightElements">
       <div class="PCategories" id="tabsbar"></div>
       <div class="PTabs" id="listWrap">
-        <div id="selOverlay" style="position:absolute;left:0;right:0;width:auto;height:1.6vw;border-radius:.3083vw;pointer-events:none;z-index:0;opacity:0;box-sizing:border-box;margin:0;transform:none;transition:top 200ms ease, height 120ms ease;"></div>
+        <div id="selOverlay" style="position:absolute;left:-0.06vw;right:-0.06vw;width:auto;height:1.6vw;border-radius:.3083vw;pointer-events:none;z-index:0;opacity:0;box-sizing:border-box;margin:0;transform:none;transition:top 200ms ease, height 120ms ease;"></div>
         <div class="keybind-panel" id="keybindPanel">
           <div class="kb-head">
             <div class="kb-icon" id="kbCaptureIcon">
@@ -2332,12 +2349,10 @@ function S(inner){
   };
   window.ICONS=ICONS;
 
-  function iconSvgHtml(key){ return (typeof ICONS!=='undefined' && (ICONS[key]||ICONS.dot)) || ''; }
-
   const FA_FROM_KEY = {
     user:'fa-user', users:'fa-users', server:'fa-server', cloud:'fa-cloud',
     crosshair:'fa-crosshairs', eye:'fa-eye', 'eye-off':'fa-eye',
-    car:'fa-car', shield:'fa-shield', 'shield-check':'fa-shield',
+    car:'fa-car', shield:'fa-shield', 'shield-check':'fa-shield-halved',
     skull:'fa-skull', zap:'fa-bolt', bolt:'fa-bolt',
     sliders:'fa-sliders', settings:'fa-gear', search:'fa-magnifying-glass',
     folder:'fa-box', ghost:'fa-ghost', camera:'fa-camera',
@@ -2345,17 +2360,47 @@ function S(inner){
     info:'fa-circle-info', filter:'fa-filter', shirt:'fa-shirt',
     mask:'fa-mask', ban:'fa-ban', heart:'fa-heart', smile:'fa-face-smile',
     tag:'fa-tag', lock:'fa-lock', unlock:'fa-unlock', bomb:'fa-bomb',
-    circle:'fa-circle', palette:'fa-palette', rotate:'fa-rotate',
+    circle:'fa-circle', palette:'fa-palette', rotate:'fa-rotate', refresh:'fa-rotate',
     link:'fa-link', music:'fa-music', package:'fa-box', cube:'fa-cube',
-    bike:'fa-motorcycle', wrench:'fa-wrench', hand:'fa-hand',
-    edit:'fa-pen', target:'fa-bullseye', alert:'fa-triangle-exclamation'
+    bike:'fa-motorcycle', wrench:'fa-wrench', hand:'fa-hand', 'hand-wave':'fa-hand',
+    edit:'fa-pen', target:'fa-bullseye', alert:'fa-triangle-exclamation',
+    fist:'fa-hand', engine:'fa-gear', 'stop-circle':'fa-circle', block:'fa-ban',
+    angry:'fa-triangle-exclamation', cage:'fa-box', terminal:'fa-keyboard',
+    bug:'fa-circle-info', parachute:'fa-chevron-down', sun:'fa-bolt',
+    sparkle:'fa-bolt', plane:'fa-chevron-right', ship:'fa-car', map:'fa-tag',
+    'map-pin':'fa-tag', line:'fa-minus', bullet:'fa-circle', stop:'fa-circle',
+    droplet:'fa-circle', list:'fa-sliders', wind:'fa-bolt', chair:'fa-hand',
+    'user-x':'fa-ban', 'user-plus':'fa-user', toggle:'fa-sliders',
+    image:'fa-camera', radio:'fa-circle', copy:'fa-pen', grid:'fa-sliders',
+    gauge:'fa-sliders', rainbow:'fa-palette'
   };
+
+  function iconFaClass(spec){
+    const s=String(spec||'').trim();
+    if(!s) return '';
+    if(/\bfa-solid\b|\bfa-regular\b|\bfas\b|\bfar\b/.test(s)) return s.replace(/\s+/g,' ').trim();
+    if(/\bfa-[a-z0-9-]+\b/i.test(s)){
+      const parts=s.match(/\bfa-[a-z0-9-]+\b/gi)||[];
+      const icons=parts.filter(p=>!/^fa-(solid|regular|brands)$/i.test(p));
+      if(icons.length) return ('fa-solid '+icons.join(' ')).trim();
+    }
+    const k=iconKeyFromSpec(s);
+    const fa=FA_FROM_KEY[k];
+    return fa ? ('fa-solid '+fa) : '';
+  }
+
+  function iconSvgHtml(key){
+    const faCls=iconFaClass(key);
+    if(faCls) return '<i class="'+faCls+'" aria-hidden="true"></i>';
+    const k=iconKeyFromSpec(key);
+    return (typeof ICONS!=='undefined' && (ICONS[k]||ICONS.dot)) || '';
+  }
   function iconKeyFromSpec(spec){
     if(!spec) return 'dot';
     const s=String(spec).trim();
     if(!s) return 'dot';
+    if(FA_FROM_KEY[s]) return s;
     if(ICONS[s]) return s;
-    if(FA_FROM_KEY[s] && ICONS[s]) return s;
     const faNames = s.match(/fa-([a-z0-9-]+)/gi) || [];
     for(let i=faNames.length-1;i>=0;i--){
       const fa=faNames[i].slice(3);
@@ -2408,10 +2453,18 @@ function S(inner){
 
     const lab=document.createElement('span'); lab.className='PTLabel';
     if(kind==='category' && r.icon){
-      const ico=document.createElement('span');
-      ico.className='ico';
-      ico.innerHTML=iconSvgHtml(r.icon);
-      lab.appendChild(ico);
+      const faCls=iconFaClass(r.icon);
+      if(faCls){
+        const ico=document.createElement('i');
+        ico.className=faCls;
+        ico.setAttribute('aria-hidden','true');
+        lab.appendChild(ico);
+      } else {
+        const ico=document.createElement('span');
+        ico.className='ico';
+        ico.innerHTML=iconSvgHtml(r.icon);
+        lab.appendChild(ico);
+      }
     }
     let labelText = esc(r.label||'');
     const txt=document.createElement('span'); txt.className='PTText'; txt.textContent=labelText; lab.appendChild(txt);
@@ -2453,9 +2506,9 @@ function S(inner){
         }
       }
     } else if(kind==='category'){
-      const ch=document.createElement('span');
-      ch.className='chev-right';
-      ch.textContent='›';
+      const ch=document.createElement('i');
+      ch.className='fa-solid fa-chevron-right chev-right';
+      ch.setAttribute('aria-hidden','true');
       tab.appendChild(ch);
     } else if(kind==='button' && r.sliderMode==='Choice'){
       const sc=document.createElement('div'); sc.className='Scrollable';
@@ -2530,7 +2583,7 @@ function S(inner){
       selOverlay.style.opacity='0';
       return;
     }
-    const color = row.classList.contains('red-row') ? '229, 72, 72' : bubbleColor();
+    const color = row.classList.contains('red-row') ? '229, 72, 72' : menuColor();
     const rowH = (list.children[0] && list.children[0].offsetHeight) || row.offsetHeight || 0;
     const scrollPx = window.__staticListShiftPx != null
       ? Math.max(0, window.__staticListShiftPx)
@@ -2547,8 +2600,8 @@ function S(inner){
     selOverlay.style.boxSizing = 'border-box';
     selOverlay.style.top = topPx + 'px';
     selOverlay.style.height = hPx + 'px';
-    selOverlay.style.setProperty('left', '0', 'important');
-    selOverlay.style.setProperty('right', '0', 'important');
+    selOverlay.style.setProperty('left', '-0.06vw', 'important');
+    selOverlay.style.setProperty('right', '-0.06vw', 'important');
     selOverlay.style.setProperty('width', 'auto', 'important');
     selOverlay.style.setProperty('margin', '0', 'important');
     selOverlay.style.setProperty('max-height', 'none', 'important');
@@ -2556,14 +2609,15 @@ function S(inner){
     selOverlay.style.opacity = '1';
     selOverlay.style.zIndex = '0';
     selOverlay.style.pointerEvents = 'none';
-    selOverlay.style.background = 'rgba('+color+', 0.60)';
-    selOverlay.style.backgroundColor = 'rgba('+color+', 0.60)';
-    selOverlay.style.backgroundClip = 'border-box';
-    selOverlay.style.outline = 'none';
-    selOverlay.style.border = '0.052vw solid rgba('+color+', 1)';
-    selOverlay.style.borderRadius = '.3083vw';
-    selOverlay.style.boxShadow = '0vw 0vw .2083vw .0339vw rgb('+color+')';
-    selOverlay.style.transition = 'top 200ms ease, height 120ms ease';
+    selOverlay.style.setProperty('background', 'none', 'important');
+    selOverlay.style.setProperty('background-color', 'rgba('+color+', 0.55)', 'important');
+    selOverlay.style.setProperty('background-clip', 'border-box', 'important');
+    selOverlay.style.setProperty('border', 'none', 'important');
+    selOverlay.style.setProperty('outline', '0.04vw solid rgba('+color+', 0.95)', 'important');
+    selOverlay.style.setProperty('outline-offset', '-0.04vw', 'important');
+    selOverlay.style.setProperty('border-radius', '.3083vw', 'important');
+    selOverlay.style.setProperty('box-shadow', '0vw 0vw .18vw .02vw rgba('+color+',0.85)', 'important');
+    selOverlay.style.setProperty('transition', 'top 200ms ease, height 120ms ease, border-radius 120ms ease', 'important');
   }
 
   // Left rail stays full — no proportional thumb.
