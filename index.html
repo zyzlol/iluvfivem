@@ -93,12 +93,11 @@ html,body,.PWrapper,.Desc,.FCWrapper,.Option,.PCategories,.PCategory,.PTabs,.PTa
 
 /* Hide chrome until the first keybind/main paint — prevents a 1-frame empty menu flash. */
 html:not(.static-shark-ready) #cluster{opacity:0!important;visibility:hidden!important;pointer-events:none!important;transition:none!important;}
-html.static-shark-ready #cluster:not(.open){opacity:0!important;visibility:hidden!important;pointer-events:none!important;}
 /* Fonts via STATIC_INTER_FONT_CSS (Inter VF + FA subset). */
 html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-optical-sizing:auto;}
     :root {
         --menu-color: 22, 137, 212;
-        --bubble-color: 63, 142, 252;
+        --bubble-color: 22, 137, 212;
         --menu-x: 4.5%;
         --menu-y: 26%;
         --menu-scale: 1;
@@ -213,7 +212,7 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
             rgba(var(--menu-color),0.75) 100%);
         border-radius: 1vw;
         box-shadow: inset 0 .06vw 0 rgba(255,255,255,0.35);
-        transition: top .2s ease, height .2s ease, background .15s ease;
+        transition: background .15s ease;
         box-sizing: border-box;
     }
 
@@ -1481,8 +1480,8 @@ html[data-theme="blue"]{--menu-color:22, 137, 212;}
 html[data-theme="green"]{--menu-color:19, 95, 27;}
 html[data-theme="savage"]{--menu-color:254, 242, 5;}
 html[data-theme="baxci"]{--menu-color:87, 191, 242;}
-.PWrapper{opacity:0;visibility:hidden;pointer-events:none;transition:opacity .3s ease,visibility 0s linear .3s;}
-.PWrapper.open{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .3s ease,visibility 0s linear 0s;}
+.PWrapper{opacity:0;visibility:hidden;pointer-events:none;transition:opacity .18s ease,visibility 0s linear .18s;}
+.PWrapper.open{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .18s ease,visibility 0s linear 0s;}
 html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-events:auto;}
 .PWrapper.input-hidden{opacity:0!important;visibility:hidden!important;pointer-events:none!important;}
 .PWrapper.color-picker-open{opacity:.72;pointer-events:none;}
@@ -1499,7 +1498,13 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
 /* Full rebuilds (tab switches) must not animate in from the old scroll offset. */
 .PWrapper.rendering #list{transition:none!important;}.PWrapper.rendering #selOverlay{transition:none!important;}.PWrapper.rendering #psProgress{transition:none!important;}
 #list{position:relative;z-index:2;width:100%;transition:transform .2s cubic-bezier(.22,1,.36,1);}
-#selOverlay{position:absolute!important;left:-0.05vw!important;right:0!important;width:auto!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;box-sizing:border-box!important;border-radius:.3083vw!important;}
+#selOverlay{position:absolute!important;left:0!important;right:0!important;width:100%!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;box-sizing:border-box!important;border-radius:.3083vw!important;}
+#listWrap{will-change:transform,opacity;}
+.PWrapper.tab-switch #listWrap{animation:staticTabFwd .22s cubic-bezier(.22,1,.36,1);}
+.PWrapper.tab-back #listWrap{animation:staticTabBack .22s cubic-bezier(.22,1,.36,1);}
+@keyframes staticTabFwd{from{opacity:0;transform:translateX(.45vw);}to{opacity:1;transform:translateX(0);}}
+@keyframes staticTabBack{from{opacity:0;transform:translateX(-.45vw);}to{opacity:1;transform:translateX(0);}}
+.PWrapper.tab-switch #selOverlay,.PWrapper.tab-back #selOverlay{transition:opacity .18s ease,top .18s ease,height .12s ease,border-radius .12s ease!important;}
 .PTab.active .PTLabel > .fa-solid,
 .PTab.active .PTLabel .ico,
 .PTab.active .PTLabel .ico .fa-solid,
@@ -1972,7 +1977,7 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
     <div class="PRightElements">
       <div class="PCategories" id="tabsbar"></div>
       <div class="PTabs" id="listWrap">
-        <div id="selOverlay" style="position:absolute;left:-0.05vw;right:0;width:auto;height:1.6vw;border-radius:.3083vw;pointer-events:none;z-index:0;opacity:0;box-sizing:border-box;margin:0;transform:none;transition:top 200ms ease, height 120ms ease;"></div>
+        <div id="selOverlay" style="position:absolute;left:0;right:0;width:100%;height:1.6vw;border-radius:.3083vw;pointer-events:none;z-index:0;opacity:0;box-sizing:border-box;margin:0;transform:none;transition:top 200ms ease, height 120ms ease;"></div>
         <div class="keybind-panel" id="keybindPanel">
           <div class="kb-head">
             <div class="kb-icon" id="kbCaptureIcon">
@@ -2234,7 +2239,7 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
     return getComputedStyle(document.documentElement).getPropertyValue('--menu-color').trim() || '22, 137, 212';
   }
   function bubbleColor(){
-    return getComputedStyle(document.documentElement).getPropertyValue('--bubble-color').trim() || '63, 142, 252';
+    return getComputedStyle(document.documentElement).getPropertyValue('--bubble-color').trim() || menuColor();
   }
   function esc(s){ return String(s==null?'':s); }
 
@@ -2243,6 +2248,7 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
       document.documentElement.setAttribute('data-theme', theme);
       const rgb = THEME_RGB[theme] || THEME_RGB.blue;
       document.documentElement.style.setProperty('--menu-color', rgb);
+      document.documentElement.style.setProperty('--bubble-color', rgb);
     }
     if(bannerUrl && bannerImg){
       showBannerFallback(false);
@@ -2640,18 +2646,20 @@ function S(inner){
   function applyTabSwitchAnim(s){
     if(!cluster) return;
     cluster.classList.remove('tab-switch','tab-back');
+    if(!s || !s.smoothTab) return;
+    const dir = Number(s.tabDir) || 0;
+    if(dir < 0) cluster.classList.add('tab-back');
+    else cluster.classList.add('tab-switch');
+    clearTimeout(window.__staticTabAnimTimer);
+    window.__staticTabAnimTimer = setTimeout(function(){
+      if(cluster) cluster.classList.remove('tab-switch','tab-back');
+    }, 260);
   }
 
-  function updateHighlight(idx, scrollOffset, layoutPass){
+  function updateHighlight(idx, scrollOffset){
     if(!selOverlay || !list) return;
     const row = findRowEl(idx) || list.children[idx];
-    if(!row || (!row.offsetHeight && !row.getBoundingClientRect().height)){
-      selOverlay.style.opacity='0';
-      if(!layoutPass) requestAnimationFrame(function(){ updateHighlight(idx, scrollOffset, 1); });
-      return;
-    }
-    const wrap = listWrap || list.parentElement;
-    if(!wrap){
+    if(!row){
       selOverlay.style.opacity='0';
       return;
     }
@@ -2662,9 +2670,12 @@ function S(inner){
       : Math.max(0, (scrollOffset||0) * rowPitchPx());
     let topPx = Math.max(0, (row.offsetTop||0) - scrollPx);
     let hPx = row.offsetHeight || rowH || 1;
-    const maxH = Math.max(0, wrap.clientHeight);
-    if(topPx + hPx > maxH) hPx = Math.max(1, maxH - topPx);
-    if(topPx > maxH) topPx = Math.max(0, maxH - hPx);
+    const wrap = listWrap || list.parentElement;
+    const maxH = wrap ? Math.max(0, wrap.clientHeight) : 0;
+    if(wrap){
+      if(topPx + hPx > maxH) hPx = Math.max(1, maxH - topPx);
+      if(topPx > maxH) topPx = Math.max(0, maxH - hPx);
+    }
     const edgeTol = 1;
     const atTop = topPx <= edgeTol;
     const atBot = maxH > 0 && (topPx + hPx >= maxH - edgeTol);
@@ -2675,9 +2686,9 @@ function S(inner){
     selOverlay.style.boxSizing = 'border-box';
     selOverlay.style.top = topPx + 'px';
     selOverlay.style.height = hPx + 'px';
-    selOverlay.style.setProperty('left', '-0.05vw', 'important');
+    selOverlay.style.setProperty('left', '0', 'important');
     selOverlay.style.setProperty('right', '0', 'important');
-    selOverlay.style.setProperty('width', 'auto', 'important');
+    selOverlay.style.setProperty('width', '100%', 'important');
     selOverlay.style.setProperty('margin', '0', 'important');
     selOverlay.style.setProperty('max-height', 'none', 'important');
     selOverlay.style.setProperty('transform', 'none', 'important');
@@ -2699,7 +2710,6 @@ function S(inner){
     }
     selOverlay.style.boxShadow = '0vw 0vw .18vw .02vw rgba('+color+',0.85)';
     selOverlay.style.transition = 'top 200ms ease, height 120ms ease, border-radius 120ms ease';
-    if(!layoutPass) requestAnimationFrame(function(){ updateHighlight(idx, scrollOffset, 1); });
   }
 
   // Left rail stays full — no proportional thumb.
@@ -3133,33 +3143,15 @@ function S(inner){
 
       const open=!!s.open;
       const isKeybind = s.mode==='keybind';
-      if(!open){
-        window.__staticTabSig = null;
-        window.__staticCtxSig = null;
-        window.__staticListSig = null;
-        window.__staticVirtSig = null;
-        cluster.classList.remove('open','rendering','fast-nav','input-hidden','color-picker-open','gun-picker-open');
-        cluster.style.opacity='0';
-        cluster.style.visibility='hidden';
-        cluster.style.pointerEvents='none';
-        if(selOverlay) selOverlay.style.opacity='0';
-        renderSidePanels(s);
-        renderInput(s);
-        if(typeof window.__staticApplyColorPicker==='function') window.__staticApplyColorPicker(s.colorPicker||{open:false});
-        if(typeof window.__staticApplyGunPicker==='function') window.__staticApplyGunPicker(s.gunPicker||{open:false});
-        return;
-      }
-
       cluster.classList.toggle('keybind-mode', isKeybind);
-      cluster.classList.add('open');
-      cluster.style.opacity='';
-      cluster.style.visibility='';
-      cluster.style.pointerEvents='';
+      cluster.classList.toggle('open', open);
 
       const tabs=s.tabs||[];
       const showTabs = !isKeybind && s.mode!=='main' && tabs.length>1;
       const showCats = !isKeybind && (showTabs || !!(s.sectionTitle||s.section));
       paintTabsbar(s, showTabs, showCats, tabs);
+      const smoothTab = !!(s.smoothTab);
+      applyTabSwitchAnim(s);
 
       if(keybindPanel){
         keybindPanel.classList.toggle('show', isKeybind);
@@ -3178,6 +3170,7 @@ function S(inner){
       }
       cluster.style.opacity='';
       cluster.style.visibility='';
+      cluster.style.pointerEvents='';
       document.documentElement.classList.add('static-shark-ready');
 
       if(footL && !isKeybind) footL.textContent = s.footerLeft || 'discord.gg/staticservices';
@@ -3190,7 +3183,6 @@ function S(inner){
         cluster.classList.add('rendering');
         window.__staticVirtSig = null;
         window.__staticListSig = null;
-        window.__staticCtxSig = null;
         if(list){
           list.innerHTML='<div class="menu-loading"><span>Loading</span></div>';
           setListShift(0, false);
@@ -3210,44 +3202,34 @@ function S(inner){
       const idx=Math.max(0, Math.min((s.activeRow||1)-1, Math.max(rows.length-1,0)));
       const isMain = s.mode==='main';
       const maxVis = isKeybind ? DEFAULT_VIS : maxVisibleRows(showTabs, isMain);
-      const ctxSig = menuCtxSig(s);
-      const ctxChanged = window.__staticCtxSig !== ctxSig;
-      if(ctxChanged){
-        window.__staticCtxSig = ctxSig;
-        window.__staticListSig = null;
+      if(smoothTab){
         window.__staticVirtSig = null;
-      }
-      applyTabSwitchAnim(s);
-
-      cluster.classList.add('rendering');
-
-      let scrollOffset = 0;
-      if(isKeybind){
-        if(list) list.innerHTML='';
-        setListShift(0, false);
-        applyListHeight(0, maxVis, true, false);
-      } else if(!rows.length){
         window.__staticListSig = null;
-        window.__staticVirtSig = null;
-        if(list) list.innerHTML='';
-        setListShift(0, false);
-        applyListHeight(0, maxVis, false, isMain);
         if(selOverlay) selOverlay.style.opacity='0';
+      }
+      list.innerHTML='';
+      if(!smoothTab) cluster.classList.add('rendering');
+      const frag=document.createDocumentFragment();
+      if(!isKeybind){
+        for(let i=0;i<rows.length;i++) frag.appendChild(buildRow(rows[i], i, idx));
+      }
+      list.appendChild(frag);
+      applyListHeight(rows.length, maxVis, isKeybind, isMain);
+      const scrollOffset = isKeybind ? 0 : calcScrollOffset(idx, rows.length, maxVis);
+      if(isKeybind){
+        setListShift(0, false);
       } else {
-        const rv = Number(s.rowsVersion||0);
-        const forceRebuild = ctxChanged || window.__staticRowsVersion !== rv;
-        window.__staticRowsVersion = rv;
-        scrollOffset = paintVisibleRows(rows, idx, maxVis, forceRebuild);
+        setListShift(scrollOffset, true);
         updateHighlight(idx, scrollOffset);
-        updateScrollBar(scrollOffset, rows.length, maxVis, idx, rows);
+        updateScrollBar();
       }
       window.__staticScrollOff = scrollOffset;
       window.__staticActiveIdx = idx;
       requestAnimationFrame(function(){
-        cluster.classList.remove('rendering');
-        if(!isKeybind && rows.length){
+        if(!smoothTab) cluster.classList.remove('rendering');
+        if(!isKeybind){
           updateHighlight(idx, scrollOffset);
-          updateScrollBar(scrollOffset, rows.length, maxVis, idx, rows);
+          updateScrollBar();
         } else if(selOverlay){ selOverlay.style.opacity='0'; }
       });
 
@@ -3262,16 +3244,15 @@ function S(inner){
       if(typeof window.__staticApplyGunPicker==='function') window.__staticApplyGunPicker(s.gunPicker);
     }catch(err){
       console.error('[Static x Eshay] render failed', err);
-      if(cluster) cluster.classList.remove('rendering');
     }
   };
 
   window.staticSetActiveRow=function(activeRow, footerRight){
     const s=window.__staticLastState;
-    if(!s || !s.open || !list) return false;
+    if(!s || !s.open || !list || !list.children.length) return false;
     if(s.mode==='keybind' || s.inputOpen) return false;
     const rows=s.rows||[];
-    if(!rows.length || !list.children.length || list.children.length!==rows.length) return false;
+    if(!rows.length || list.children.length!==rows.length) return false;
     s.activeRow=Number(activeRow)||1;
     if(typeof footerRight==='string') s.footerRight=footerRight;
     const idx=Math.max(0, Math.min((s.activeRow||1)-1, Math.max(rows.length-1,0)));
@@ -3283,11 +3264,13 @@ function S(inner){
 
     const showTabs = s.mode!=='main' && s.tabs && s.tabs.length>1;
     const maxVis = maxVisibleRows(showTabs, s.mode==='main');
-    const scrollOffset = paintVisibleRows(rows, idx, maxVis, false);
+    applyListHeight(rows.length, maxVis, false, s.mode==='main');
+    const scrollOffset=calcScrollOffset(idx, rows.length, maxVis);
+    setListShift(scrollOffset, true);
     window.__staticScrollOff = scrollOffset;
     window.__staticActiveIdx = idx;
     updateHighlight(idx, scrollOffset);
-    updateScrollBar(scrollOffset, rows.length, maxVis, idx, rows);
+    updateScrollBar();
     if(footR) footR.textContent=formatFootCount(rows, idx);
     setDesc(s.footerRight||'');
     if(fast){
