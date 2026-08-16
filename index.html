@@ -428,18 +428,6 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         background: linear-gradient(90deg, rgba(var(--menu-color),0.1) 0%, rgba(255,255,255,0.01) 60%, transparent 100%);
     }
 
-    .PWrapper .PTabs .PTab.red-row .PTLabel,
-    .PWrapper .PTabs .PTab.red-row .PTLabel .PTText {
-        color: #e54848 !important;
-    }
-    .PWrapper .PTabs .PTab.red-row.active .PTLabel,
-    .PWrapper .PTabs .PTab.red-row.active .PTLabel .PTText {
-        color: #fff !important;
-    }
-    .PWrapper .PTabs .PTab.red-row:hover {
-        background: linear-gradient(90deg, rgba(229,72,72,0.14) 0%, rgba(255,255,255,0.01) 60%, transparent 100%);
-    }
-
     .PWrapper .PTabs .PTab:active {
         background: rgba(255,255,255,0.02);
     }
@@ -515,6 +503,13 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         transition: none;
         overflow: visible !important;
         box-sizing: border-box !important;
+        text-align: center !important;
+    }
+    .PWrapper .PTabs .PTab .PTLabel > .fa-solid::before {
+        display: block !important;
+        width: 100% !important;
+        text-align: center !important;
+        line-height: .72vw !important;
     }
     .PWrapper .PTabs .PTab .PTLabel > .ico svg {
         width: .58vw !important;
@@ -1458,7 +1453,7 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
 /* Full rebuilds (tab switches) must not animate in from the old scroll offset. */
 .PWrapper.rendering #list{transition:none!important;}.PWrapper.rendering #selOverlay{transition:none!important;}.PWrapper.rendering #psProgress{transition:none!important;}
 #list{position:relative;z-index:2;width:100%;transition:transform .2s cubic-bezier(.22,1,.36,1);}
-#selOverlay{position:absolute!important;left:0!important;right:0!important;width:100%!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;box-sizing:border-box!important;border-radius:.3083vw!important;}
+#selOverlay{position:absolute!important;left:0!important;right:0!important;width:100%!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;box-sizing:border-box!important;border-radius:.3083vw!important;outline:none!important;pointer-events:none!important;z-index:0!important;}
 /* Icons stay muted — never brighten on hover/active (matches Static Shark). */
 .PTab.active .PTLabel > .fa-solid,
 .PTab.active .PTLabel .ico,
@@ -2142,7 +2137,6 @@ function S(inner){
     const tab=document.createElement('div');
     const isActive = i===activeIdx;
     tab.className='PTab'+(isActive?' active':'');
-    if(r.redRow) tab.classList.add('red-row');
     tab.dataset.idx=String(i);
 
     const kind = r.kind || 'button';
@@ -2292,7 +2286,7 @@ function S(inner){
       selOverlay.style.opacity='0';
       return;
     }
-    const color = row.classList.contains('red-row') ? '229, 72, 72' : menuColor();
+    const color = menuColor();
     const rowH = (list.children[0] && list.children[0].offsetHeight) || row.offsetHeight || 0;
     const scrollPx = window.__staticListShiftPx != null
       ? Math.max(0, window.__staticListShiftPx)
@@ -2319,7 +2313,7 @@ function S(inner){
     selOverlay.style.zIndex = '0';
     selOverlay.style.pointerEvents = 'none';
     selOverlay.style.background = 'none';
-    selOverlay.style.backgroundColor = 'rgba('+color+', 0.55)';
+    selOverlay.style.setProperty('background-color', 'rgba('+color+', 0.55)', 'important');
     selOverlay.style.outline = 'none';
     selOverlay.style.border = '0.04vw solid rgba('+color+', 0.95)';
     selOverlay.style.borderRadius = '.3083vw';
