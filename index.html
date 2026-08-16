@@ -106,9 +106,11 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         --surface: rgba(255,255,255,0.04);
         --surface-hover: rgba(255,255,255,0.07);
         --surface-active: rgba(255,255,255,0.02);
-        /* Row label/icon centering is handled by flex — keep nudge at 0. */
-        --text-nudge: 0;
-        --ctrl-nudge: 0;
+        /* Shared optical centering — matches right-side controls (+.06vw). */
+        --row-nudge: .06vw;
+        --text-baseline: .02vw;
+        --text-nudge: var(--text-baseline);
+        --ctrl-nudge: var(--row-nudge);
     }
 
     /* DUI already sizes with vw — do not auto-shrink (DPR * width falsely hits 4K). */
@@ -338,16 +340,13 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         letter-spacing: .03vw;
         cursor: pointer;
         transition: color .2s ease, background .25s ease;
+        padding-top: var(--row-nudge);
         box-sizing: border-box;
     }
     .PWrapper .PCategories .PCategory > span {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 100%;
-        height: 100%;
+        display: inline-block;
         line-height: 1;
-        transform: none;
+        transform: translateY(var(--text-baseline));
         box-sizing: border-box;
     }
 
@@ -441,11 +440,11 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         overflow: visible;
         white-space: nowrap;
         letter-spacing: .015vw;
-        padding: 0;
+        padding: var(--row-nudge) 0 0 0;
         box-sizing: border-box;
     }
     .PWrapper .PTabs .PTab .PTLabel .PTText {
-        display: block;
+        display: inline-block;
         flex: 1 1 auto;
         min-width: 0;
         max-width: 100%;
@@ -457,7 +456,8 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         letter-spacing: inherit;
         color: inherit;
         line-height: 1;
-        transform: translateY(.02vw);
+        transform: translateY(var(--text-baseline));
+        vertical-align: middle;
     }
 
     .PWrapper .PTabs .PTab.active .PTLabel,
@@ -512,7 +512,7 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         font-size: .58vw; font-weight: 400;
         color: var(--text-primary);
         opacity: .8;
-        transform: none;
+        transform: translateY(var(--row-nudge));
     }
 
     .PWrapper .PTabs .PTab .TOptions .Checkbox {
@@ -660,7 +660,7 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
 
     .PWrapper .PTabs .PTab .Divider {
         position: absolute; left: 50%; top: 50%;
-        transform: translate(-50%, -50%);
+        transform: translate(-50%, calc(-50% + var(--row-nudge)));
         display: flex; width: 86%;
         justify-content: space-between; align-items: center;
         flex-direction: row; gap: .26vw;
@@ -1416,11 +1416,10 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
   position:static !important;
   right:auto !important;
   top:auto !important;
-  transform:none !important;
   line-height:1;
   font-size:1em;
   color:rgba(255,255,255,.72) !important;
-  vertical-align:middle;
+  transform:translateY(var(--text-baseline)) !important;
   transition:none;
 }
 .PTLabel > .fa-solid{
