@@ -426,11 +426,11 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
     }
 
     .PWrapper .PTabs .PTab:hover {
-        background: linear-gradient(90deg, rgba(var(--menu-color),0.1) 0%, rgba(255,255,255,0.01) 60%, transparent 100%);
+        background: transparent;
     }
 
     .PWrapper .PTabs .PTab:active {
-        background: rgba(255,255,255,0.02);
+        background: transparent;
     }
 
     .PWrapper .PTabs .PTab .PTLabel {
@@ -1415,7 +1415,10 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
 .PWrapper.rendering #listWrap{transition:none!important;}
 #listWrap{transition:height .2s cubic-bezier(.22,1,.36,1),max-height .2s cubic-bezier(.22,1,.36,1);}
 #list{position:relative;z-index:2;width:100%;transition:transform .2s cubic-bezier(.22,1,.36,1);}
-#selOverlay{position:absolute!important;left:0!important;right:0!important;width:auto!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;box-sizing:border-box!important;border-radius:.3083vw!important;}
+#selOverlay{position:absolute!important;left:0!important;right:0!important;width:100%!important;min-width:100%!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;box-sizing:border-box!important;border-radius:.3083vw!important;pointer-events:none!important;border:none!important;}
+.PWrapper .PTabs .PTab,.PWrapper .PTabs .PTab:hover,.PWrapper .PTabs .PTab:active,.PWrapper .PTabs .PTab.active,.PWrapper .PTabs .PTab.active:hover,.PWrapper .PTabs .PTab.red-row,.PWrapper .PTabs .PTab.red-row:hover,.PWrapper .PTabs .PTab.red-row.active,.PWrapper .PTabs .PTab.red-row.active:hover{background:transparent!important;background-image:none!important;}
+.PWrapper .PTabs .PTab .PTLabel,.PWrapper .PTabs .PTab.active .PTLabel,.PWrapper .PTabs .PTab:hover .PTLabel,.PWrapper .PTabs .PTab .PTLabel .PTText,.PWrapper .PTabs .PTab.active .PTLabel .PTText,.PWrapper .PTabs .PTab:hover .PTLabel .PTText{color:var(--text-primary)!important;font-weight:500!important;transition:none!important;}
+.PWrapper .PTabs .PTab .PTLabel .PTText{transform:translateY(var(--text-baseline))!important;}
 .PWrapper .PTabs .PTab.active .Divider,.PWrapper .PTabs .PTab.active:hover .Divider{opacity:.4!important;}
 .PTLabel > .fa-solid,
 .PTLabel .ico{
@@ -2424,16 +2427,40 @@ function S(inner){
     return w*(ROW_H_VW/100);
   }
 
+  function isRowEl(el){
+    return !!(el && el.classList && el.classList.contains('PTab'));
+  }
+
+  function syncPScrollToList(){
+    const pScroll=document.getElementById('pScroll');
+    const pElements=cluster ? cluster.querySelector('.PElements') : null;
+    if(!pScroll || !listWrap || !pElements) return;
+    const wrapRect=listWrap.getBoundingClientRect();
+    const elemRect=pElements.getBoundingClientRect();
+    if(!wrapRect.height) return;
+    pScroll.style.top=Math.max(0, wrapRect.top-elemRect.top)+'px';
+    pScroll.style.bottom='auto';
+    pScroll.style.height=wrapRect.height+'px';
+  }
+  window.__staticSyncPScrollToList = syncPScrollToList;
+
   // Real distance between row tops. Borders/padding make this larger than ROW_H_VW, and
   // that gap multiplies by the scroll offset — which is what pushed the last rows of a
   // full tab below the panel and left half-rows clipped at the top and bottom edges.
   function rowPitchPx(){
-    if(list && list.children.length >= 2){
-      const d = (list.children[1].offsetTop || 0) - (list.children[0].offsetTop || 0);
-      if(d > 0.5) return d;
-    }
-    if(list && list.children.length && list.children[0].offsetHeight){
-      return list.children[0].offsetHeight;
+    if(list){
+      let first = null, second = null;
+      for(let i=0;i<list.children.length;i++){
+        const el=list.children[i];
+        if(!isRowEl(el)) continue;
+        if(!first) first=el;
+        else { second=el; break; }
+      }
+      if(first && second){
+        const d = (second.offsetTop || 0) - (first.offsetTop || 0);
+        if(d > 0.5) return d;
+      }
+      if(first && first.offsetHeight) return first.offsetHeight;
     }
     return rowHeightPx();
   }
@@ -2460,7 +2487,7 @@ function S(inner){
     const want=String(idx);
     for(let i=0;i<list.children.length;i++){
       const el=list.children[i];
-      if(el && el.dataset && el.dataset.idx===want) return el;
+      if(isRowEl(el) && el.dataset && el.dataset.idx===want) return el;
     }
     return null;
   }
@@ -2472,37 +2499,39 @@ function S(inner){
   }
 
   function updateHighlight(idx, scrollOffset){
-    if(!selOverlay || !list) return;
-    const row = findRowEl(idx) || list.children[idx];
+    if(!selOverlay || !list || !listWrap) return;
+    const row = findRowEl(idx);
     if(!row){
       selOverlay.style.opacity='0';
       return;
     }
     const color = row.classList.contains('red-row') ? '229, 72, 72' : menuColor();
-    const rowH = (list.children[0] && list.children[0].offsetHeight) || row.offsetHeight || 0;
-    const scrollPx = window.__staticListShiftPx != null
-      ? Math.max(0, window.__staticListShiftPx)
-      : Math.max(0, (scrollOffset||0) * rowH);
-    let topPx = Math.max(0, (row.offsetTop||0) - scrollPx);
-    let hPx = row.offsetHeight || rowH || 1;
-    const maxH = listWrap ? Math.max(0, listWrap.clientHeight) : 0;
-    if(listWrap){
-      if(topPx + hPx > maxH) hPx = Math.max(1, maxH - topPx);
-      if(topPx > maxH) topPx = Math.max(0, maxH - hPx);
-    }
+    const wrapRect = listWrap.getBoundingClientRect();
+    const rowRect = row.getBoundingClientRect();
+    let topPx = rowRect.top - wrapRect.top;
+    let hPx = rowRect.height || row.offsetHeight || rowPitchPx();
+    const maxH = Math.max(0, listWrap.clientHeight);
+    if(topPx + hPx > maxH) hPx = Math.max(1, maxH - topPx);
+    if(topPx > maxH) topPx = Math.max(0, maxH - hPx);
     if(topPx <= 1) topPx = 0;
+    selOverlay.style.display = 'block';
+    selOverlay.style.visibility = 'visible';
     selOverlay.style.top = topPx + 'px';
     selOverlay.style.height = hPx + 'px';
     selOverlay.style.left = '0';
     selOverlay.style.right = '0';
-    selOverlay.style.width = 'auto';
+    selOverlay.style.width = '100%';
+    selOverlay.style.margin = '0';
+    selOverlay.style.padding = '0';
     selOverlay.style.opacity = '1';
     selOverlay.style.zIndex = '0';
     selOverlay.style.pointerEvents = 'none';
     selOverlay.style.backgroundColor = 'rgba('+color+', 0.60)';
-    selOverlay.style.border = '0.052vw solid rgba('+color+', 1)';
+    selOverlay.style.border = 'none';
     selOverlay.style.borderRadius = '.3083vw';
-    selOverlay.style.boxShadow = '0vw 0vw .2083vw .0339vw rgb('+color+')';
+    selOverlay.style.boxShadow = 'inset 0 0 0 0.052vw rgba('+color+', 1), 0 0 .2083vw .0339vw rgb('+color+')';
+    selOverlay.style.boxSizing = 'border-box';
+    syncPScrollToList();
   }
   window.__staticUpdateHighlight = updateHighlight;
 
@@ -2888,6 +2917,7 @@ function S(inner){
       ? 'none'
       : (Math.max(MAX_H_VW, INSIDE_VISIBLE_ROWS*ROW_H_VW) + slack)+'vw';
     listWrap.style.overflow='hidden';
+    syncPScrollToList();
   }
   window.__staticApplyListHeight = applyListHeight;
 
@@ -3168,10 +3198,11 @@ function S(inner){
 
   window.staticSetActiveRow=function(activeRow, footerRight){
     const s=window.__staticLastState;
-    if(!s || !s.open || !list || !list.children.length) return false;
+    if(!s || !s.open || !list || !list.querySelector('.PTab')) return false;
     if(s.mode==='keybind' || s.inputOpen) return false;
     const rows=s.rows||[];
-    if(!rows.length || list.children.length!==rows.length) return false;
+    const rowCount=list.querySelectorAll('.PTab').length;
+    if(!rows.length || rowCount!==rows.length) return false;
     const prevIdx=(window.__staticActiveIdx==null)?-1:window.__staticActiveIdx;
     s.activeRow=Number(activeRow)||1;
     if(typeof footerRight==='string') s.footerRight=footerRight;
@@ -3185,7 +3216,13 @@ function S(inner){
     const fast=(now-_lastSelAt)<90;
     cluster.classList.toggle('fast-nav', fast);
     _lastSelAt=now;
-    for(let i=0;i<list.children.length;i++) list.children[i].classList.toggle('active', i===idx);
+    for(let i=0;i<list.children.length;i++){
+      const el=list.children[i];
+      if(!isRowEl(el)) continue;
+      const ri=Number(el.dataset.idx);
+      if(isNaN(ri)) continue;
+      el.classList.toggle('active', ri===idx);
+    }
     syncActiveSliderLabels(rows, prevIdx, idx);
 
     const showTabs = s.mode!=='main' && s.tabs && s.tabs.length>1;
@@ -3197,6 +3234,7 @@ function S(inner){
     window.__staticActiveIdx = idx;
     updateHighlight(idx, scrollOffset);
     updateScrollBar(scrollOffset, rows.length, maxVis, idx, rows);
+    requestAnimationFrame(function(){ updateHighlight(idx, scrollOffset); });
     if(footR) footR.textContent=formatFootCount(rows, idx);
     setDesc(s.footerRight||'');
     if(fast){
