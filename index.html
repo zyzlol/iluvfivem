@@ -475,32 +475,6 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         background: transparent;
     }
 
-    .PWrapper .PTabs .PTab.active::before,
-    .PWrapper .PTabs .PTab.active:hover::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        z-index: 0;
-        pointer-events: none;
-        border-radius: .3083vw;
-        background: rgba(var(--menu-color), 0.60);
-        box-shadow:
-            inset 0 0 0 0.052vw rgba(var(--menu-color), 1),
-            inset 0 0 0.14vw rgba(var(--menu-color), 0.4);
-    }
-
-    .PWrapper .PTabs .PTab.red-row.active::before,
-    .PWrapper .PTabs .PTab.red-row.active:hover::before {
-        background: rgba(229, 72, 72, 0.60);
-        box-shadow:
-            inset 0 0 0 0.052vw rgba(229, 72, 72, 1),
-            inset 0 0 0.14vw rgba(229, 72, 72, 0.4);
-    }
-
-    .PWrapper .PTabs .PTab > * {
-        z-index: 1;
-    }
-
     .PWrapper .PTabs .PTab.red-row.active,
     .PWrapper .PTabs .PTab.red-row.active:hover {
         background: transparent;
@@ -1434,19 +1408,17 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
 .PWrapper:not(.keybind-mode) .PBanner,.PWrapper:not(.keybind-mode) .PCategories,.PWrapper:not(.keybind-mode) .PTabs,.PWrapper:not(.keybind-mode) .PFooter{width:100%!important;max-width:100%!important;margin-left:0!important;margin-right:0!important;box-sizing:border-box!important;}
 .PWrapper .PCategories:empty,.PWrapper .PCategories:not(.show){display:none;}
 .PWrapper .PCategories.show{display:flex;}
-/* List scroll animates; selection bubble snaps instantly (no in-box text parallax). */
-.PWrapper.fast-nav #list{transition:transform .12s cubic-bezier(.22,1,.36,1)!important;}.PWrapper.fast-nav #selOverlay{transition:none!important;}.PWrapper.fast-nav #psProgress{transition:none!important;}
+/* List scroll and selection bubble share a curve/duration, otherwise crossing a scroll
+   boundary glides the rows at one speed and snaps the highlight at another. */
+.PWrapper.fast-nav #list{transition:transform .12s cubic-bezier(.22,1,.36,1)!important;}.PWrapper.fast-nav #selOverlay{transition:top .12s cubic-bezier(.22,1,.36,1),height .12s cubic-bezier(.22,1,.36,1)!important;}.PWrapper.fast-nav #psProgress{transition:none!important;}
 /* Full rebuilds (tab switches) must not animate in from the old scroll offset. */
 .PWrapper.rendering #list{transition:none!important;}.PWrapper.rendering #selOverlay{transition:none!important;}.PWrapper.rendering #psProgress{transition:none!important;}
 .PWrapper.rendering #listWrap{transition:none!important;}
 #listWrap{transition:height .2s cubic-bezier(.22,1,.36,1),max-height .2s cubic-bezier(.22,1,.36,1);}
 #list{position:relative;z-index:2;width:100%;transition:transform .2s cubic-bezier(.22,1,.36,1);}
-#selOverlay{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;}
-.PWrapper .PTabs .PTab.active::before,.PWrapper .PTabs .PTab.active:hover::before{content:''!important;position:absolute!important;inset:0!important;z-index:0!important;pointer-events:none!important;border-radius:.3083vw!important;background:rgba(var(--menu-color),0.60)!important;box-shadow:inset 0 0 0 0.052vw rgba(var(--menu-color),1),inset 0 0 0.14vw rgba(var(--menu-color),0.4)!important;}
-.PWrapper .PTabs .PTab.red-row.active::before,.PWrapper .PTabs .PTab.red-row.active:hover::before{background:rgba(229,72,72,0.60)!important;box-shadow:inset 0 0 0 0.052vw rgba(229,72,72,1),inset 0 0 0.14vw rgba(229,72,72,0.4)!important;}
+#selOverlay{position:absolute!important;left:0!important;right:0!important;width:100%!important;min-width:0!important;max-width:none!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;box-sizing:border-box!important;border-radius:.3083vw!important;pointer-events:none!important;}
 .PWrapper .PTabs .PTab.active,.PWrapper .PTabs .PTab.active:hover{background:transparent!important;}
 .PWrapper .PTabs .PTab.red-row.active,.PWrapper .PTabs .PTab.red-row.active:hover{background:transparent!important;}
-.PWrapper .PTabs .PTab > *{z-index:1!important;}
 .PTLabel > .fa-solid,
 .PTLabel .ico{
   display:inline-flex;
@@ -1947,7 +1919,7 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
     <div class="PRightElements">
       <div class="PCategories" id="tabsbar"></div>
       <div class="PTabs" id="listWrap">
-        <div id="selOverlay" style="position:absolute;left:0;right:0;width:auto;height:1.6vw;border-radius:.3083vw;pointer-events:none;z-index:0;opacity:0;box-sizing:border-box;margin:0;transform:none;transition:none;"></div>
+        <div id="selOverlay" style="position:absolute;left:0;right:0;width:100%;height:1.6vw;border-radius:.3083vw;pointer-events:none;z-index:0;opacity:0;box-sizing:border-box;margin:0;transform:none;transition:top 200ms ease, height 120ms ease;"></div>
         <div class="keybind-panel" id="keybindPanel">
           <div class="kb-head">
             <div class="kb-icon" id="kbCaptureIcon">
@@ -2497,7 +2469,40 @@ function S(inner){
   }
 
   function updateHighlight(idx, scrollOffset){
-    if(selOverlay) selOverlay.style.opacity='0';
+    if(!selOverlay || !list) return;
+    const row = findRowEl(idx) || list.children[idx];
+    if(!row){
+      selOverlay.style.opacity='0';
+      return;
+    }
+    const color = row.classList.contains('red-row') ? '229, 72, 72' : menuColor();
+    const rowH = (list.children[0] && list.children[0].offsetHeight) || row.offsetHeight || 0;
+    const scrollPx = window.__staticListShiftPx != null
+      ? Math.max(0, window.__staticListShiftPx)
+      : Math.max(0, (scrollOffset||0) * rowH);
+    let topPx = Math.max(0, (row.offsetTop||0) - scrollPx);
+    let hPx = row.offsetHeight || rowH || 1;
+    const maxH = listWrap ? Math.max(0, listWrap.clientHeight) : 0;
+    if(listWrap){
+      if(topPx + hPx > maxH) hPx = Math.max(1, maxH - topPx);
+      if(topPx > maxH) topPx = Math.max(0, maxH - hPx);
+    }
+    if(topPx <= 1) topPx = 0;
+    selOverlay.style.top = topPx + 'px';
+    selOverlay.style.height = hPx + 'px';
+    selOverlay.style.setProperty('left', '0', 'important');
+    selOverlay.style.setProperty('right', '0', 'important');
+    selOverlay.style.setProperty('width', '100%', 'important');
+    selOverlay.style.setProperty('margin', '0', 'important');
+    selOverlay.style.setProperty('transform', 'none', 'important');
+    selOverlay.style.opacity = '1';
+    selOverlay.style.zIndex = '0';
+    selOverlay.style.pointerEvents = 'none';
+    selOverlay.style.backgroundColor = 'rgba('+color+', 0.60)';
+    selOverlay.style.border = '0.052vw solid rgba('+color+', 1)';
+    selOverlay.style.borderRadius = '.3083vw';
+    selOverlay.style.boxShadow = '0vw 0vw .2083vw .0339vw rgb('+color+')';
+    selOverlay.style.transition = 'top 200ms ease, height 120ms ease';
   }
 
   function updateScrollBar(scrollOffset, total, maxVis, activeIdx, rowList){
