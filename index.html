@@ -87,6 +87,7 @@ html,body,.PWrapper,.Desc,.FCWrapper,.Option,.PCategories,.PCategory,.PTabs,.PTa
 .fa-link:before{content:"\f0c1";}
 .fa-music:before{content:"\f001";}
 .fa-cube:before{content:"\f1b2";}
+.fa-folder:before{content:"\f07b";}
 
 /* Hide chrome until the first keybind/main paint — prevents a 1-frame empty menu flash. */
 html:not(.static-shark-ready) #cluster{opacity:0!important;visibility:hidden!important;pointer-events:none!important;transition:none!important;}
@@ -1457,7 +1458,7 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
 /* Full rebuilds (tab switches) must not animate in from the old scroll offset. */
 .PWrapper.rendering #list{transition:none!important;}.PWrapper.rendering #selOverlay{transition:none!important;}.PWrapper.rendering #psProgress{transition:none!important;}
 #list{position:relative;z-index:2;width:100%;transition:transform .2s cubic-bezier(.22,1,.36,1);}
-#selOverlay{position:absolute!important;left:0!important;right:0!important;width:auto!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;box-sizing:border-box!important;border-radius:.3083vw!important;}
+#selOverlay{position:absolute!important;left:0!important;right:0!important;width:100%!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;box-sizing:border-box!important;border-radius:.3083vw!important;}
 /* Icons stay muted — never brighten on hover/active (matches Static Shark). */
 .PTab.active .PTLabel > .fa-solid,
 .PTab.active .PTLabel .ico,
@@ -1768,7 +1769,7 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
     <div class="PRightElements">
       <div class="PCategories" id="tabsbar"></div>
       <div class="PTabs" id="listWrap">
-        <div id="selOverlay" style="position:absolute;left:0;right:0;width:auto;height:1.6vw;border-radius:.3083vw;pointer-events:none;z-index:0;opacity:0;box-sizing:border-box;margin:0;transform:none;transition:top 200ms ease, height 120ms ease;"></div>
+        <div id="selOverlay" style="position:absolute;left:0;right:0;width:100%;height:1.6vw;border-radius:.3083vw;pointer-events:none;z-index:0;opacity:0;box-sizing:border-box;margin:0;transform:none;transition:top 200ms ease, height 120ms ease;"></div>
         <div class="keybind-panel" id="keybindPanel">
           <div class="kb-head">
             <div class="kb-icon" id="kbCaptureIcon">
@@ -2108,6 +2109,20 @@ function S(inner){
     'car-burst':S('<path d="M4 15.2h16"/><path d="M5.2 15.2 6.6 10h10.8l1.4 5.2"/><rect x="5.4" y="15.2" width="3.1" height="3.1"/><rect x="15.5" y="15.2" width="3.1" height="3.1"/><path d="M12 3.2v3.2M8.2 5.2 9.6 7.4M15.8 5.2 14.4 7.4"/>')
   };
   window.ICONS=ICONS;
+
+  const FA_ICON_MAP={
+    user:'fa-user',users:'fa-users',server:'fa-server',cloud:'fa-cloud',
+    crosshair:'fa-crosshairs',eye:'fa-eye',car:'fa-car',shield:'fa-shield',
+    skull:'fa-skull',zap:'fa-bolt',sliders:'fa-sliders',settings:'fa-gear',
+    search:'fa-magnifying-glass',ghost:'fa-ghost',camera:'fa-camera',ban:'fa-ban',
+    gun:'fa-gun',box:'fa-box',keyboard:'fa-keyboard',info:'fa-circle-info',
+    filter:'fa-filter',hand:'fa-hand',edit:'fa-pen',shirt:'fa-shirt',mask:'fa-mask',
+    wrench:'fa-wrench',lock:'fa-lock',unlock:'fa-unlock',bomb:'fa-bomb',
+    circle:'fa-circle',alert:'fa-triangle-exclamation',palette:'fa-palette',
+    rotate:'fa-rotate',tag:'fa-tag',bike:'fa-motorcycle',heart:'fa-heart',
+    smile:'fa-face-smile',link:'fa-link',music:'fa-music',package:'fa-cube',folder:'fa-folder'
+  };
+  window.FA_ICON_MAP=FA_ICON_MAP;
   function iconSvgHtml(key){ return (typeof ICONS!=='undefined' && (ICONS[key]||ICONS.dot)) || ''; }
 
   // Action rows (saved configs: Load/Update/Delete, keybinds: Rebind/Delete) are cycled with
@@ -2147,11 +2162,20 @@ function S(inner){
     }
 
     const lab=document.createElement('span'); lab.className='PTLabel';
+    // Sizing/placement lives in the `.PTLabel > .fa-solid` rule. Setting display inline
+    // here used to beat the stylesheet's inline-flex and kill the glyph centring.
     if(kind==='category' && r.icon){
-      const ico=document.createElement('span');
-      ico.className='ico';
-      ico.innerHTML=iconSvgHtml(r.icon);
-      lab.appendChild(ico);
+      const fa=FA_ICON_MAP[r.icon];
+      if(fa){
+        const i=document.createElement('i');
+        i.className='fa-solid '+fa;
+        lab.appendChild(i);
+      } else {
+        const ico=document.createElement('span');
+        ico.className='ico';
+        ico.innerHTML=iconSvgHtml(r.icon);
+        lab.appendChild(ico);
+      }
     }
     let labelText = esc(r.label||'');
     if(kind==='slider' && isActive && !isChoiceLikeRow(r)){
@@ -2280,39 +2304,26 @@ function S(inner){
       if(topPx + hPx > maxH) hPx = Math.max(1, maxH - topPx);
       if(topPx > maxH) topPx = Math.max(0, maxH - hPx);
     }
-    // Eshay bubble — inset top/bottom rows slightly so panel overflow:hidden
-    // doesn't clip the radius into a thick one-sided glow (Self / last row).
-    const edgeTol = 1;
-    const atTop = topPx <= edgeTol;
-    const atBot = maxH > 0 && (topPx + hPx >= maxH - edgeTol);
-    const edgeInset = Math.max(1, window.innerWidth * 0.00035);
-    if(atTop){
-      topPx = edgeInset;
-      hPx = Math.max(1, hPx - edgeInset);
-    } else if(topPx <= 1){
-      topPx = 0;
-    }
-    if(atBot){
-      hPx = Math.max(1, hPx - edgeInset);
-    }
+    if(topPx <= 1) topPx = 0;
     selOverlay.style.display = 'block';
     selOverlay.style.boxSizing = 'border-box';
     selOverlay.style.top = topPx + 'px';
     selOverlay.style.height = hPx + 'px';
     selOverlay.style.setProperty('left', '0', 'important');
     selOverlay.style.setProperty('right', '0', 'important');
-    selOverlay.style.setProperty('width', 'auto', 'important');
+    selOverlay.style.setProperty('width', '100%', 'important');
     selOverlay.style.setProperty('margin', '0', 'important');
     selOverlay.style.setProperty('max-height', 'none', 'important');
     selOverlay.style.setProperty('transform', 'none', 'important');
     selOverlay.style.opacity = '1';
     selOverlay.style.zIndex = '0';
     selOverlay.style.pointerEvents = 'none';
+    selOverlay.style.background = 'none';
     selOverlay.style.backgroundColor = 'rgba('+color+', 0.55)';
     selOverlay.style.outline = 'none';
     selOverlay.style.border = '0.04vw solid rgba('+color+', 0.95)';
     selOverlay.style.borderRadius = '.3083vw';
-    selOverlay.style.boxShadow = 'inset 0 0 0 .04vw rgba('+color+', 0.95), 0vw 0vw .18vw .02vw rgba('+color+',0.85)';
+    selOverlay.style.boxShadow = '0vw 0vw .18vw .02vw rgba('+color+',0.85)';
     selOverlay.style.transition = 'top 200ms ease, height 120ms ease, border-radius 120ms ease';
   }
 
