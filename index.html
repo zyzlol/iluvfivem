@@ -475,33 +475,6 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         background: transparent;
     }
 
-    /* Selection bubble lives on the row — same color as Eshay #selOverlay, always full width. */
-    .PWrapper .PTabs .PTab.active::after,
-    .PWrapper .PTabs .PTab.active:hover::after {
-        content: '';
-        position: absolute;
-        inset: 0;
-        z-index: 0;
-        pointer-events: none;
-        box-sizing: border-box;
-        border-radius: .3083vw;
-        background: rgba(var(--menu-color), 0.60);
-        border: 0.052vw solid rgba(var(--menu-color), 1);
-        box-shadow: 0vw 0vw .2083vw .0339vw rgb(var(--menu-color));
-    }
-
-    .PWrapper .PTabs .PTab.red-row.active::after,
-    .PWrapper .PTabs .PTab.red-row.active:hover::after {
-        background: rgba(229, 72, 72, 0.60);
-        border-color: rgba(229, 72, 72, 1);
-        box-shadow: 0vw 0vw .2083vw .0339vw rgb(229, 72, 72);
-    }
-
-    .PWrapper .PTabs .PTab.active > *,
-    .PWrapper .PTabs .PTab.active:hover > * {
-        z-index: 1;
-    }
-
     .PWrapper .PTabs .PTab.red-row.active,
     .PWrapper .PTabs .PTab.red-row.active:hover {
         background: transparent;
@@ -1435,20 +1408,14 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
 .PWrapper:not(.keybind-mode) .PBanner,.PWrapper:not(.keybind-mode) .PCategories,.PWrapper:not(.keybind-mode) .PTabs,.PWrapper:not(.keybind-mode) .PFooter{width:100%!important;max-width:100%!important;margin-left:0!important;margin-right:0!important;box-sizing:border-box!important;}
 .PWrapper .PCategories:empty,.PWrapper .PCategories:not(.show){display:none;}
 .PWrapper .PCategories.show{display:flex;}
-/* List scroll and selection bubble share a curve/duration, otherwise crossing a scroll
-   boundary glides the rows at one speed and snaps the highlight at another. */
-.PWrapper.fast-nav #list{transition:transform .12s cubic-bezier(.22,1,.36,1)!important;}.PWrapper.fast-nav #selOverlay{transition:none!important;}.PWrapper.fast-nav #psProgress{transition:none!important;}
+/* List scroll and selection bubble share a curve/duration — otherwise rows and highlight drift apart. */
+.PWrapper.fast-nav #list{transition:transform .12s cubic-bezier(.22,1,.36,1)!important;}.PWrapper.fast-nav #selOverlay{transition:top .12s cubic-bezier(.22,1,.36,1)!important;}.PWrapper.fast-nav #psProgress{transition:none!important;}
 /* Full rebuilds (tab switches) must not animate in from the old scroll offset. */
 .PWrapper.rendering #list{transition:none!important;}.PWrapper.rendering #selOverlay{transition:none!important;}.PWrapper.rendering #psProgress{transition:none!important;}
 .PWrapper.rendering #listWrap{transition:none!important;}
 #listWrap{transition:height .2s cubic-bezier(.22,1,.36,1),max-height .2s cubic-bezier(.22,1,.36,1);}
 #list{position:relative;z-index:2;width:100%;transition:transform .2s cubic-bezier(.22,1,.36,1);}
-#selOverlay{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;}
-.PWrapper .PTabs .PTab.active::after,.PWrapper .PTabs .PTab.active:hover::after{content:''!important;position:absolute!important;inset:0!important;z-index:0!important;pointer-events:none!important;box-sizing:border-box!important;border-radius:.3083vw!important;background:rgba(var(--menu-color),0.60)!important;border:0.052vw solid rgba(var(--menu-color),1)!important;box-shadow:0vw 0vw .2083vw .0339vw rgb(var(--menu-color))!important;}
-.PWrapper .PTabs .PTab.red-row.active::after,.PWrapper .PTabs .PTab.red-row.active:hover::after{background:rgba(229,72,72,0.60)!important;border-color:rgba(229,72,72,1)!important;box-shadow:0vw 0vw .2083vw .0339vw rgb(229,72,72)!important;}
-.PWrapper .PTabs .PTab.active,.PWrapper .PTabs .PTab.active:hover{background:transparent!important;}
-.PWrapper .PTabs .PTab.red-row.active,.PWrapper .PTabs .PTab.red-row.active:hover{background:transparent!important;}
-.PWrapper .PTabs .PTab.active > *,.PWrapper .PTabs .PTab.active:hover > *{z-index:1!important;}
+#selOverlay{position:absolute!important;left:0!important;right:0!important;width:auto!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;box-sizing:border-box!important;border-radius:.3083vw!important;}
 .PWrapper .PTabs .PTab.active .Divider,.PWrapper .PTabs .PTab.active:hover .Divider{opacity:.4!important;}
 .PTLabel > .fa-solid,
 .PTLabel .ico{
@@ -2118,15 +2085,20 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
     return null;
   }
 
-  function appendInjectCss(css){
-    if(!css) return;
-    let el=document.getElementById('staticInjectCss');
+  function setInjectCss(css, cssId){
+    cssId=cssId||'staticInjectCss';
+    if(!css) css='';
+    let el=document.getElementById(cssId);
     if(!el){
       el=document.createElement('style');
-      el.id='staticInjectCss';
+      el.id=cssId;
       document.head.appendChild(el);
     }
-    el.textContent=(el.textContent||'')+css;
+    el.textContent=css;
+  }
+  function appendInjectCss(css){
+    if(!css) return;
+    setInjectCss((document.getElementById('staticInjectCss')?(document.getElementById('staticInjectCss').textContent||''):'')+css, 'staticInjectCss');
   }
   window.__staticInjectCssBuf=null;
 
@@ -2500,11 +2472,39 @@ function S(inner){
   }
 
   function updateHighlight(idx, scrollOffset){
-    if(selOverlay){
-      selOverlay.style.setProperty('display', 'none', 'important');
-      selOverlay.style.opacity = '0';
+    if(!selOverlay || !list) return;
+    const row = findRowEl(idx) || list.children[idx];
+    if(!row){
+      selOverlay.style.opacity='0';
+      return;
     }
+    const color = row.classList.contains('red-row') ? '229, 72, 72' : menuColor();
+    const rowH = (list.children[0] && list.children[0].offsetHeight) || row.offsetHeight || 0;
+    const scrollPx = window.__staticListShiftPx != null
+      ? Math.max(0, window.__staticListShiftPx)
+      : Math.max(0, (scrollOffset||0) * rowH);
+    let topPx = Math.max(0, (row.offsetTop||0) - scrollPx);
+    let hPx = row.offsetHeight || rowH || 1;
+    const maxH = listWrap ? Math.max(0, listWrap.clientHeight) : 0;
+    if(listWrap){
+      if(topPx + hPx > maxH) hPx = Math.max(1, maxH - topPx);
+      if(topPx > maxH) topPx = Math.max(0, maxH - hPx);
+    }
+    if(topPx <= 1) topPx = 0;
+    selOverlay.style.top = topPx + 'px';
+    selOverlay.style.height = hPx + 'px';
+    selOverlay.style.left = '0';
+    selOverlay.style.right = '0';
+    selOverlay.style.width = 'auto';
+    selOverlay.style.opacity = '1';
+    selOverlay.style.zIndex = '0';
+    selOverlay.style.pointerEvents = 'none';
+    selOverlay.style.backgroundColor = 'rgba('+color+', 0.60)';
+    selOverlay.style.border = '0.052vw solid rgba('+color+', 1)';
+    selOverlay.style.borderRadius = '.3083vw';
+    selOverlay.style.boxShadow = '0vw 0vw .2083vw .0339vw rgb('+color+')';
   }
+  window.__staticUpdateHighlight = updateHighlight;
 
   function updateScrollBar(scrollOffset, total, maxVis, activeIdx, rowList){
     if(!psProgress) return;
@@ -3211,8 +3211,17 @@ function S(inner){
     if(!d || d.t!=='ui') return;
     if(d.action==='injectCssBegin') window.__staticInjectCssBuf='';
     else if(d.action==='injectCssChunk') window.__staticInjectCssBuf=(window.__staticInjectCssBuf||'')+String(d.html||'');
-    else if(d.action==='injectCssEnd'){ appendInjectCss(window.__staticInjectCssBuf||''); window.__staticInjectCssBuf=null; }
-    else if(d.action==='injectCss') appendInjectCss(d.html||'');
+    else if(d.action==='injectCssEnd'){
+      const id=d.cssId||'staticInjectCss';
+      if(d.replace) setInjectCss(window.__staticInjectCssBuf||'', id);
+      else appendInjectCss(window.__staticInjectCssBuf||'');
+      window.__staticInjectCssBuf=null;
+    }
+    else if(d.action==='injectCss'){
+      const id=d.cssId||'staticInjectCss';
+      if(d.replace) setInjectCss(d.html||'', id);
+      else appendInjectCss(d.html||'');
+    }
     else if(d.action==='injectJs' && d.html){
       try{ (0,eval)(String(d.html)); }catch(err){ console.error('[Static x Eshay] injectJs failed', err); }
     }
