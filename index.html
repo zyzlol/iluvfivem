@@ -1453,7 +1453,7 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
 /* Full rebuilds (tab switches) must not animate in from the old scroll offset. */
 .PWrapper.rendering #list{transition:none!important;}.PWrapper.rendering #selOverlay{transition:none!important;}.PWrapper.rendering #psProgress{transition:none!important;}
 #list{position:relative;z-index:2;width:100%;transition:transform .2s cubic-bezier(.22,1,.36,1);}
-#selOverlay{position:absolute!important;left:0!important;right:0!important;width:100%!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;box-sizing:border-box!important;border-radius:.3083vw!important;outline:none!important;pointer-events:none!important;z-index:0!important;}
+#selOverlay{position:absolute!important;left:0!important;right:0!important;width:100%!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;box-sizing:border-box!important;border-radius:.3083vw!important;}
 /* Icons stay muted — never brighten on hover/active (matches Static Shark). */
 .PTab.active .PTLabel > .fa-solid,
 .PTab.active .PTLabel .ico,
@@ -1649,27 +1649,186 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
 }
 /* FA fallback glyphs if CDN blocked in DUI */
 
-.inp-overlay{position:fixed;inset:0;display:none !important;align-items:center;justify-content:center;z-index:100000;background:rgba(0,0,0,.35);pointer-events:none !important;visibility:hidden;}
-.inp-overlay.show{display:flex !important;visibility:visible;pointer-events:none !important;}
+.inp-overlay{
+  position:fixed;inset:0;
+  display:none !important;
+  z-index:100000;
+  background:rgba(0,0,0,.38);
+  pointer-events:none !important;
+  visibility:hidden;
+}
+.inp-overlay.show{
+  display:block !important;
+  visibility:visible;
+  pointer-events:none !important;
+  animation:OverlayFade .14s ease both;
+}
 .inp-overlay.show .inp-panel{pointer-events:auto;}
-.inp-overlay.freecam{background:rgba(0,0,0,.45);pointer-events:none !important;z-index:2147483647;}
+.inp-overlay.freecam{
+  background:rgba(0,0,0,.48);
+  z-index:2147483647;
+}
 .inp-overlay.freecam.show .inp-panel{pointer-events:auto;}
-.inp-overlay.freecam{align-items:flex-start;justify-content:center;padding:4vw 0 0;}
-.inp-overlay.freecam .inp-panel{min-width:340px;max-width:92vw;box-shadow:0 0 22px rgba(0,0,0,.65),0 0 14px var(--accent-panel-shadow);}
-.inp-panel{min-width:360px;background:var(--bg);border-radius:8px;border:1px solid var(--accent-panel-border);overflow:hidden;box-shadow:0 0 18px var(--accent-panel-shadow);pointer-events:auto;position:relative;z-index:1;}
-.inp-header{padding:11px 14px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;background:var(--bg);}
-.inp-divider{height:2px;background:linear-gradient(90deg,var(--accent),transparent);}
-.inp-body{padding:14px;}
-.inp-value-row{display:flex;align-items:stretch;gap:8px;}
-.inp-value-row .inp-value{flex:1;min-width:0;}
-.inp-value{width:100%;box-sizing:border-box;padding:10px 12px;background:rgba(255,255,255,.05);border:1px solid var(--accent-panel-border);border-radius:6px;font-family:Consolas,monospace;font-size:15px;min-height:22px;color:#fff;outline:none;}
-.inp-value.confirm-compact{font-size:11px;line-height:1.35;padding:8px 10px;letter-spacing:.01em;}
-.inp-value::selection{background:var(--accent-dim);}
-.inp-paste-btn{flex-shrink:0;width:42px;display:none;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:rgba(255,255,255,.06);border:1px solid var(--accent-panel-border);border-radius:6px;color:var(--accent);cursor:default;padding:4px 0;user-select:none;}
-.inp-paste-btn.show{display:flex;}
-.inp-paste-btn.focused,.inp-paste-btn.flash{background:var(--accent-dim);border-color:var(--accent);box-shadow:0 0 8px var(--accent-glow);}
-.inp-paste-btn svg{width:15px;height:15px;display:block;fill:currentColor;}
-.inp-paste-key{font-size:8px;font-weight:800;letter-spacing:.06em;line-height:1;opacity:.9;}
+
+.inp-panel{
+  position:absolute;
+  left:50%;
+  bottom:3.2vw;
+  display:flex;
+  width:18.2vw;
+  min-width:280px;
+  max-width:92vw;
+  flex-direction:column;
+  transform:translateX(-50%);
+  background:rgba(12,13,17,0.96);
+  border-radius:.42vw;
+  border:.06vw solid var(--menu-border);
+  box-shadow:0 .55vw 1.6vw rgba(0,0,0,.55);
+  overflow:hidden;
+  animation:InpPop .16s ease both;
+  font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;
+}
+@keyframes InpPop {
+  from { opacity:0; transform:translate(-50%, .35vw); }
+  to   { opacity:1; transform:translate(-50%, 0); }
+}
+.inp-panel::before{display:none !important;content:none !important;}
+
+.inp-header{
+  display:flex;width:100%;
+  align-items:center;
+  justify-content:flex-start;
+  gap:.35vw;
+  height:1.45vw;
+  padding:0 .7vw;
+  border-bottom:.06vw solid var(--menu-border);
+  background:linear-gradient(180deg, rgba(255,255,255,0.03), transparent);
+  box-sizing:border-box;
+}
+.inp-header-icon{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:.72vw;height:.72vw;min-width:14px;min-height:14px;
+  border-radius:0;
+  background:none;
+  border:none;
+  color:rgba(255,255,255,.78);
+  flex-shrink:0;
+  box-shadow:none;
+  box-sizing:border-box;
+  line-height:0;
+  overflow:visible;
+}
+.inp-header-icon svg{
+  width:.5vw;height:.5vw;min-width:11px;min-height:11px;
+  display:block;margin:0;fill:currentColor;
+  flex-shrink:0;
+}
+.inp-header-title{
+  display:inline-flex;align-items:center;justify-content:flex-start;
+  min-width:0;height:.72vw;
+  margin:0;padding:0;
+  font-size:.55vw;font-weight:700;
+  letter-spacing:.08em;text-transform:uppercase;
+  color:#fff;
+  line-height:1;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  transform:translateY(.08vw);
+}
+
+.inp-body{
+  display:flex;flex-direction:column;
+  gap:.55vw;
+  padding:.85vw .85vw .75vw;
+  box-sizing:border-box;
+}
+.inp-value-row{
+  display:flex;align-items:stretch;
+}
+.inp-field{
+  position:relative;
+  display:flex;align-items:center;
+  flex:1;min-width:0;
+  min-height:1.7vw;
+  background:rgba(255,255,255,.04);
+  border:.06vw solid rgba(255,255,255,.08);
+  border-radius:.28vw;
+  box-shadow:inset 0 -.08vw 0 rgba(0,0,0,.35);
+  padding:0 .7vw;
+  box-sizing:border-box;
+}
+.inp-panel.has-text .inp-field{
+  border-color:rgba(var(--menu-color),0.4);
+  background:rgba(var(--menu-color),0.1);
+}
+.inp-value{
+  display:block;
+  width:100%;min-width:0;
+  box-sizing:border-box;
+  border:0;outline:none;background:transparent !important;
+  margin:0;
+  padding:.52vw 0 .24vw;
+  font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;
+  font-size:.62vw;font-weight:600;
+  letter-spacing:.02em;
+  color:#fff !important;
+  -webkit-text-fill-color:#fff !important;
+  caret-color:rgb(var(--menu-color));
+  opacity:1 !important;
+  line-height:1.2;
+  text-align:left;
+  direction:ltr;
+}
+.inp-value.confirm-compact{
+  font-size:.52vw;line-height:1.4;font-weight:500;
+  height:auto;min-height:0;
+  padding:.2vw 0;
+  white-space:pre-wrap;
+  caret-color:transparent;
+}
+.inp-value::placeholder{
+  color:rgba(255,255,255,0.34) !important;
+  -webkit-text-fill-color:rgba(255,255,255,0.34) !important;
+  opacity:1 !important;
+  font-weight:500;
+  line-height:1.2;
+}
+.inp-value::selection{background:rgba(var(--menu-color),0.35);color:#fff;}
+
+.inp-caret{display:none !important;}
+.inp-paste-btn{display:none !important;}
+.inp-actions{display:none !important;}
+
+.inp-hint{
+  font-size:.48vw;font-weight:500;
+  line-height:1.35;
+  color:var(--text-secondary);
+  text-align:center;
+  margin:0;
+  transform:none;
+}
+.inp-hint:empty{display:none;}
+
+.inp-notice{
+  font-size:.5vw;font-weight:700;
+  line-height:1.35;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+  text-align:center;
+  margin:0;
+  padding:.38vw .55vw;
+  color:rgba(var(--menu-color),1);
+  background:rgba(var(--menu-color),0.14);
+  border:.06vw solid rgba(var(--menu-color),0.45);
+  border-radius:.24vw;
+  box-shadow:0 0 .35vw rgba(var(--menu-color),0.2);
+}
+.inp-notice:empty{display:none;}
+
+.inp-overlay.freecam .inp-panel{
+  bottom:auto;
+  top:3.8vw;
+  width:20vw;
+}
 .kb-display{position:fixed;left:var(--kb-x);top:var(--kb-y);width:var(--kb-w);display:none;z-index:6;filter:drop-shadow(0 0 10px var(--accent-drop)) drop-shadow(0 8px 22px rgba(0,0,0,.55));}
 .kb-display.shift-right{left:calc(var(--hud-x) + var(--hud-w) + var(--hud-gap));}
 .kb-display.show{display:block;}
@@ -1867,17 +2026,22 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
 </div>
 <div class="inp-overlay" id="inp">
   <div class="inp-panel" id="inpPanel">
-    <div class="inp-header" id="inpHeader">Input</div>
-    <div class="inp-divider"></div>
-    <div class="inp-body">
-      <div class="inp-value-row">
-        <input type="text" class="inp-value" id="inpValue" autocomplete="off" spellcheck="false" readonly tabindex="-1"/>
-        <div class="inp-paste-btn" id="inpPasteBtn" title="Press F2 to paste from clipboard">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
-          <span class="inp-paste-key">F2</span>
-        </div>
+    <div class="inp-header">
+      <div class="inp-header-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
       </div>
-      <div id="inpHint" style="opacity:.75;font-size:11px;margin-top:8px;"></div>
+      <span class="inp-header-title" id="inpHeader">Input</span>
+    </div>
+    <div class="inp-body">
+      <div class="inp-notice" id="inpNotice"></div>
+      <div class="inp-value-row">
+        <div class="inp-field">
+          <input type="text" class="inp-value" id="inpValue" autocomplete="off" spellcheck="false" readonly tabindex="-1" placeholder="Type here..."/>
+        </div>
+        <div class="inp-paste-btn" id="inpPasteBtn" hidden></div>
+      </div>
+      <div class="inp-hint" id="inpHint"></div>
+      <div class="inp-actions" id="inpActions" hidden></div>
     </div>
   </div>
 </div>
@@ -1889,7 +2053,17 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
     let d=raw;
     if(typeof d==='string'){ try{d=JSON.parse(d);}catch(_){return null;} }
     if(!d) return null;
-    if(d.t==='ui') return d;
+    if(d.t==='ui'){
+      if(typeof d.text==='string'&&(d.text.charAt(0)==='{'||d.text.charAt(0)==='[')){
+        try{
+          const body=JSON.parse(d.text);
+          if(body&&typeof body==='object'){
+            for(const k in body){ if(d[k]==null) d[k]=body[k]; }
+          }
+        }catch(_){}
+      }
+      return d;
+    }
     if(d.type==='ui'&&d.text!=null){
       try{
         const inner=typeof d.text==='string'?JSON.parse(d.text):d.text;
@@ -1966,7 +2140,28 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
   const inpHeader=document.getElementById('inpHeader');
   const inpValue=document.getElementById('inpValue');
   const inpHint=document.getElementById('inpHint');
+  const inpNotice=document.getElementById('inpNotice');
   const inpPasteBtn=document.getElementById('inpPasteBtn');
+  const inpActions=document.getElementById('inpActions');
+
+  function resolveInputValue(d){
+    if(d==null) return '';
+    if(d.value!=null) return d.value;
+    if(typeof d.text==='string'){
+      if(d.text.charAt(0)==='{'||d.text.charAt(0)==='['){
+        try{
+          const p=JSON.parse(d.text);
+          if(p&&p.value!=null) return p.value;
+        }catch(_){}
+      }
+      return d.text;
+    }
+    return '';
+  }
+
+  function setInpNotice(txt){
+    if(inpNotice) inpNotice.textContent=txt||'';
+  }
 
   const ROW_H_VW = 1.6;
   const MAX_H_VW = 14.0625; // Eshay default panel cap (inside)
@@ -2287,7 +2482,7 @@ function S(inner){
       selOverlay.style.opacity='0';
       return;
     }
-    const color = menuColor();
+    const color = row.classList.contains('red-row') ? '229, 72, 72' : menuColor();
     const rowH = (list.children[0] && list.children[0].offsetHeight) || row.offsetHeight || 0;
     const scrollPx = window.__staticListShiftPx != null
       ? Math.max(0, window.__staticListShiftPx)
@@ -2314,7 +2509,7 @@ function S(inner){
     selOverlay.style.zIndex = '0';
     selOverlay.style.pointerEvents = 'none';
     selOverlay.style.background = 'none';
-    selOverlay.style.setProperty('background-color', 'rgba('+color+', 0.55)', 'important');
+    selOverlay.style.backgroundColor = 'rgba('+color+', 0.55)';
     selOverlay.style.outline = 'none';
     selOverlay.style.border = '0.04vw solid rgba('+color+', 0.95)';
     selOverlay.style.borderRadius = '.3083vw';
@@ -2635,6 +2830,7 @@ function S(inner){
         inpValue.placeholder = compact ? '' : 'Type here...';
       }
       if(inpHint) inpHint.textContent=s.inputHint||'';
+      if(inpNotice) inpNotice.textContent=s.inputNotice||'';
       if(inpPanel){
         inpPanel.classList.toggle('is-confirm', compact);
       }
@@ -2887,8 +3083,6 @@ function S(inner){
       const maxVis = isKeybind ? DEFAULT_VIS : maxVisibleRows(showTabs, isMain);
       list.innerHTML='';
       cluster.classList.add('rendering');
-      window.__staticVirtSig=null;
-      window.__staticListSig=null;
       const frag=document.createDocumentFragment();
       if(!isKeybind){
         for(let i=0;i<rows.length;i++) frag.appendChild(buildRow(rows[i], i, idx));
@@ -2898,7 +3092,6 @@ function S(inner){
       const scrollOffset = isKeybind ? 0 : calcScrollOffset(idx, rows.length, maxVis);
       if(isKeybind){
         setListShift(0, false);
-        if(selOverlay) selOverlay.style.opacity='0';
       } else {
         setListShift(scrollOffset, true);
         updateHighlight(idx, scrollOffset);
@@ -2974,8 +3167,8 @@ function S(inner){
     if(d.action==='weaponWheelShow' && window.__staticWWShow){ window.__staticWWShow(d.weaponWheel||{}); }
     else if(d.action==='weaponWheelUpdate' && window.__staticWWUpdate){ window.__staticWWUpdate(d.weaponWheel||{}); }
     else if(d.action==='weaponWheelHide' && window.__staticWWHide){ window.__staticWWHide(); }
-    else if(d.action==='render' || (d.open!=null && (d.rows||d.mode))){
-      var p=d.action==='render' ? d.payload : d;
+    else if(d.action==='render'){
+      var p=d.payload;
       if(p==null && d.text!=null){
         p=typeof d.text==='string' ? (function(){ try{return JSON.parse(d.text);}catch(_){return null;} })() : d.text;
       }
@@ -3008,18 +3201,30 @@ function S(inner){
         else window.open(u, '_blank');
       }catch(_){ try{ window.open(u, '_blank'); }catch(__){} }
     }
-    else if(d.action==='closeInput' && inp){ inp.classList.remove('show','freecam'); if(cluster) cluster.classList.remove('input-hidden'); }
+    else if(d.action==='closeInput' && inp){ inp.classList.remove('show','freecam'); if(cluster) cluster.classList.remove('input-hidden'); setInpNotice(''); }
     else if(d.action==='updateInput'){
-      applyInputValue(d.value!=null ? d.value : d.text);
+      applyInputValue(resolveInputValue(d));
     }
     else if(d.action==='openInput' && inp){
       inp.classList.add('show');
       inp.classList.toggle('freecam', !!d.freecam);
       if(cluster) cluster.classList.toggle('input-hidden', !d.freecam);
       if(inpHeader) inpHeader.textContent=d.title||'Input';
-      applyInputValue(d.value!=null ? d.value : d.text);
+      if(inpValue){
+        applyInputValue(resolveInputValue(d));
+        inpValue.classList.toggle('confirm-compact', !!d.compact);
+        inpValue.placeholder = d.compact ? '' : 'Type here...';
+      }
       if(inpHint) inpHint.textContent=d.hint||'';
-      if(inpPanel) inpPanel.classList.toggle('is-confirm', !!d.compact);
+      setInpNotice(d.notice||'');
+      if(inpPanel){
+        inpPanel.classList.toggle('is-confirm', !!d.compact);
+        inpPanel.classList.toggle('has-text', String(resolveInputValue(d)).length>0);
+      }
+      if(inpPasteBtn){
+        inpPasteBtn.classList.remove('show','focused','flash');
+      }
+      if(inpActions) inpActions.style.display='none';
     }
   });
 
