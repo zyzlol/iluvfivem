@@ -1453,6 +1453,8 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
 /* Full rebuilds (tab switches) must not animate in from the old scroll offset. */
 .PWrapper.rendering #list{transition:none!important;}.PWrapper.rendering #selOverlay{transition:none!important;}.PWrapper.rendering #psProgress{transition:none!important;}
 #list{position:relative;z-index:2;width:100%;transition:transform .2s cubic-bezier(.22,1,.36,1);}
+#listWrap{transition:height .2s cubic-bezier(.22,1,.36,1),max-height .2s cubic-bezier(.22,1,.36,1);}
+.PWrapper.rendering #listWrap{transition:none!important;}
 #selOverlay{position:absolute!important;left:0!important;right:0!important;width:100%!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;box-sizing:border-box!important;border-radius:.3083vw!important;outline:none!important;pointer-events:none!important;z-index:0!important;}
 /* Icons stay muted — never brighten on hover/active (matches Static Shark). */
 .PTab.active .PTLabel > .fa-solid,
@@ -2825,6 +2827,9 @@ function S(inner){
       const idx=Math.max(0, Math.min((s.activeRow||1)-1, Math.max(rows.length-1,0)));
       const isMain = s.mode==='main';
       const maxVis = isKeybind ? DEFAULT_VIS : maxVisibleRows(showTabs, isMain);
+      const navKey=(s.mode||'')+'|'+(s.section||'')+'|'+(s.tabIndex||1);
+      const navChanged=window.__staticNavKey!=null && window.__staticNavKey!==navKey;
+      window.__staticNavKey=navKey;
       list.innerHTML='';
       cluster.classList.add('rendering');
       const frag=document.createDocumentFragment();
@@ -2844,11 +2849,18 @@ function S(inner){
       window.__staticScrollOff = scrollOffset;
       window.__staticActiveIdx = idx;
       requestAnimationFrame(function(){
-        cluster.classList.remove('rendering');
-        if(!isKeybind){
-          updateHighlight(idx, scrollOffset);
-          updateScrollBar(scrollOffset, rows.length, maxVis, idx, rows);
-        } else if(selOverlay){ selOverlay.style.opacity='0'; }
+        requestAnimationFrame(function(){
+          cluster.classList.remove('rendering');
+          if(navChanged){
+            cluster.classList.add('fast-nav');
+            clearTimeout(window.__staticFastNavTimer);
+            window.__staticFastNavTimer=setTimeout(function(){ cluster.classList.remove('fast-nav'); }, 220);
+          }
+          if(!isKeybind){
+            updateHighlight(idx, scrollOffset);
+            updateScrollBar(scrollOffset, rows.length, maxVis, idx, rows);
+          } else if(selOverlay){ selOverlay.style.opacity='0'; }
+        });
       });
 
       if(footR && !isKeybind){
