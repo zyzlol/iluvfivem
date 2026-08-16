@@ -2744,12 +2744,11 @@ function S(inner){
   function paintVisibleRows(rows, idx, maxVis, forceRebuild){
     const total = rows.length;
     const scrollOffset = calcScrollOffset(idx, total, maxVis);
-    const useVirt = total > maxVis + ROW_OVERSCAN;
+    const useVirt = total > VIRT_THRESHOLD;
     const head = rows[0] ? String(rows[0].label||'') : '';
     const mid = rows[Math.floor(total/2)] ? String(rows[Math.floor(total/2)].label||'') : '';
     const tail = rows[total-1] ? String(rows[total-1].label||'') : '';
-    const rv = (window.__staticLastState && window.__staticLastState.rowsVersion) || 0;
-    const contentSig = rv + ':' + total + '|' + head + '|' + mid + '|' + tail;
+    const contentSig = total + '|' + head + '|' + mid + '|' + tail;
 
     if(useVirt){
       const start = scrollOffset;
@@ -2797,15 +2796,6 @@ function S(inner){
   }
   window.__staticPaintVisibleRows = paintVisibleRows;
 
-  function navContextKey(s){
-    if(!s) return '';
-    return String(s.mode||'')+'|'+String(s.section||'')+'|'+(s.tabs||[]).join('\x1e');
-  }
-  function isSectionNavChange(prev, s){
-    if(!prev || !prev.mode) return true;
-    return navContextKey(prev) !== navContextKey(s);
-  }
-
   window.staticRender=function(payload){
     try{
       const s=(typeof payload==='string')?JSON.parse(payload):payload;
@@ -2820,38 +2810,31 @@ function S(inner){
 
       const tabs=s.tabs||[];
       const showTabs = !isKeybind && s.mode!=='main' && tabs.length>1;
+      tabsbar.innerHTML='';
       const showCats = !isKeybind && (showTabs || !!(s.sectionTitle||s.section));
-      const prevCtx = window.__staticNavCtx || {};
-      const sectionNavChange = isSectionNavChange(prevCtx, s);
-
-      if(sectionNavChange){
-        tabsbar.innerHTML='';
-        tabsbar.classList.toggle('show', showCats);
-        if(showTabs){
-          tabs.forEach(function(name,i){
-            const d=document.createElement('div');
-            d.className='PCategory'+(i===((s.tabIndex||1)-1)?' active':'');
-            d.dataset.tab=String(i+1);
-            const span=document.createElement('span');
-            span.textContent=name;
-            d.appendChild(span);
-            d.addEventListener('mousedown', function(ev){
-              ev.preventDefault();
-              if(window.__staticColorPickerActive || window.__staticGunPickerActive) return;
-              window.__staticMenuTab=String(i+1);
-            });
-            tabsbar.appendChild(d);
-          });
-        } else if(showCats){
+      tabsbar.classList.toggle('show', showCats);
+      if(showTabs){
+        tabs.forEach(function(name,i){
           const d=document.createElement('div');
-          d.className='PCategory active';
+          d.className='PCategory'+(i===((s.tabIndex||1)-1)?' active':'');
+          d.dataset.tab=String(i+1);
           const span=document.createElement('span');
-          span.textContent=s.sectionTitle||s.section||'Menu';
+          span.textContent=name;
           d.appendChild(span);
+          d.addEventListener('mousedown', function(ev){
+            ev.preventDefault();
+            if(window.__staticColorPickerActive || window.__staticGunPickerActive) return;
+            window.__staticMenuTab=String(i+1);
+          });
           tabsbar.appendChild(d);
-        }
-      } else {
-        paintTabsbar(tabs, showTabs, showCats, s.tabIndex, s.sectionTitle, s.section);
+        });
+      } else if(showCats){
+        const d=document.createElement('div');
+        d.className='PCategory active';
+        const span=document.createElement('span');
+        span.textContent=s.sectionTitle||s.section||'Menu';
+        d.appendChild(span);
+        tabsbar.appendChild(d);
       }
 
       if(keybindPanel){
@@ -2902,31 +2885,27 @@ function S(inner){
       const idx=Math.max(0, Math.min((s.activeRow||1)-1, Math.max(rows.length-1,0)));
       const isMain = s.mode==='main';
       const maxVis = isKeybind ? DEFAULT_VIS : maxVisibleRows(showTabs, isMain);
+      list.innerHTML='';
       cluster.classList.add('rendering');
-      let scrollOffset = 0;
+      window.__staticVirtSig=null;
+      window.__staticListSig=null;
+      const frag=document.createDocumentFragment();
+      if(!isKeybind){
+        for(let i=0;i<rows.length;i++) frag.appendChild(buildRow(rows[i], i, idx));
+      }
+      list.appendChild(frag);
+      applyListHeight(rows.length, maxVis, isKeybind, isMain);
+      const scrollOffset = isKeybind ? 0 : calcScrollOffset(idx, rows.length, maxVis);
       if(isKeybind){
-        window.__staticVirtSig=null;
-        window.__staticListSig=null;
-        if(list) list.innerHTML='';
-        applyListHeight(rows.length, maxVis, true, isMain);
         setListShift(0, false);
         if(selOverlay) selOverlay.style.opacity='0';
       } else {
-        window.__staticVirtSig=null;
-        window.__staticListSig=null;
-        scrollOffset = paintVisibleRows(rows, idx, maxVis, true);
-        applyListHeight(rows.length, maxVis, false, isMain);
+        setListShift(scrollOffset, true);
         updateHighlight(idx, scrollOffset);
         updateScrollBar(scrollOffset, rows.length, maxVis, idx, rows);
       }
       window.__staticScrollOff=scrollOffset;
       window.__staticActiveIdx=idx;
-      window.__staticNavCtx={
-        mode:s.mode,
-        section:s.section,
-        tab:s.tabIndex,
-        tabs:(s.tabs||[]).slice()
-      };
       requestAnimationFrame(function(){
         cluster.classList.remove('rendering');
         if(!isKeybind){
@@ -2951,10 +2930,10 @@ function S(inner){
 
   window.staticSetActiveRow=function(activeRow, footerRight){
     const s=window.__staticLastState;
-    if(!s || !s.open || !list) return false;
+    if(!s || !s.open || !list || !list.children.length) return false;
     if(s.mode==='keybind' || s.inputOpen) return false;
     const rows=s.rows||[];
-    if(!rows.length) return false;
+    if(!rows.length || list.children.length!==rows.length) return false;
     s.activeRow=Number(activeRow)||1;
     if(typeof footerRight==='string') s.footerRight=footerRight;
     const idx=Math.max(0, Math.min((s.activeRow||1)-1, Math.max(rows.length-1,0)));
@@ -2962,11 +2941,13 @@ function S(inner){
     const fast=(now-_lastSelAt)<90;
     cluster.classList.toggle('fast-nav', fast);
     _lastSelAt=now;
+    for(let i=0;i<list.children.length;i++) list.children[i].classList.toggle('active', i===idx);
 
     const showTabs = s.mode!=='main' && s.tabs && s.tabs.length>1;
     const maxVis = maxVisibleRows(showTabs, s.mode==='main');
     applyListHeight(rows.length, maxVis, false, s.mode==='main');
-    const scrollOffset = paintVisibleRows(rows, idx, maxVis, false);
+    const scrollOffset=calcScrollOffset(idx, rows.length, maxVis);
+    setListShift(scrollOffset, true);
     window.__staticScrollOff = scrollOffset;
     window.__staticActiveIdx = idx;
     updateHighlight(idx, scrollOffset);
