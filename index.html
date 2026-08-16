@@ -434,39 +434,27 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
 
     .PWrapper .PTabs .PTab .PTLabel {
         position: absolute; display: flex; align-items: center;
-        left: .7vw; top: 0; bottom: 0; right: 6.8vw;
-        width: auto; height: auto; max-width: none;
+        left: .75vw; top: 0; width: 55%; height: 100%;
         font-size: .62vw; font-weight: 500; line-height: 1;
-        color: rgba(255,255,255,0.92);
-        /* Clip text on .PTText only — overflow:hidden here was slicing FA/SVG icons. */
-        overflow: visible;
-        white-space: nowrap;
-        letter-spacing: .01vw;
-        margin: 0; padding: 0; box-sizing: border-box;
-        z-index: 2;
-        pointer-events: none;
-    }
-    .PWrapper .PTabs .PTab .PTLabel .PTText {
-        display: flex;
-        align-items: center;
-        flex: 1 1 auto;
-        min-width: 0;
-        max-width: 100%;
-        height: 100%;
+        color: var(--text-primary);
         overflow: hidden; text-overflow: ellipsis;
         white-space: nowrap;
-        font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
-        font-size: .62vw;
-        font-weight: 500;
-        letter-spacing: .01vw;
-        color: rgba(255,255,255,0.92);
-        line-height: 1;
-        padding: 0;
+        letter-spacing: .015vw;
+        padding-top: .06vw;
         box-sizing: border-box;
-        transform: translateY(-.02vw);
-        margin: 0;
-        opacity: 1;
-        visibility: visible;
+    }
+    .PWrapper .PTabs .PTab .PTLabel .PTText {
+        display: inline-block;
+        max-width: 100%;
+        overflow: hidden; text-overflow: ellipsis;
+        white-space: nowrap;
+        font: inherit;
+        font-size: inherit;
+        font-weight: inherit;
+        letter-spacing: inherit;
+        color: inherit;
+        line-height: 1;
+        transform: translateY(.02vw);
     }
 
     .PWrapper .PTabs .PTab.active .PTLabel,
@@ -480,54 +468,13 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         font-size: .58vw; color: var(--text-secondary);
     }
 
-    .PWrapper .PTabs .PTab .PTLabel > .fa-solid,
-    .PWrapper .PTabs .PTab .PTLabel > .ico {
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        flex: 0 0 .72vw !important;
-        width: .72vw !important;
-        height: .72vw !important;
-        margin: 0 .22vw 0 0 !important;
-        padding: 0 !important;
-        position: static !important;
-        left: auto !important;
-        right: auto !important;
-        top: auto !important;
-        bottom: auto !important;
-        transform: none !important;
-        line-height: 1 !important;
-        font-size: .58vw !important;
-        color: rgba(255,255,255,.72) !important;
-        vertical-align: middle;
-        transition: none;
-        overflow: visible !important;
-        box-sizing: border-box !important;
-        text-align: center !important;
-    }
-    .PWrapper .PTabs .PTab .PTLabel > .fa-solid::before {
-        display: block !important;
-        width: 100% !important;
-        text-align: center !important;
-        line-height: .72vw !important;
-    }
-    .PWrapper .PTabs .PTab .PTLabel > .ico svg {
-        width: .58vw !important;
-        height: .58vw !important;
-        display: block;
-        margin: 0;
-        overflow: visible;
-        stroke-width: 1.65;
-    }
-
     .PWrapper .PTabs .PTab i.chev-right,
     .PWrapper .PTabs .PTab .chev-right {
         position: absolute; display: flex;
-        right: .65vw;
-        top: 50%;
+        right: .65vw; top: 50%;
         font-size: .58vw;
         color: var(--text-secondary);
-        transform: translateY(-50%);
+        transform: translateY(calc(-50% + .06vw));
         line-height: 1;
         align-items: center;
         justify-content: center;
@@ -598,7 +545,7 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
     .PWrapper .PTabs .PTab .Checkbox {
         position: absolute; display: flex; right: .65vw;
         top: 50%;
-        transform: translateY(-50%);
+        transform: translateY(calc(-50% + .06vw));
         width: 1.4vw; height: .7vw;
         justify-content: flex-start; align-items: center;
         background: rgba(255,255,255,0.08);
@@ -696,16 +643,13 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
     .PWrapper .PTabs .PTab .Scrollable {
         position: absolute; display: flex;
         right: .65vw;
-        top: 0; bottom: 0;
-        height: auto;
         justify-content: center; align-items: center;
         flex-direction: row; gap: .26vw;
         font-size: .58vw; font-weight: 400;
-        line-height: 1.15;
         color: var(--text-primary);
         opacity: .8;
-        transform: none;
-        box-sizing: border-box;
+        top: 50%;
+        transform: translateY(calc(-50% + .06vw));
     }
     .PWrapper .PTabs .PTab .Scrollable.with-checkbox {
         right: 2.35vw;
@@ -1456,6 +1400,36 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
 #listWrap{transition:height .2s cubic-bezier(.22,1,.36,1),max-height .2s cubic-bezier(.22,1,.36,1);}
 #list{position:relative;z-index:2;width:100%;transition:transform .2s cubic-bezier(.22,1,.36,1);}
 #selOverlay{position:absolute!important;left:0!important;right:0!important;width:100%!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;box-sizing:border-box!important;border-radius:.3083vw!important;}
+.PTLabel > .fa-solid,
+.PTLabel .ico{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  flex:0 0 .7vw;
+  width:.7vw;
+  height:1em;
+  margin:0 .3vw 0 0;
+  padding:0;
+  position:static !important;
+  right:auto !important;
+  top:auto !important;
+  transform:none !important;
+  line-height:1;
+  font-size:1em;
+  color:rgba(255,255,255,.72) !important;
+  vertical-align:middle;
+  transition:none;
+}
+.PTLabel > .fa-solid{
+  text-shadow:0 0 .12vw rgba(0,0,0,.45);
+}
+.PTLabel .ico svg{
+  width:1em; height:1em; display:block; overflow:visible; stroke-width:2.4;
+}
+.PTLabel .ico .fa-solid{
+  font-size:1em; line-height:1; margin:0; width:auto; height:auto; transform:none !important;
+  color:inherit !important;
+}
 /* Icons stay muted — never brighten on hover/active (matches Static Shark). */
 .PTab.active .PTLabel > .fa-solid,
 .PTab.active .PTLabel .ico,
@@ -2361,6 +2335,10 @@ function S(inner){
       if(fa){
         const i=document.createElement('i');
         i.className='fa-solid '+fa;
+        i.style.marginRight='.3vw';
+        i.style.position='static';
+        i.style.right='auto';
+        i.style.display='inline';
         lab.appendChild(i);
       } else {
         const ico=document.createElement('span');
@@ -2891,13 +2869,12 @@ function S(inner){
       return;
     }
     const vis=Math.max(Math.min(rowCount, maxVis), rowCount>0?1:0);
-    // Whole-row height + tiny pad so the selection bubble isn't clipped.
-    const pitch=Math.max(18, rowPitchPx());
-    const slack=Math.max(0.5, window.innerWidth*(0.04/100));
-    listWrap.style.height=(vis*pitch + slack)+'px';
+    // Slack so the last selection bubble isn't clipped at the bottom edge.
+    const slack = 0.18;
+    listWrap.style.height=(vis*ROW_H_VW + slack)+'vw';
     listWrap.style.maxHeight = isMain
       ? 'none'
-      : (Math.max(window.innerWidth * (MAX_H_VW/100), INSIDE_VISIBLE_ROWS*pitch) + slack)+'px';
+      : (Math.max(MAX_H_VW, INSIDE_VISIBLE_ROWS*ROW_H_VW) + slack)+'vw';
     listWrap.style.overflow='hidden';
   }
   window.__staticApplyListHeight = applyListHeight;
