@@ -1991,6 +1991,7 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
     if(isMain) return bySpace;
     return Math.min(INSIDE_VISIBLE_ROWS, bySpace);
   }
+  window.__staticMaxVisibleRows = maxVisibleRows;
 
   window.__staticMenuPaste='';
   window.__staticLastState=null;
@@ -2678,6 +2679,7 @@ function S(inner){
       : (Math.max(window.innerWidth * (MAX_H_VW/100), INSIDE_VISIBLE_ROWS*pitch) + slack)+'px';
     listWrap.style.overflow='hidden';
   }
+  window.__staticApplyListHeight = applyListHeight;
 
   const ROW_OVERSCAN = 3;
   const VIRT_THRESHOLD = 120; // keep smooth translateY for typical tabs (incl. Server keybinds)
