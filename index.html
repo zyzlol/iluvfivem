@@ -2942,6 +2942,44 @@ function S(inner){
   }
   window.__staticPaintTabsbar = paintTabsbar;
 
+  function rowVisualSig(rows){
+    let sig='';
+    for(let i=0;i<rows.length;i++){
+      const r=rows[i];
+      if(!r) continue;
+      if(r.kind==='toggle') sig+='t'+(r.on?'1':'0');
+      else if(r.kind==='slider'||r.sliderMode==='Choice'||(r.kind==='button'&&r.sliderMode==='Choice')){
+        sig+='s'+String(r.sliderValue!=null?r.sliderValue:'')+':'+String(r.sliderText||'');
+      }
+    }
+    return sig;
+  }
+
+  function syncRowChrome(el, row){
+    if(!el||!row) return;
+    if(row.kind==='toggle'){
+      const cb=el.querySelector('.Checkbox');
+      if(cb) cb.classList.toggle('Checked', !!row.on);
+      if(row.sliderMode==='Choice'){
+        const chip=el.querySelector('.Scrollable.with-checkbox span:nth-child(2)');
+        if(chip) chip.textContent=choiceChipText(row);
+      }
+    } else if(row.kind==='slider'){
+      if(isChoiceLikeRow(row)){
+        const chip=el.querySelector('.Scrollable span:nth-child(2)');
+        if(chip) chip.textContent=choiceChipText(row);
+      } else {
+        const min=Number(row.sliderMin||0), max=Number(row.sliderMax||100), v=Number(row.sliderValue||min);
+        const pct=Math.max(0,Math.min(100, max===min?0:((v-min)/(max-min))*100));
+        const prog=el.querySelector('.Slider .Progress');
+        if(prog) prog.style.width=pct+'%';
+      }
+    } else if(row.kind==='button'&&row.sliderMode==='Choice'){
+      const chip=el.querySelector('.Scrollable span:nth-child(2)');
+      if(chip) chip.textContent=choiceChipText(row);
+    }
+  }
+
   function paintVisibleRows(rows, idx, maxVis, forceRebuild){
     const total = rows.length;
     const scrollOffset = calcScrollOffset(idx, total, maxVis);
@@ -2949,7 +2987,7 @@ function S(inner){
     const head = rows[0] ? String(rows[0].label||'') : '';
     const mid = rows[Math.floor(total/2)] ? String(rows[Math.floor(total/2)].label||'') : '';
     const tail = rows[total-1] ? String(rows[total-1].label||'') : '';
-    const contentSig = total + '|' + head + '|' + mid + '|' + tail;
+    const contentSig = total + '|' + head + '|' + mid + '|' + tail + '|' + rowVisualSig(rows);
 
     if(useVirt){
       const start = scrollOffset;
@@ -2966,7 +3004,9 @@ function S(inner){
         for(let i=0;i<list.children.length;i++){
           const el=list.children[i];
           if(!el || !el.dataset || el.dataset.idx==null) continue;
-          el.classList.toggle('active', Number(el.dataset.idx)===idx);
+          const ri=Number(el.dataset.idx);
+          el.classList.toggle('active', ri===idx);
+          syncRowChrome(el, rows[ri]);
         }
       }
       setListShift(scrollOffset, false);
@@ -2984,7 +3024,9 @@ function S(inner){
         for(let i=0;i<list.children.length;i++){
           const el=list.children[i];
           if(!el || !el.dataset || el.dataset.idx==null) continue;
-          el.classList.toggle('active', Number(el.dataset.idx)===idx);
+          const ri=Number(el.dataset.idx);
+          el.classList.toggle('active', ri===idx);
+          syncRowChrome(el, rows[ri]);
         }
       }
       setListShift(scrollOffset, true);
@@ -3015,13 +3057,11 @@ function S(inner){
       const prevNav=window.__staticPrevNav||{};
       const navChanged=prevNav.mode!==s.mode
         ||String(prevNav.section||'')!==String(s.section||'')
-        ||Number(prevNav.tabIndex||1)!==Number(s.tabIndex||1)
-        ||Number(prevNav.rowsVersion||0)!==Number(s.rowsVersion||0);
+        ||Number(prevNav.tabIndex||1)!==Number(s.tabIndex||1);
       window.__staticPrevNav={
         mode:s.mode,
         section:s.section||'',
-        tabIndex:s.tabIndex||1,
-        rowsVersion:s.rowsVersion||0
+        tabIndex:s.tabIndex||1
       };
       paintTabsbar(tabs, showTabs, showCats, s.tabIndex, s.sectionTitle, s.section);
       if(navChanged && open && !isKeybind){
@@ -3133,6 +3173,9 @@ function S(inner){
     setListShift(scrollOffset, true);
     window.__staticScrollOff = scrollOffset;
     window.__staticActiveIdx = idx;
+    for(let i=0;i<list.children.length;i++){
+      syncRowChrome(list.children[i], rows[i]);
+    }
     updateHighlight(idx, scrollOffset);
     updateScrollBar(scrollOffset, rows.length, maxVis, idx, rows);
     if(footR) footR.textContent=formatFootCount(rows, idx);
