@@ -3041,6 +3041,8 @@ function S(inner){
 
   window.staticRender=function(payload){
     try{
+      window.__staticListSig=null;
+      window.__staticVirtSig=null;
       const s=(typeof payload==='string')?JSON.parse(payload):payload;
       if(!s) return;
       window.__staticLastState=s;
