@@ -429,6 +429,11 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         background: linear-gradient(90deg, rgba(var(--menu-color),0.1) 0%, rgba(255,255,255,0.01) 60%, transparent 100%);
     }
 
+    .PWrapper .PTabs .PTab.active,
+    .PWrapper .PTabs .PTab.active:hover {
+        background: transparent;
+    }
+
     .PWrapper .PTabs .PTab:active {
         background: rgba(255,255,255,0.02);
     }
@@ -1398,7 +1403,7 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
 .PWrapper:not(.keybind-mode) .PBanner,.PWrapper:not(.keybind-mode) .PCategories,.PWrapper:not(.keybind-mode) .PTabs,.PWrapper:not(.keybind-mode) .PFooter{width:100%!important;max-width:100%!important;margin-left:0!important;margin-right:0!important;box-sizing:border-box!important;}
 .PWrapper .PCategories:empty,.PWrapper .PCategories:not(.show){display:none;}
 .PWrapper .PCategories.show{display:flex;}
-/* List scroll animates; selection bubble snaps instantly (no text-in-box parallax). */
+/* List scroll animates; bubble snaps instantly so labels never slide inside the box. */
 .PWrapper.fast-nav #list{transition:transform .12s cubic-bezier(.22,1,.36,1)!important;}.PWrapper.fast-nav #selOverlay{transition:none!important;}.PWrapper.fast-nav #psProgress{transition:none!important;}
 /* Full rebuilds (tab switches) must not animate in from the old scroll offset. */
 .PWrapper.rendering #list{transition:none!important;}.PWrapper.rendering #selOverlay{transition:none!important;}.PWrapper.rendering #psProgress{transition:none!important;}
@@ -2352,10 +2357,6 @@ function S(inner){
       }
     }
     let labelText = esc(r.label||'');
-    if(kind==='slider' && isActive && !isChoiceLikeRow(r)){
-      const v = r.sliderText!=null ? r.sliderText : (r.sliderValue!=null ? r.sliderValue : '');
-      if(v !== '') labelText = labelText + ': ' + esc(v);
-    }
     const txt=document.createElement('span'); txt.className='PTText'; txt.textContent=labelText; lab.appendChild(txt);
     tab.appendChild(lab);
 
@@ -2488,10 +2489,10 @@ function S(inner){
     selOverlay.style.opacity = '1';
     selOverlay.style.zIndex = '0';
     selOverlay.style.pointerEvents = 'none';
-    selOverlay.style.backgroundColor = 'rgba('+color+', 0.60)';
-    selOverlay.style.border = '0.052vw solid rgba('+color+', 1)';
+    selOverlay.style.backgroundColor = 'rgba('+color+', 0.55)';
+    selOverlay.style.border = '0.04vw solid rgba('+color+', 0.95)';
     selOverlay.style.borderRadius = '.3083vw';
-    selOverlay.style.boxShadow = '0vw 0vw .2083vw .0339vw rgb('+color+')';
+    selOverlay.style.boxShadow = '0vw 0vw .18vw .02vw rgba('+color+',0.85)';
     selOverlay.style.transition = 'none';
   }
 
@@ -3190,7 +3191,6 @@ function S(inner){
     cluster.classList.toggle('fast-nav', fast);
     _lastSelAt=now;
     for(let i=0;i<list.children.length;i++) list.children[i].classList.toggle('active', i===idx);
-    syncActiveSliderLabels(rows, prevIdx, idx);
 
     const showTabs = s.mode!=='main' && s.tabs && s.tabs.length>1;
     const maxVis = maxVisibleRows(showTabs, s.mode==='main');
