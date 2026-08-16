@@ -3138,22 +3138,24 @@ function S(inner){
       const maxVis = isKeybind ? DEFAULT_VIS : maxVisibleRows(showTabs, isMain);
       list.innerHTML='';
       cluster.classList.add('rendering');
+      cluster.classList.remove('fast-nav');
       const frag=document.createDocumentFragment();
       if(!isKeybind){
         for(let i=0;i<rows.length;i++) frag.appendChild(buildRow(rows[i], i, idx));
       }
       list.appendChild(frag);
-      requestAnimationFrame(function(){ cluster.classList.remove('rendering'); });
-
       applyListHeight(rows.length, maxVis, isKeybind, isMain);
       const scrollOffset = isKeybind ? 0 : calcScrollOffset(idx, rows.length, maxVis);
       setListShift(scrollOffset, !isKeybind);
       window.__staticScrollOff = scrollOffset;
       window.__staticActiveIdx = idx;
-      if(!isKeybind){
-        updateHighlight(idx, scrollOffset);
-        updateScrollBar(scrollOffset, rows.length, maxVis, idx, rows);
-      } else if(selOverlay){ selOverlay.style.opacity='0'; }
+      requestAnimationFrame(function(){
+        cluster.classList.remove('rendering');
+        if(!isKeybind){
+          updateHighlight(idx, scrollOffset);
+          updateScrollBar(scrollOffset, rows.length, maxVis, idx, rows);
+        } else if(selOverlay){ selOverlay.style.opacity='0'; }
+      });
 
       if(footR && !isKeybind){
         footR.textContent = formatFootCount(rows, idx);
