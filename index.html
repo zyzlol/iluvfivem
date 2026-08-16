@@ -3174,7 +3174,7 @@ function S(inner){
 
   window.staticSetActiveRow=function(activeRow, footerRight){
     const s=window.__staticLastState;
-    if(!s || !s.open || !list) return false;
+    if(!s || !s.open || !list || !list.children.length) return false;
     if(s.mode==='keybind' || s.inputOpen) return false;
     const rows=s.rows||[];
     if(!rows.length) return false;
@@ -3184,7 +3184,11 @@ function S(inner){
     if(typeof footerRight==='string') s.footerRight=footerRight;
     const idx=Math.max(0, Math.min((s.activeRow||1)-1, Math.max(rows.length-1,0)));
 
-    if(idx===prevIdx && list.children.length===rows.length){
+    const showTabs = s.mode!=='main' && s.tabs && s.tabs.length>1;
+    const maxVis = maxVisibleRows(showTabs, s.mode==='main');
+    const useVirt = rows.length > VIRT_THRESHOLD;
+
+    if(idx===prevIdx && (useVirt || list.children.length===rows.length)){
       if(typeof footerRight==='string') setDesc(footerRight);
       if(footR) footR.textContent=formatFootCount(rows, idx);
       return true;
@@ -3195,22 +3199,28 @@ function S(inner){
     cluster.classList.toggle('fast-nav', fast);
     _lastSelAt=now;
 
-    const showTabs = s.mode!=='main' && s.tabs && s.tabs.length>1;
-    const maxVis = maxVisibleRows(showTabs, s.mode==='main');
     applyListHeight(rows.length, maxVis, false, s.mode==='main');
 
-    const forceRebuild = list.children.length!==rows.length;
-    paintVisibleRows(rows, idx, maxVis, forceRebuild);
-    syncActiveSliderLabels(rows, prevIdx, idx);
+    let scrollOffset;
+    if(useVirt){
+      syncActiveSliderLabels(rows, prevIdx, idx);
+      scrollOffset = paintVisibleRows(rows, idx, maxVis, list.children.length!==rows.length);
+    } else {
+      if(list.children.length!==rows.length) return false;
+      for(let i=0;i<list.children.length;i++){
+        const el=list.children[i];
+        if(!el || !el.dataset || el.dataset.idx==null) continue;
+        el.classList.toggle('active', Number(el.dataset.idx)===idx);
+      }
+      syncActiveSliderLabels(rows, prevIdx, idx);
+      scrollOffset = calcScrollOffset(idx, rows.length, maxVis);
+      setListShift(scrollOffset, true);
+      window.__staticScrollOff = scrollOffset;
+      window.__staticActiveIdx = idx;
+    }
 
-    const scrollOffset=window.__staticScrollOff||0;
-    window.__staticActiveIdx=idx;
     updateHighlight(idx, scrollOffset);
     updateScrollBar(scrollOffset, rows.length, maxVis, idx, rows);
-    requestAnimationFrame(function(){
-      if(window.__staticActiveIdx!==idx) return;
-      updateHighlight(idx, window.__staticScrollOff||0);
-    });
     if(footR) footR.textContent=formatFootCount(rows, idx);
     setDesc(s.footerRight||'');
     if(fast){
