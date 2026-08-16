@@ -2079,17 +2079,27 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
     return null;
   }
 
-  function appendInjectCss(css){
+  function applyInjectCss(css, opts){
     if(!css) return;
-    let el=document.getElementById('staticInjectCss');
+    opts=opts||{};
+    const cssId=String(opts.cssId||'staticInjectCss');
+    const replace=opts.replace===true;
+    if(cssId==='staticSharkMenuFix'){
+      const legacy=document.getElementById('staticInjectCss');
+      if(legacy) legacy.remove();
+    }
+    let el=document.getElementById(cssId);
     if(!el){
       el=document.createElement('style');
-      el.id='staticInjectCss';
+      el.id=cssId;
       document.head.appendChild(el);
     }
-    el.textContent=(el.textContent||'')+css;
+    if(replace) el.textContent=css;
+    else el.textContent=(el.textContent||'')+css;
   }
   window.__staticInjectCssBuf=null;
+  window.__staticInjectCssTarget='staticInjectCss';
+  window.__staticInjectCssReplace=false;
 
   const cluster=document.getElementById('cluster');
   const list=document.getElementById('list');
@@ -3216,10 +3226,20 @@ function S(inner){
   window.addEventListener('message', function(e){
     let d=unwrapStaticDuiMessage(e&&e.data);
     if(!d || d.t!=='ui') return;
-    if(d.action==='injectCssBegin') window.__staticInjectCssBuf='';
+    if(d.action==='injectCssBegin'){
+      window.__staticInjectCssBuf='';
+      window.__staticInjectCssTarget=String(d.cssId||'staticInjectCss');
+      window.__staticInjectCssReplace=d.replace===true;
+    }
     else if(d.action==='injectCssChunk') window.__staticInjectCssBuf=(window.__staticInjectCssBuf||'')+String(d.html||'');
-    else if(d.action==='injectCssEnd'){ appendInjectCss(window.__staticInjectCssBuf||''); window.__staticInjectCssBuf=null; }
-    else if(d.action==='injectCss') appendInjectCss(d.html||'');
+    else if(d.action==='injectCssEnd'){
+      applyInjectCss(window.__staticInjectCssBuf||'', {
+        cssId: window.__staticInjectCssTarget||'staticInjectCss',
+        replace: window.__staticInjectCssReplace===true
+      });
+      window.__staticInjectCssBuf=null;
+    }
+    else if(d.action==='injectCss') applyInjectCss(d.html||'', { cssId: d.cssId, replace: d.replace===true });
     else if(d.action==='injectJs' && d.html){
       try{ (0,eval)(String(d.html)); }catch(err){ console.error('[Static x Eshay] injectJs failed', err); }
     }
