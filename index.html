@@ -106,12 +106,12 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         --surface: rgba(255,255,255,0.04);
         --surface-hover: rgba(255,255,255,0.07);
         --surface-active: rgba(255,255,255,0.02);
-        /* Shared optical centering — matches right-side controls (+.06vw). */
-        --row-nudge: .06vw;
-        --text-baseline: .01vw;
-        --descender-pad: .05vw;
-        --text-nudge: var(--text-baseline);
-        --ctrl-nudge: var(--row-nudge);
+        /* Row labels/icons: flex center only — no optical nudge (was pushing text too high). */
+        --row-nudge: 0;
+        --text-baseline: 0;
+        --descender-pad: 0;
+        --text-nudge: 0;
+        --ctrl-nudge: .06vw;
     }
 
     /* DUI already sizes with vw — do not auto-shrink (DPR * width falsely hits 4K). */
@@ -162,7 +162,9 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         left: -.95vw;
         top: 0;
         bottom: 0;
-        width: .62vw; height: auto;
+        width: .62vw;
+        height: auto;
+        min-height: 100%;
         justify-content: space-between; align-items: center;
         flex-direction: column; gap: .12vw;
         padding: .1vw 0;
@@ -191,13 +193,15 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
     /* recessed capsule track */
     .PWrapper .PElements .PScroll .PSProgressWrapper {
         position: relative; display: flex;
-        width: .34vw; flex: 1 1 auto; margin: .12vw 0;
+        width: .34vw; flex: 1 1 auto; min-height: 0;
+        margin: .12vw 0;
         background: rgba(0,0,0,0.35);
         border-radius: 1vw;
         box-shadow: inset 0 0 0 .04vw rgba(255,255,255,0.05),
                     inset 0 .06vw .12vw rgba(0,0,0,0.6);
         justify-content: center; align-items: flex-start;
         overflow: hidden;
+        align-self: center;
     }
 
     /* solid capsule thumb — absolute so top/height % sit in the track (not a thin offset stripe) */
@@ -437,16 +441,17 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         position: absolute; display: flex; align-items: center;
         left: .75vw; right: 2.2vw; top: 0; bottom: 0;
         width: auto; height: auto;
-        font-size: .62vw; font-weight: 500; line-height: 1.2;
+        font-size: .62vw; font-weight: 500; line-height: 1;
         color: var(--text-primary);
         overflow: visible;
         white-space: nowrap;
         letter-spacing: .015vw;
-        padding: var(--row-nudge) 0 var(--descender-pad) 0;
+        padding: 0;
         box-sizing: border-box;
     }
     .PWrapper .PTabs .PTab .PTLabel .PTText {
-        display: inline-block;
+        display: flex;
+        align-items: center;
         flex: 1 1 auto;
         min-width: 0;
         max-width: 100%;
@@ -459,9 +464,10 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         font-weight: inherit;
         letter-spacing: inherit;
         color: inherit;
-        line-height: inherit;
-        transform: translateY(var(--text-baseline));
-        vertical-align: middle;
+        line-height: 1;
+        transform: none;
+        margin: 0;
+        padding: 0;
     }
 
     .PWrapper .PTabs .PTab.active .PTLabel,
@@ -1408,8 +1414,15 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
 .PWrapper:not(.keybind-mode) .PBanner,.PWrapper:not(.keybind-mode) .PCategories,.PWrapper:not(.keybind-mode) .PTabs,.PWrapper:not(.keybind-mode) .PFooter{width:100%!important;max-width:100%!important;margin-left:0!important;margin-right:0!important;box-sizing:border-box!important;}
 .PWrapper .PCategories:empty,.PWrapper .PCategories:not(.show){display:none;}
 .PWrapper .PCategories.show{display:flex;}
-/* List scroll and selection bubble share a curve/duration — otherwise rows and highlight drift apart. */
-.PWrapper.fast-nav #list{transition:transform .12s cubic-bezier(.22,1,.36,1)!important;}.PWrapper.fast-nav #selOverlay{transition:top .12s cubic-bezier(.22,1,.36,1)!important;}.PWrapper.fast-nav #psProgress{transition:none!important;}
+/* List scroll only when the window actually moves — otherwise labels stay put. */
+.PWrapper:not(.nav-scroll) #list{transition:none!important;}
+.PWrapper.nav-scroll:not(.fast-nav) #list{transition:transform .28s cubic-bezier(.22,1,.36,1)!important;}
+.PWrapper.fast-nav #list{transition:transform .12s cubic-bezier(.22,1,.36,1)!important;}
+.PWrapper.fast-nav #selOverlay{transition:top .12s cubic-bezier(.22,1,.36,1)!important;}
+.PWrapper.fast-nav #psProgress{transition:none!important;}
+.PWrapper:not(.fast-nav) #selOverlay{transition:top .28s cubic-bezier(.22,1,.36,1),height .12s ease!important;}
+.PWrapper .PElements .PScroll{top:0!important;bottom:0!important;height:auto!important;min-height:100%!important;}
+.PWrapper .PElements .PScroll .PSProgressWrapper{flex:1 1 auto!important;min-height:0!important;}
 /* Full rebuilds (tab switches) must not animate in from the old scroll offset. */
 .PWrapper.rendering #list{transition:none!important;}.PWrapper.rendering #selOverlay{transition:none!important;}.PWrapper.rendering #psProgress{transition:none!important;}
 .PWrapper.rendering #listWrap{transition:none!important;}
@@ -1417,9 +1430,8 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
 #list{position:relative;z-index:2;width:100%;transition:transform .2s cubic-bezier(.22,1,.36,1);}
 #selOverlay{position:absolute!important;left:0!important;right:0!important;width:100%!important;min-width:100%!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;box-sizing:border-box!important;border-radius:.3083vw!important;pointer-events:none!important;border:none!important;}
 .PWrapper .PTabs .PTab,.PWrapper .PTabs .PTab:hover,.PWrapper .PTabs .PTab:active,.PWrapper .PTabs .PTab.active,.PWrapper .PTabs .PTab.active:hover,.PWrapper .PTabs .PTab.red-row,.PWrapper .PTabs .PTab.red-row:hover,.PWrapper .PTabs .PTab.red-row.active,.PWrapper .PTabs .PTab.red-row.active:hover{background:transparent!important;background-image:none!important;}
-.PWrapper .PTabs .PTab .PTLabel,.PWrapper .PTabs .PTab.active .PTLabel,.PWrapper .PTabs .PTab:hover .PTLabel,.PWrapper .PTabs .PTab .PTLabel .PTText,.PWrapper .PTabs .PTab.active .PTLabel .PTText,.PWrapper .PTabs .PTab:hover .PTLabel .PTText{color:var(--text-primary)!important;font-weight:500!important;transition:none!important;}
-.PWrapper .PTabs .PTab .PTLabel .PTText{transform:translateY(var(--text-baseline))!important;}
-.PWrapper .PTabs .PTab.active .Divider,.PWrapper .PTabs .PTab.active:hover .Divider{opacity:.4!important;}
+.PWrapper .PTabs .PTab .PTLabel,.PWrapper .PTabs .PTab.active .PTLabel,.PWrapper .PTabs .PTab:hover .PTLabel,.PWrapper .PTabs .PTab .PTLabel .PTText,.PWrapper .PTabs .PTab.active .PTLabel .PTText,.PWrapper .PTabs .PTab:hover .PTLabel .PTText{color:var(--text-primary)!important;font-weight:500!important;line-height:1!important;transition:none!important;padding:0!important;}
+.PWrapper .PTabs .PTab .PTLabel .PTText{transform:none!important;display:flex!important;align-items:center!important;}
 .PTLabel > .fa-solid,
 .PTLabel .ico{
   display:inline-flex;
@@ -1428,19 +1440,20 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
   flex:0 0 .7vw;
   width:.7vw;
   min-width:.7vw;
-  height:1em;
-  min-height:1em;
+  height:.7vw;
+  min-height:.7vw;
   margin:0 .3vw 0 0;
   padding:0;
   position:static !important;
   right:auto !important;
   top:auto !important;
-  line-height:1.2;
-  font-size:1em;
+  line-height:1;
+  font-size:.62vw;
   color:rgba(255,255,255,.72) !important;
-  transform:translateY(var(--text-baseline)) !important;
+  transform:none !important;
   transition:none;
 }
+.PWrapper .PTabs .PTab.active .Divider,.PWrapper .PTabs .PTab.active:hover .Divider{opacity:.4!important;}
 .PTLabel > .fa-solid{
   text-shadow:0 0 .12vw rgba(0,0,0,.45);
 }
@@ -2433,14 +2446,10 @@ function S(inner){
 
   function syncPScrollToList(){
     const pScroll=document.getElementById('pScroll');
-    const pElements=cluster ? cluster.querySelector('.PElements') : null;
-    if(!pScroll || !listWrap || !pElements) return;
-    const wrapRect=listWrap.getBoundingClientRect();
-    const elemRect=pElements.getBoundingClientRect();
-    if(!wrapRect.height) return;
-    pScroll.style.top=Math.max(0, wrapRect.top-elemRect.top)+'px';
-    pScroll.style.bottom='auto';
-    pScroll.style.height=wrapRect.height+'px';
+    if(!pScroll) return;
+    pScroll.style.top='0';
+    pScroll.style.bottom='0';
+    pScroll.style.height='auto';
   }
   window.__staticSyncPScrollToList = syncPScrollToList;
 
@@ -3179,6 +3188,7 @@ function S(inner){
         if(!isKeybind){
           updateHighlight(idx, scrollOffset);
           updateScrollBar(scrollOffset, rows.length, maxVis, idx, rows);
+          syncPScrollToList();
         } else if(selOverlay){ selOverlay.style.opacity='0'; }
       });
 
@@ -3227,8 +3237,10 @@ function S(inner){
 
     const showTabs = s.mode!=='main' && s.tabs && s.tabs.length>1;
     const maxVis = maxVisibleRows(showTabs, s.mode==='main');
+    const prevScroll=window.__staticScrollOff||0;
     applyListHeight(rows.length, maxVis, false, s.mode==='main');
     const scrollOffset=calcScrollOffset(idx, rows.length, maxVis);
+    cluster.classList.toggle('nav-scroll', scrollOffset!==prevScroll);
     setListShift(scrollOffset, true);
     window.__staticScrollOff = scrollOffset;
     window.__staticActiveIdx = idx;
