@@ -3043,6 +3043,7 @@ function S(inner){
     try{
       window.__staticListSig=null;
       window.__staticVirtSig=null;
+      window.__staticToggleSig=null;
       const s=(typeof payload==='string')?JSON.parse(payload):payload;
       if(!s) return;
       window.__staticLastState=s;
