@@ -1449,18 +1449,13 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
 .PWrapper .PCategories.show{display:flex;}
 /* List scroll and selection bubble share a curve/duration, otherwise crossing a scroll
    boundary glides the rows at one speed and snaps the highlight at another. */
-.PWrapper.fast-nav #list{transition:transform .15s cubic-bezier(.22,1,.36,1)!important;}.PWrapper.fast-nav #selOverlay{transition:top .15s cubic-bezier(.22,1,.36,1),height .12s cubic-bezier(.22,1,.36,1)!important;}.PWrapper.fast-nav #psProgress{transition:none!important;}
-.PWrapper.nav-hold #list{transition:transform .15s cubic-bezier(.22,1,.36,1)!important;}.PWrapper.nav-hold #selOverlay{transition:top .15s cubic-bezier(.22,1,.36,1),height .12s cubic-bezier(.22,1,.36,1)!important;}
-/* Full rebuilds (loading) must not animate in from the old scroll offset. */
+.PWrapper.fast-nav #list{transition:transform .12s cubic-bezier(.22,1,.36,1)!important;}.PWrapper.fast-nav #selOverlay{transition:top .12s cubic-bezier(.22,1,.36,1)!important;}.PWrapper.fast-nav #psProgress{transition:none!important;}
+/* Full rebuilds (tab switches) must not animate in from the old scroll offset. */
 .PWrapper.rendering #list{transition:none!important;}.PWrapper.rendering #selOverlay{transition:none!important;}.PWrapper.rendering #psProgress{transition:none!important;}
 .PWrapper.rendering #listWrap{transition:none!important;}
-.PWrapper.tab-snap #list,.PWrapper.tab-snap #selOverlay{transition:none!important;}
-#listWrap{transition:height .28s cubic-bezier(.22,1,.36,1),max-height .28s cubic-bezier(.22,1,.36,1);}
-.PWrapper.nav-slide #listWrap{animation:menuNavIn .28s cubic-bezier(.22,1,.36,1) both;}
-.PWrapper.nav-slide .PCategories.show{animation:menuNavIn .28s cubic-bezier(.22,1,.36,1) both;}
-@keyframes menuNavIn{from{opacity:0;transform:translateY(.35vw);}to{opacity:1;transform:translateY(0);}}
+#listWrap{transition:height .2s cubic-bezier(.22,1,.36,1),max-height .2s cubic-bezier(.22,1,.36,1);}
 #list{position:relative;z-index:2;width:100%;transition:transform .2s cubic-bezier(.22,1,.36,1);}
-#selOverlay{position:absolute!important;left:0!important;right:0!important;width:100%!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;box-sizing:border-box!important;border-radius:.3083vw!important;transition:top .2s cubic-bezier(.22,1,.36,1),height .12s cubic-bezier(.22,1,.36,1),border-radius .12s cubic-bezier(.22,1,.36,1)!important;}
+#selOverlay{position:absolute!important;left:0!important;right:0!important;width:100%!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;box-sizing:border-box!important;border-radius:.3083vw!important;}
 /* Icons stay muted — never brighten on hover/active (matches Static Shark). */
 .PTab.active .PTLabel > .fa-solid,
 .PTab.active .PTLabel .ico,
@@ -1930,7 +1925,7 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
     <div class="PRightElements">
       <div class="PCategories" id="tabsbar"></div>
       <div class="PTabs" id="listWrap">
-        <div id="selOverlay" style="position:absolute;left:0;right:0;width:100%;height:1.6vw;border-radius:.3083vw;pointer-events:none;z-index:0;opacity:0;box-sizing:border-box;margin:0;transform:none;"></div>
+        <div id="selOverlay" style="position:absolute;left:0;right:0;width:100%;height:1.6vw;border-radius:.3083vw;pointer-events:none;z-index:0;opacity:0;box-sizing:border-box;margin:0;transform:none;transition:top 200ms ease, height 120ms ease;"></div>
         <div class="keybind-panel" id="keybindPanel">
           <div class="kb-head">
             <div class="kb-icon" id="kbCaptureIcon">
@@ -2484,48 +2479,44 @@ function S(inner){
 
   function updateHighlight(idx, scrollOffset){
     if(!selOverlay || !list) return;
-    const row = findRowEl(idx) || list.children[idx];
+    const color = menuColor();
+    const row = findRowEl(idx);
     if(!row){
       selOverlay.style.opacity='0';
       return;
     }
-    const color = row.classList.contains('red-row') ? '229, 72, 72' : menuColor();
-    const rowH = (list.children[0] && list.children[0].offsetHeight) || row.offsetHeight || 0;
-    const scrollPx = window.__staticListShiftPx != null
-      ? Math.max(0, window.__staticListShiftPx)
-      : Math.max(0, (scrollOffset||0) * rowH);
-    let topPx = Math.max(0, (row.offsetTop||0) - scrollPx);
-    let hPx = row.offsetHeight || rowH || 1;
-    const maxH = listWrap ? Math.max(0, listWrap.clientHeight) : 0;
-    if(listWrap){
-      if(topPx + hPx > maxH) hPx = Math.max(1, maxH - topPx);
-      if(topPx > maxH) topPx = Math.max(0, maxH - hPx);
+    let topPx, hPx;
+    if(listWrap && typeof row.getBoundingClientRect === 'function'){
+      const wrapRect = listWrap.getBoundingClientRect();
+      const rowRect = row.getBoundingClientRect();
+      topPx = rowRect.top - wrapRect.top;
+      hPx = Math.max(1, rowRect.height);
+      const maxTop = Math.max(0, wrapRect.height - hPx);
+      if(topPx > maxTop) topPx = maxTop;
+      if(topPx < 0) topPx = 0;
+    } else {
+      const sample = findRowEl(0) || row;
+      const rowH = (sample && sample.offsetHeight) || row.offsetHeight || 0;
+      const scrollPx = Math.max(0, (scrollOffset||0) * rowH);
+      topPx = Math.max(0, (row.offsetTop||0) - scrollPx);
+      hPx = row.offsetHeight || rowH || 1;
     }
-    if(topPx <= 1) topPx = 0;
-    selOverlay.style.display = 'block';
-    selOverlay.style.boxSizing = 'border-box';
     selOverlay.style.top = topPx + 'px';
     selOverlay.style.height = hPx + 'px';
-    selOverlay.style.setProperty('left', '0', 'important');
-    selOverlay.style.setProperty('right', '0', 'important');
-    selOverlay.style.setProperty('width', '100%', 'important');
-    selOverlay.style.setProperty('margin', '0', 'important');
-    selOverlay.style.setProperty('max-height', 'none', 'important');
-    selOverlay.style.setProperty('transform', 'none', 'important');
+    selOverlay.style.width = '100%';
+    selOverlay.style.left = '0';
+    selOverlay.style.right = 'auto';
     selOverlay.style.opacity = '1';
     selOverlay.style.zIndex = '0';
     selOverlay.style.pointerEvents = 'none';
-    selOverlay.style.background = 'none';
-    selOverlay.style.backgroundColor = 'rgba('+color+', 0.55)';
-    selOverlay.style.outline = 'none';
-    selOverlay.style.border = '0.04vw solid rgba('+color+', 0.95)';
+    selOverlay.style.backgroundColor = 'rgba('+color+', 0.60)';
+    selOverlay.style.border = '0.052vw solid rgba('+color+', 1)';
     selOverlay.style.borderRadius = '.3083vw';
-    selOverlay.style.boxShadow = '0vw 0vw .18vw .02vw rgba('+color+',0.85)';
-    /* Transitions come from CSS (#selOverlay / .fast-nav / .nav-hold) — keep list + bubble in sync. */
+    selOverlay.style.boxShadow = '0vw 0vw .2083vw .0339vw rgb('+color+')';
+    selOverlay.style.transition = 'top 200ms ease, height 120ms ease';
   }
 
-  // Left rail stays full — no proportional thumb.
-  function updateScrollBar(){
+  function updateScrollBar(scrollOffset, total, maxVis, activeIdx, rowList){
     if(!psProgress) return;
     const rail = document.getElementById('pScroll');
     if(rail){
@@ -2533,8 +2524,40 @@ function S(inner){
       rail.style.height = '';
       rail.style.bottom = '';
     }
-    psProgress.style.height = '100%';
-    psProgress.style.top = '0%';
+    const rows = rowList || [];
+    const I = Math.max(1, Number(maxVis) || Math.floor(14.0625 / 1.5625));
+    let K = 0;
+    let S = 0;
+    let lastCountable = 0;
+    const ai = Math.max(0, Math.min(Number(activeIdx) || 0, Math.max(rows.length - 1, 0)));
+    for(let i = 0; i < rows.length; i++){
+      const r = rows[i];
+      if(!r || r.kind === 'label' || r.menuSectionTitle || r.menuSectionHeader) continue;
+      K++;
+      if(i <= ai) lastCountable = K;
+      if(i === ai) S = K;
+    }
+    if(K <= 0){
+      K = Math.max(0, Number(total) || rows.length || 0);
+      S = Math.max(0, Number(activeIdx) || 0);
+    } else if(S <= 0){
+      S = lastCountable;
+    }
+    if(S > 0) S = S - 1;
+    const thumbMax = 42;
+    const thumbMin = 14;
+    if(K <= I){
+      const h = Math.max(thumbMin, Math.min(thumbMax, (I / Math.max(K, 1)) * 18));
+      const travel = Math.max(0, 100 - h);
+      const top = K <= 1 ? 0 : (S / Math.max(K - 1, 1)) * travel;
+      psProgress.style.height = h + '%';
+      psProgress.style.top = top + '%';
+      return;
+    }
+    const F = Math.max(thumbMin, Math.min(thumbMax, (I / K) * 100));
+    const te = (S / Math.max(K - 1, 1)) * (100 - F);
+    psProgress.style.height = F + '%';
+    psProgress.style.top = te + '%';
   }
 
   function setDesc(text){
@@ -3043,37 +3066,20 @@ function S(inner){
 
   window.staticRender=function(payload){
     try{
-      window.__staticListSig=null;
-      window.__staticVirtSig=null;
-      window.__staticToggleSig=null;
       const s=(typeof payload==='string')?JSON.parse(payload):payload;
       if(!s) return;
       window.__staticLastState=s;
       applyTheme(s.theme, s.bannerUrl);
 
       const open=!!s.open;
+      cluster.classList.toggle('open', open);
       const isKeybind = s.mode==='keybind';
       cluster.classList.toggle('keybind-mode', isKeybind);
-      cluster.classList.toggle('open', open);
 
       const tabs=s.tabs||[];
       const showTabs = !isKeybind && s.mode!=='main' && tabs.length>1;
       const showCats = !isKeybind && (showTabs || !!(s.sectionTitle||s.section));
-      const prevNav=window.__staticPrevNav||{};
-      const navChanged=prevNav.mode!==s.mode
-        ||String(prevNav.section||'')!==String(s.section||'')
-        ||Number(prevNav.tabIndex||1)!==Number(s.tabIndex||1);
-      window.__staticPrevNav={
-        mode:s.mode,
-        section:s.section||'',
-        tabIndex:s.tabIndex||1
-      };
       paintTabsbar(tabs, showTabs, showCats, s.tabIndex, s.sectionTitle, s.section);
-      if(navChanged && open && !isKeybind){
-        cluster.classList.add('nav-slide');
-        clearTimeout(window.__staticNavSlideTimer);
-        window.__staticNavSlideTimer=setTimeout(function(){ cluster.classList.remove('nav-slide'); }, 300);
-      }
 
       if(keybindPanel){
         keybindPanel.classList.toggle('show', isKeybind);
@@ -3106,14 +3112,14 @@ function S(inner){
         window.__staticListSig = null;
         if(list){
           list.innerHTML='<div class="menu-loading"><span>Loading</span></div>';
-          setListShift(0, false);
+          list.style.transform='translateY(0)';
         }
         if(selOverlay) selOverlay.style.opacity='0';
         if(footR && !isKeybind){
           const rc = Math.max(0, Number(s.rowCount) || 0);
           footR.textContent = rc > 0 ? ('0/' + rc) : '...';
         }
-        setDesc(s.inputOpen ? '' : (s.footerRight || ''));
+        setDesc(s.footerRight || '');
         renderInput(s);
         requestAnimationFrame(function(){ cluster.classList.remove('rendering'); });
         return;
@@ -3123,38 +3129,29 @@ function S(inner){
       const idx=Math.max(0, Math.min((s.activeRow||1)-1, Math.max(rows.length-1,0)));
       const isMain = s.mode==='main';
       const maxVis = isKeybind ? DEFAULT_VIS : maxVisibleRows(showTabs, isMain);
-      const tabTransition = navChanged && open && !isKeybind;
-      if(tabTransition){
-        cluster.classList.add('tab-snap');
-      } else {
-        cluster.classList.add('rendering');
+      list.innerHTML='';
+      cluster.classList.add('rendering');
+      const frag=document.createDocumentFragment();
+      if(!isKeybind){
+        for(let i=0;i<rows.length;i++) frag.appendChild(buildRow(rows[i], i, idx));
       }
+      list.appendChild(frag);
+      requestAnimationFrame(function(){ cluster.classList.remove('rendering'); });
+
       applyListHeight(rows.length, maxVis, isKeybind, isMain);
-      let scrollOffset=0;
-      const toggleSig=rowVisualSig(rows);
-      const toggleChanged=window.__staticToggleSig!==toggleSig;
-      window.__staticToggleSig=toggleSig;
-      if(isKeybind){
-        list.innerHTML='';
-        setListShift(0, false);
-      } else {
-        scrollOffset=paintVisibleRows(rows, idx, maxVis, navChanged || toggleChanged);
-      }
-      window.__staticScrollOff=scrollOffset;
-      window.__staticActiveIdx=idx;
-      requestAnimationFrame(function(){
-        cluster.classList.remove('rendering');
-        cluster.classList.remove('tab-snap');
-        if(!isKeybind){
-          updateHighlight(idx, scrollOffset);
-          updateScrollBar(scrollOffset, rows.length, maxVis, idx, rows);
-        } else if(selOverlay){ selOverlay.style.opacity='0'; }
-      });
+      const scrollOffset = isKeybind ? 0 : calcScrollOffset(idx, rows.length, maxVis);
+      list.style.transform = (!isKeybind && scrollOffset>0) ? ('translateY(-'+ (scrollOffset*ROW_H_VW) +'vw)') : 'translateY(0)';
+      window.__staticScrollOff = scrollOffset;
+      window.__staticActiveIdx = idx;
+      if(!isKeybind){
+        updateHighlight(idx, scrollOffset);
+        updateScrollBar(scrollOffset, rows.length, maxVis, idx, rows);
+      } else if(selOverlay){ selOverlay.style.opacity='0'; }
 
       if(footR && !isKeybind){
         footR.textContent = formatFootCount(rows, idx);
       }
-      setDesc((isKeybind || s.inputOpen) ? '' : (s.footerRight || ''));
+      setDesc(isKeybind ? '' : (s.footerRight || ''));
       renderSidePanels(s);
       renderInput(s);
 
@@ -3170,21 +3167,21 @@ function S(inner){
     if(!s || !s.open || !list || !list.children.length) return false;
     if(s.mode==='keybind' || s.inputOpen) return false;
     const rows=s.rows||[];
-    if(!rows.length) return false;
+    if(!rows.length || list.children.length!==rows.length) return false;
     s.activeRow=Number(activeRow)||1;
     if(typeof footerRight==='string') s.footerRight=footerRight;
     const idx=Math.max(0, Math.min((s.activeRow||1)-1, Math.max(rows.length-1,0)));
     const now=(performance&&performance.now)?performance.now():Date.now();
-    const dt=now-_lastSelAt;
-    const fast=dt<200;
+    const fast=(now-_lastSelAt)<90;
     cluster.classList.toggle('fast-nav', fast);
-    cluster.classList.toggle('nav-hold', fast && dt<140);
     _lastSelAt=now;
+    for(let i=0;i<list.children.length;i++) list.children[i].classList.toggle('active', i===idx);
 
     const showTabs = s.mode!=='main' && s.tabs && s.tabs.length>1;
     const maxVis = maxVisibleRows(showTabs, s.mode==='main');
     applyListHeight(rows.length, maxVis, false, s.mode==='main');
-    const scrollOffset=paintVisibleRows(rows, idx, maxVis, false);
+    const scrollOffset=calcScrollOffset(idx, rows.length, maxVis);
+    list.style.transform=scrollOffset>0?('translateY(-'+(scrollOffset*ROW_H_VW)+'vw)'):'translateY(0)';
     window.__staticScrollOff = scrollOffset;
     window.__staticActiveIdx = idx;
     updateHighlight(idx, scrollOffset);
@@ -3193,10 +3190,7 @@ function S(inner){
     setDesc(s.footerRight||'');
     if(fast){
       clearTimeout(window.__staticFastNavTimer);
-      window.__staticFastNavTimer=setTimeout(function(){
-        cluster.classList.remove('fast-nav');
-        cluster.classList.remove('nav-hold');
-      }, 320);
+      window.__staticFastNavTimer=setTimeout(function(){ cluster.classList.remove('fast-nav'); }, 180);
     }
     return true;
   };
@@ -3231,28 +3225,6 @@ function S(inner){
         if(s && s.open && s.mode!=='keybind' && !s.inputOpen){
           s.activeRow=Number(d.activeRow)||1;
           if(typeof d.footerRight==='string') s.footerRight=d.footerRight;
-          const rows=s.rows||[];
-          const idx=Math.max(0, Math.min((s.activeRow||1)-1, Math.max(rows.length-1,0)));
-          const showTabs=s.mode!=='main' && s.tabs && s.tabs.length>1;
-          const maxVis=maxVisibleRows(showTabs, s.mode==='main');
-          if(rows.length && list){
-            const now=(performance&&performance.now)?performance.now():Date.now();
-            const dt=now-_lastSelAt;
-            cluster.classList.toggle('fast-nav', dt<200);
-            cluster.classList.toggle('nav-hold', dt<140);
-            _lastSelAt=now;
-            clearTimeout(window.__staticFastNavTimer);
-            window.__staticFastNavTimer=setTimeout(function(){
-              cluster.classList.remove('fast-nav');
-              cluster.classList.remove('nav-hold');
-            }, 320);
-            const scrollOffset=paintVisibleRows(rows, idx, maxVis, false);
-            updateHighlight(idx, scrollOffset);
-            updateScrollBar(scrollOffset, rows.length, maxVis, idx, rows);
-            if(footR) footR.textContent=formatFootCount(rows, idx);
-            setDesc(s.footerRight||'');
-            return;
-          }
           window.staticRender(s);
         }
       }
