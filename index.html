@@ -3121,11 +3121,14 @@ function S(inner){
       cluster.classList.add('rendering');
       applyListHeight(rows.length, maxVis, isKeybind, isMain);
       let scrollOffset=0;
+      const toggleSig=rowVisualSig(rows);
+      const toggleChanged=window.__staticToggleSig!==toggleSig;
+      window.__staticToggleSig=toggleSig;
       if(isKeybind){
         list.innerHTML='';
         setListShift(0, false);
       } else {
-        scrollOffset=paintVisibleRows(rows, idx, maxVis, navChanged);
+        scrollOffset=paintVisibleRows(rows, idx, maxVis, navChanged || toggleChanged);
       }
       window.__staticScrollOff=scrollOffset;
       window.__staticActiveIdx=idx;
