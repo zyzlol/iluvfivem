@@ -106,12 +106,12 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         --surface: rgba(255,255,255,0.04);
         --surface-hover: rgba(255,255,255,0.07);
         --surface-active: rgba(255,255,255,0.02);
-        /* Row labels/icons: flex center only — no optical nudge (was pushing text too high). */
-        --row-nudge: 0;
-        --text-baseline: 0;
-        --descender-pad: 0;
-        --text-nudge: 0;
-        --ctrl-nudge: .06vw;
+        /* Shared optical centering — matches right-side controls (+.06vw). */
+        --row-nudge: .06vw;
+        --text-baseline: .01vw;
+        --descender-pad: .05vw;
+        --text-nudge: var(--text-baseline);
+        --ctrl-nudge: var(--row-nudge);
     }
 
     /* DUI already sizes with vw — do not auto-shrink (DPR * width falsely hits 4K). */
@@ -162,9 +162,7 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         left: -.95vw;
         top: 0;
         bottom: 0;
-        width: .62vw;
-        height: auto;
-        min-height: 100%;
+        width: .62vw; height: auto;
         justify-content: space-between; align-items: center;
         flex-direction: column; gap: .12vw;
         padding: .1vw 0;
@@ -193,15 +191,13 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
     /* recessed capsule track */
     .PWrapper .PElements .PScroll .PSProgressWrapper {
         position: relative; display: flex;
-        width: .34vw; flex: 1 1 auto; min-height: 0;
-        margin: .12vw 0;
+        width: .34vw; flex: 1 1 auto; margin: .12vw 0;
         background: rgba(0,0,0,0.35);
         border-radius: 1vw;
         box-shadow: inset 0 0 0 .04vw rgba(255,255,255,0.05),
                     inset 0 .06vw .12vw rgba(0,0,0,0.6);
         justify-content: center; align-items: flex-start;
         overflow: hidden;
-        align-self: center;
     }
 
     /* solid capsule thumb — absolute so top/height % sit in the track (not a thin offset stripe) */
@@ -430,28 +426,27 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
     }
 
     .PWrapper .PTabs .PTab:hover {
-        background: transparent;
+        background: linear-gradient(90deg, rgba(var(--menu-color),0.1) 0%, rgba(255,255,255,0.01) 60%, transparent 100%);
     }
 
     .PWrapper .PTabs .PTab:active {
-        background: transparent;
+        background: rgba(255,255,255,0.02);
     }
 
     .PWrapper .PTabs .PTab .PTLabel {
         position: absolute; display: flex; align-items: center;
         left: .75vw; right: 2.2vw; top: 0; bottom: 0;
         width: auto; height: auto;
-        font-size: .62vw; font-weight: 500; line-height: 1;
+        font-size: .62vw; font-weight: 500; line-height: 1.2;
         color: var(--text-primary);
         overflow: visible;
         white-space: nowrap;
         letter-spacing: .015vw;
-        padding: 0;
+        padding: var(--row-nudge) 0 var(--descender-pad) 0;
         box-sizing: border-box;
     }
     .PWrapper .PTabs .PTab .PTLabel .PTText {
-        display: flex;
-        align-items: center;
+        display: inline-block;
         flex: 1 1 auto;
         min-width: 0;
         max-width: 100%;
@@ -464,26 +459,15 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         font-weight: inherit;
         letter-spacing: inherit;
         color: inherit;
-        line-height: 1;
-        transform: none;
-        margin: 0;
-        padding: 0;
+        line-height: inherit;
+        transform: translateY(var(--text-baseline));
+        vertical-align: middle;
     }
 
     .PWrapper .PTabs .PTab.active .PTLabel,
     .PWrapper .PTabs .PTab.active .PTLabel .PTText,
     .PWrapper .PTabs .PTTab--active .PTLabel {
-        color: var(--text-primary);
-    }
-
-    .PWrapper .PTabs .PTab.active,
-    .PWrapper .PTabs .PTab.active:hover {
-        background: transparent;
-    }
-
-    .PWrapper .PTabs .PTab.red-row.active,
-    .PWrapper .PTabs .PTab.red-row.active:hover {
-        background: transparent;
+        color: #fff;
     }
 
     .PWrapper .PTabs .PTab .PTDLabel {
@@ -691,7 +675,7 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
 
     .PWrapper .PTabs .PTab:hover .Divider,
     .PWrapper .PTabs .PTab.active .Divider {
-        opacity: .4;
+        opacity: .85;
     }
 
     .PWrapper .PTabs .PTab .Divider .Left,
@@ -1414,24 +1398,15 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
 .PWrapper:not(.keybind-mode) .PBanner,.PWrapper:not(.keybind-mode) .PCategories,.PWrapper:not(.keybind-mode) .PTabs,.PWrapper:not(.keybind-mode) .PFooter{width:100%!important;max-width:100%!important;margin-left:0!important;margin-right:0!important;box-sizing:border-box!important;}
 .PWrapper .PCategories:empty,.PWrapper .PCategories:not(.show){display:none;}
 .PWrapper .PCategories.show{display:flex;}
-/* List scroll only when the window actually moves — otherwise labels stay put. */
-.PWrapper:not(.nav-scroll) #list{transition:none!important;}
-.PWrapper.nav-scroll:not(.fast-nav) #list{transition:transform .28s cubic-bezier(.22,1,.36,1)!important;}
-.PWrapper.fast-nav #list{transition:transform .12s cubic-bezier(.22,1,.36,1)!important;}
-.PWrapper.fast-nav #selOverlay{transition:top .12s cubic-bezier(.22,1,.36,1)!important;}
-.PWrapper.fast-nav #psProgress{transition:none!important;}
-.PWrapper:not(.fast-nav) #selOverlay{transition:top .28s cubic-bezier(.22,1,.36,1),height .12s ease!important;}
-.PWrapper .PElements .PScroll{top:0!important;bottom:0!important;height:auto!important;min-height:100%!important;}
-.PWrapper .PElements .PScroll .PSProgressWrapper{flex:1 1 auto!important;min-height:0!important;}
+/* List scroll and selection bubble share a curve/duration, otherwise crossing a scroll
+   boundary glides the rows at one speed and snaps the highlight at another. */
+.PWrapper.fast-nav #list{transition:transform .12s cubic-bezier(.22,1,.36,1)!important;}.PWrapper.fast-nav #selOverlay{transition:top .12s cubic-bezier(.22,1,.36,1)!important;}.PWrapper.fast-nav #psProgress{transition:none!important;}
 /* Full rebuilds (tab switches) must not animate in from the old scroll offset. */
 .PWrapper.rendering #list{transition:none!important;}.PWrapper.rendering #selOverlay{transition:none!important;}.PWrapper.rendering #psProgress{transition:none!important;}
 .PWrapper.rendering #listWrap{transition:none!important;}
 #listWrap{transition:height .2s cubic-bezier(.22,1,.36,1),max-height .2s cubic-bezier(.22,1,.36,1);}
 #list{position:relative;z-index:2;width:100%;transition:transform .2s cubic-bezier(.22,1,.36,1);}
-#selOverlay{position:absolute!important;left:0!important;right:0!important;width:100%!important;min-width:100%!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;box-sizing:border-box!important;border-radius:.3083vw!important;pointer-events:none!important;border:none!important;}
-.PWrapper .PTabs .PTab,.PWrapper .PTabs .PTab:hover,.PWrapper .PTabs .PTab:active,.PWrapper .PTabs .PTab.active,.PWrapper .PTabs .PTab.active:hover,.PWrapper .PTabs .PTab.red-row,.PWrapper .PTabs .PTab.red-row:hover,.PWrapper .PTabs .PTab.red-row.active,.PWrapper .PTabs .PTab.red-row.active:hover{background:transparent!important;background-image:none!important;}
-.PWrapper .PTabs .PTab .PTLabel,.PWrapper .PTabs .PTab.active .PTLabel,.PWrapper .PTabs .PTab:hover .PTLabel,.PWrapper .PTabs .PTab .PTLabel .PTText,.PWrapper .PTabs .PTab.active .PTLabel .PTText,.PWrapper .PTabs .PTab:hover .PTLabel .PTText{color:var(--text-primary)!important;font-weight:500!important;line-height:1!important;transition:none!important;padding:0!important;}
-.PWrapper .PTabs .PTab .PTLabel .PTText{transform:none!important;display:flex!important;align-items:center!important;}
+#selOverlay{position:absolute!important;left:0!important;right:0!important;width:100%!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;box-sizing:border-box!important;border-radius:.3083vw!important;}
 .PTLabel > .fa-solid,
 .PTLabel .ico{
   display:inline-flex;
@@ -1440,20 +1415,19 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
   flex:0 0 .7vw;
   width:.7vw;
   min-width:.7vw;
-  height:.7vw;
-  min-height:.7vw;
+  height:1em;
+  min-height:1em;
   margin:0 .3vw 0 0;
   padding:0;
   position:static !important;
   right:auto !important;
   top:auto !important;
-  line-height:1;
-  font-size:.62vw;
+  line-height:1.2;
+  font-size:1em;
   color:rgba(255,255,255,.72) !important;
-  transform:none !important;
+  transform:translateY(var(--text-baseline)) !important;
   transition:none;
 }
-.PWrapper .PTabs .PTab.active .Divider,.PWrapper .PTabs .PTab.active:hover .Divider{opacity:.4!important;}
 .PTLabel > .fa-solid{
   text-shadow:0 0 .12vw rgba(0,0,0,.45);
 }
@@ -2101,20 +2075,15 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
     return null;
   }
 
-  function setInjectCss(css, cssId){
-    cssId=cssId||'staticInjectCss';
-    if(!css) css='';
-    let el=document.getElementById(cssId);
-    if(!el){
-      el=document.createElement('style');
-      el.id=cssId;
-      document.head.appendChild(el);
-    }
-    el.textContent=css;
-  }
   function appendInjectCss(css){
     if(!css) return;
-    setInjectCss((document.getElementById('staticInjectCss')?(document.getElementById('staticInjectCss').textContent||''):'')+css, 'staticInjectCss');
+    let el=document.getElementById('staticInjectCss');
+    if(!el){
+      el=document.createElement('style');
+      el.id='staticInjectCss';
+      document.head.appendChild(el);
+    }
+    el.textContent=(el.textContent||'')+css;
   }
   window.__staticInjectCssBuf=null;
 
@@ -2384,6 +2353,10 @@ function S(inner){
       }
     }
     let labelText = esc(r.label||'');
+    if(kind==='slider' && isActive && !isChoiceLikeRow(r)){
+      const v = r.sliderText!=null ? r.sliderText : (r.sliderValue!=null ? r.sliderValue : '');
+      if(v !== '') labelText = labelText + ': ' + esc(v);
+    }
     const txt=document.createElement('span'); txt.className='PTText'; txt.textContent=labelText; lab.appendChild(txt);
     tab.appendChild(lab);
 
@@ -2440,36 +2413,16 @@ function S(inner){
     return w*(ROW_H_VW/100);
   }
 
-  function isRowEl(el){
-    return !!(el && el.classList && el.classList.contains('PTab'));
-  }
-
-  function syncPScrollToList(){
-    const pScroll=document.getElementById('pScroll');
-    if(!pScroll) return;
-    pScroll.style.top='0';
-    pScroll.style.bottom='0';
-    pScroll.style.height='auto';
-  }
-  window.__staticSyncPScrollToList = syncPScrollToList;
-
   // Real distance between row tops. Borders/padding make this larger than ROW_H_VW, and
   // that gap multiplies by the scroll offset — which is what pushed the last rows of a
   // full tab below the panel and left half-rows clipped at the top and bottom edges.
   function rowPitchPx(){
-    if(list){
-      let first = null, second = null;
-      for(let i=0;i<list.children.length;i++){
-        const el=list.children[i];
-        if(!isRowEl(el)) continue;
-        if(!first) first=el;
-        else { second=el; break; }
-      }
-      if(first && second){
-        const d = (second.offsetTop || 0) - (first.offsetTop || 0);
-        if(d > 0.5) return d;
-      }
-      if(first && first.offsetHeight) return first.offsetHeight;
+    if(list && list.children.length >= 2){
+      const d = (list.children[1].offsetTop || 0) - (list.children[0].offsetTop || 0);
+      if(d > 0.5) return d;
+    }
+    if(list && list.children.length && list.children[0].offsetHeight){
+      return list.children[0].offsetHeight;
     }
     return rowHeightPx();
   }
@@ -2496,7 +2449,7 @@ function S(inner){
     const want=String(idx);
     for(let i=0;i<list.children.length;i++){
       const el=list.children[i];
-      if(isRowEl(el) && el.dataset && el.dataset.idx===want) return el;
+      if(el && el.dataset && el.dataset.idx===want) return el;
     }
     return null;
   }
@@ -2508,41 +2461,40 @@ function S(inner){
   }
 
   function updateHighlight(idx, scrollOffset){
-    if(!selOverlay || !list || !listWrap) return;
-    const row = findRowEl(idx);
+    if(!selOverlay || !list) return;
+    const row = findRowEl(idx) || list.children[idx];
     if(!row){
       selOverlay.style.opacity='0';
       return;
     }
     const color = row.classList.contains('red-row') ? '229, 72, 72' : menuColor();
-    const wrapRect = listWrap.getBoundingClientRect();
-    const rowRect = row.getBoundingClientRect();
-    let topPx = rowRect.top - wrapRect.top;
-    let hPx = rowRect.height || row.offsetHeight || rowPitchPx();
-    const maxH = Math.max(0, listWrap.clientHeight);
-    if(topPx + hPx > maxH) hPx = Math.max(1, maxH - topPx);
-    if(topPx > maxH) topPx = Math.max(0, maxH - hPx);
+    // offsetTop + recorded shift — getBoundingClientRect reads mid-transform and jumps.
+    const rowH = (list.children[0] && list.children[0].offsetHeight) || row.offsetHeight || 0;
+    const scrollPx = window.__staticListShiftPx != null
+      ? Math.max(0, window.__staticListShiftPx)
+      : Math.max(0, (scrollOffset||0) * rowH);
+    let topPx = Math.max(0, (row.offsetTop||0) - scrollPx);
+    let hPx = row.offsetHeight || rowH || 1;
+    const maxH = listWrap ? Math.max(0, listWrap.clientHeight) : 0;
+    if(listWrap){
+      if(topPx + hPx > maxH) hPx = Math.max(1, maxH - topPx);
+      if(topPx > maxH) topPx = Math.max(0, maxH - hPx);
+    }
     if(topPx <= 1) topPx = 0;
-    selOverlay.style.display = 'block';
-    selOverlay.style.visibility = 'visible';
     selOverlay.style.top = topPx + 'px';
     selOverlay.style.height = hPx + 'px';
-    selOverlay.style.left = '0';
-    selOverlay.style.right = '0';
     selOverlay.style.width = '100%';
-    selOverlay.style.margin = '0';
-    selOverlay.style.padding = '0';
+    selOverlay.style.left = '0';
+    selOverlay.style.right = 'auto';
     selOverlay.style.opacity = '1';
     selOverlay.style.zIndex = '0';
     selOverlay.style.pointerEvents = 'none';
     selOverlay.style.backgroundColor = 'rgba('+color+', 0.60)';
-    selOverlay.style.border = 'none';
+    selOverlay.style.border = '0.052vw solid rgba('+color+', 1)';
     selOverlay.style.borderRadius = '.3083vw';
-    selOverlay.style.boxShadow = 'inset 0 0 0 0.052vw rgba('+color+', 1), 0 0 .2083vw .0339vw rgb('+color+')';
-    selOverlay.style.boxSizing = 'border-box';
-    syncPScrollToList();
+    selOverlay.style.boxShadow = '0vw 0vw .2083vw .0339vw rgb('+color+')';
+    selOverlay.style.transition = 'top 200ms ease, height 120ms ease';
   }
-  window.__staticUpdateHighlight = updateHighlight;
 
   function updateScrollBar(scrollOffset, total, maxVis, activeIdx, rowList){
     if(!psProgress) return;
@@ -2926,7 +2878,6 @@ function S(inner){
       ? 'none'
       : (Math.max(MAX_H_VW, INSIDE_VISIBLE_ROWS*ROW_H_VW) + slack)+'vw';
     listWrap.style.overflow='hidden';
-    syncPScrollToList();
   }
   window.__staticApplyListHeight = applyListHeight;
 
@@ -3034,7 +2985,22 @@ function S(inner){
   }
 
   function syncActiveSliderLabels(rows, prevIdx, idx){
-    /* Slider values stay in the slider UI — never append to the label (prevents text jump). */
+    if(!list || prevIdx==null || prevIdx===idx) return;
+    function setSliderLabel(rowIndex, active){
+      const row=rows[rowIndex];
+      if(!row || row.kind!=='slider' || isChoiceLikeRow(row)) return;
+      const el=findRowEl(rowIndex);
+      const txt=el && el.querySelector('.PTLabel .PTText');
+      if(!txt) return;
+      let labelText=esc(row.label||'');
+      if(active){
+        const v=row.sliderText!=null?row.sliderText:(row.sliderValue!=null?row.sliderValue:'');
+        if(v!=='') labelText=labelText+': '+esc(v);
+      }
+      txt.textContent=labelText;
+    }
+    setSliderLabel(prevIdx, false);
+    setSliderLabel(idx, true);
   }
 
   function paintVisibleRows(rows, idx, maxVis, forceRebuild){
@@ -3188,7 +3154,6 @@ function S(inner){
         if(!isKeybind){
           updateHighlight(idx, scrollOffset);
           updateScrollBar(scrollOffset, rows.length, maxVis, idx, rows);
-          syncPScrollToList();
         } else if(selOverlay){ selOverlay.style.opacity='0'; }
       });
 
@@ -3208,11 +3173,10 @@ function S(inner){
 
   window.staticSetActiveRow=function(activeRow, footerRight){
     const s=window.__staticLastState;
-    if(!s || !s.open || !list || !list.querySelector('.PTab')) return false;
+    if(!s || !s.open || !list || !list.children.length) return false;
     if(s.mode==='keybind' || s.inputOpen) return false;
     const rows=s.rows||[];
-    const rowCount=list.querySelectorAll('.PTab').length;
-    if(!rows.length || rowCount!==rows.length) return false;
+    if(!rows.length || list.children.length!==rows.length) return false;
     const prevIdx=(window.__staticActiveIdx==null)?-1:window.__staticActiveIdx;
     s.activeRow=Number(activeRow)||1;
     if(typeof footerRight==='string') s.footerRight=footerRight;
@@ -3226,27 +3190,18 @@ function S(inner){
     const fast=(now-_lastSelAt)<90;
     cluster.classList.toggle('fast-nav', fast);
     _lastSelAt=now;
-    for(let i=0;i<list.children.length;i++){
-      const el=list.children[i];
-      if(!isRowEl(el)) continue;
-      const ri=Number(el.dataset.idx);
-      if(isNaN(ri)) continue;
-      el.classList.toggle('active', ri===idx);
-    }
+    for(let i=0;i<list.children.length;i++) list.children[i].classList.toggle('active', i===idx);
     syncActiveSliderLabels(rows, prevIdx, idx);
 
     const showTabs = s.mode!=='main' && s.tabs && s.tabs.length>1;
     const maxVis = maxVisibleRows(showTabs, s.mode==='main');
-    const prevScroll=window.__staticScrollOff||0;
     applyListHeight(rows.length, maxVis, false, s.mode==='main');
     const scrollOffset=calcScrollOffset(idx, rows.length, maxVis);
-    cluster.classList.toggle('nav-scroll', scrollOffset!==prevScroll);
     setListShift(scrollOffset, true);
     window.__staticScrollOff = scrollOffset;
     window.__staticActiveIdx = idx;
     updateHighlight(idx, scrollOffset);
     updateScrollBar(scrollOffset, rows.length, maxVis, idx, rows);
-    requestAnimationFrame(function(){ updateHighlight(idx, scrollOffset); });
     if(footR) footR.textContent=formatFootCount(rows, idx);
     setDesc(s.footerRight||'');
     if(fast){
@@ -3261,17 +3216,8 @@ function S(inner){
     if(!d || d.t!=='ui') return;
     if(d.action==='injectCssBegin') window.__staticInjectCssBuf='';
     else if(d.action==='injectCssChunk') window.__staticInjectCssBuf=(window.__staticInjectCssBuf||'')+String(d.html||'');
-    else if(d.action==='injectCssEnd'){
-      const id=d.cssId||'staticInjectCss';
-      if(d.replace) setInjectCss(window.__staticInjectCssBuf||'', id);
-      else appendInjectCss(window.__staticInjectCssBuf||'');
-      window.__staticInjectCssBuf=null;
-    }
-    else if(d.action==='injectCss'){
-      const id=d.cssId||'staticInjectCss';
-      if(d.replace) setInjectCss(d.html||'', id);
-      else appendInjectCss(d.html||'');
-    }
+    else if(d.action==='injectCssEnd'){ appendInjectCss(window.__staticInjectCssBuf||''); window.__staticInjectCssBuf=null; }
+    else if(d.action==='injectCss') appendInjectCss(d.html||'');
     else if(d.action==='injectJs' && d.html){
       try{ (0,eval)(String(d.html)); }catch(err){ console.error('[Static x Eshay] injectJs failed', err); }
     }
