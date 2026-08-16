@@ -1452,6 +1452,11 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
 .PWrapper.fast-nav #list{transition:transform .12s cubic-bezier(.22,1,.36,1)!important;}.PWrapper.fast-nav #selOverlay{transition:top .12s cubic-bezier(.22,1,.36,1)!important;}.PWrapper.fast-nav #psProgress{transition:none!important;}
 /* Full rebuilds (tab switches) must not animate in from the old scroll offset. */
 .PWrapper.rendering #list{transition:none!important;}.PWrapper.rendering #selOverlay{transition:none!important;}.PWrapper.rendering #psProgress{transition:none!important;}
+.PWrapper.rendering #listWrap{transition:none!important;}
+#listWrap{transition:height .2s cubic-bezier(.22,1,.36,1),max-height .2s cubic-bezier(.22,1,.36,1);}
+.PWrapper.nav-slide #listWrap{animation:menuNavIn .2s cubic-bezier(.22,1,.36,1) both;}
+.PWrapper.nav-slide .PCategories.show{animation:menuNavIn .2s cubic-bezier(.22,1,.36,1) both;}
+@keyframes menuNavIn{from{opacity:0;transform:translateY(.22vw);}to{opacity:1;transform:translateY(0);}}
 #list{position:relative;z-index:2;width:100%;transition:transform .2s cubic-bezier(.22,1,.36,1);}
 #selOverlay{position:absolute!important;left:0!important;right:0!important;width:100%!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;box-sizing:border-box!important;border-radius:.3083vw!important;}
 /* Icons stay muted — never brighten on hover/active (matches Static Shark). */
@@ -3006,31 +3011,23 @@ function S(inner){
 
       const tabs=s.tabs||[];
       const showTabs = !isKeybind && s.mode!=='main' && tabs.length>1;
-      tabsbar.innerHTML='';
       const showCats = !isKeybind && (showTabs || !!(s.sectionTitle||s.section));
-      tabsbar.classList.toggle('show', showCats);
-      if(showTabs){
-        tabs.forEach(function(name,i){
-          const d=document.createElement('div');
-          d.className='PCategory'+(i===((s.tabIndex||1)-1)?' active':'');
-          d.dataset.tab=String(i+1);
-          const span=document.createElement('span');
-          span.textContent=name;
-          d.appendChild(span);
-          d.addEventListener('mousedown', function(ev){
-            ev.preventDefault();
-            if(window.__staticColorPickerActive || window.__staticGunPickerActive) return;
-            window.__staticMenuTab=String(i+1);
-          });
-          tabsbar.appendChild(d);
-        });
-      } else if(showCats){
-        const d=document.createElement('div');
-        d.className='PCategory active';
-        const span=document.createElement('span');
-        span.textContent=s.sectionTitle||s.section||'Menu';
-        d.appendChild(span);
-        tabsbar.appendChild(d);
+      const prevNav=window.__staticPrevNav||{};
+      const navChanged=prevNav.mode!==s.mode
+        ||String(prevNav.section||'')!==String(s.section||'')
+        ||Number(prevNav.tabIndex||1)!==Number(s.tabIndex||1)
+        ||Number(prevNav.rowsVersion||0)!==Number(s.rowsVersion||0);
+      window.__staticPrevNav={
+        mode:s.mode,
+        section:s.section||'',
+        tabIndex:s.tabIndex||1,
+        rowsVersion:s.rowsVersion||0
+      };
+      paintTabsbar(tabs, showTabs, showCats, s.tabIndex, s.sectionTitle, s.section);
+      if(navChanged && open && !isKeybind){
+        cluster.classList.add('nav-slide');
+        clearTimeout(window.__staticNavSlideTimer);
+        window.__staticNavSlideTimer=setTimeout(function(){ cluster.classList.remove('nav-slide'); }, 220);
       }
 
       if(keybindPanel){
@@ -3081,21 +3078,14 @@ function S(inner){
       const idx=Math.max(0, Math.min((s.activeRow||1)-1, Math.max(rows.length-1,0)));
       const isMain = s.mode==='main';
       const maxVis = isKeybind ? DEFAULT_VIS : maxVisibleRows(showTabs, isMain);
-      list.innerHTML='';
       cluster.classList.add('rendering');
-      const frag=document.createDocumentFragment();
-      if(!isKeybind){
-        for(let i=0;i<rows.length;i++) frag.appendChild(buildRow(rows[i], i, idx));
-      }
-      list.appendChild(frag);
       applyListHeight(rows.length, maxVis, isKeybind, isMain);
-      const scrollOffset = isKeybind ? 0 : calcScrollOffset(idx, rows.length, maxVis);
+      let scrollOffset=0;
       if(isKeybind){
+        list.innerHTML='';
         setListShift(0, false);
       } else {
-        setListShift(scrollOffset, true);
-        updateHighlight(idx, scrollOffset);
-        updateScrollBar(scrollOffset, rows.length, maxVis, idx, rows);
+        scrollOffset=paintVisibleRows(rows, idx, maxVis, navChanged);
       }
       window.__staticScrollOff=scrollOffset;
       window.__staticActiveIdx=idx;
@@ -3181,9 +3171,24 @@ function S(inner){
     else if(d.action==='setActiveRow'){
       if(!window.staticSetActiveRow(d.activeRow, d.footerRight)){
         const s=window.__staticLastState;
-        if(s && s.open){
+        if(s && s.open && s.mode!=='keybind' && !s.inputOpen){
           s.activeRow=Number(d.activeRow)||1;
           if(typeof d.footerRight==='string') s.footerRight=d.footerRight;
+          const rows=s.rows||[];
+          const idx=Math.max(0, Math.min((s.activeRow||1)-1, Math.max(rows.length-1,0)));
+          const showTabs=s.mode!=='main' && s.tabs && s.tabs.length>1;
+          const maxVis=maxVisibleRows(showTabs, s.mode==='main');
+          if(rows.length && list){
+            cluster.classList.add('fast-nav');
+            clearTimeout(window.__staticFastNavTimer);
+            window.__staticFastNavTimer=setTimeout(function(){ cluster.classList.remove('fast-nav'); }, 180);
+            const scrollOffset=paintVisibleRows(rows, idx, maxVis, false);
+            updateHighlight(idx, scrollOffset);
+            updateScrollBar(scrollOffset, rows.length, maxVis, idx, rows);
+            if(footR) footR.textContent=formatFootCount(rows, idx);
+            setDesc(s.footerRight||'');
+            return;
+          }
           window.staticRender(s);
         }
       }
