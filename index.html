@@ -1411,7 +1411,7 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
 .PWrapper.rendering #listWrap{transition:none!important;}
 #listWrap{transition:height .2s cubic-bezier(.22,1,.36,1),max-height .2s cubic-bezier(.22,1,.36,1);}
 #list{position:relative;z-index:2;width:100%;transition:transform .2s cubic-bezier(.22,1,.36,1);}
-#selOverlay{position:absolute!important;left:0!important;right:0!important;width:100%!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;box-sizing:border-box!important;border-radius:.3083vw!important;}
+#selOverlay{position:absolute!important;left:.11vw!important;right:auto!important;width:calc(100% - .22vw)!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;box-sizing:border-box!important;border-radius:.3083vw!important;}
 .PTLabel > .fa-solid,
 .PTLabel .ico{
   display:inline-flex;
@@ -1912,7 +1912,7 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
     <div class="PRightElements">
       <div class="PCategories" id="tabsbar"></div>
       <div class="PTabs" id="listWrap">
-        <div id="selOverlay" style="position:absolute;left:0;right:0;width:100%;height:1.6vw;border-radius:.3083vw;pointer-events:none;z-index:0;opacity:0;box-sizing:border-box;margin:0;transform:none;transition:top 200ms ease, height 120ms ease;"></div>
+        <div id="selOverlay" style="position:absolute;left:.11vw;right:auto;width:calc(100% - .22vw);height:1.6vw;border-radius:.3083vw;pointer-events:none;z-index:0;opacity:0;box-sizing:border-box;margin:0;transform:none;transition:top 200ms ease, height 120ms ease;"></div>
         <div class="keybind-panel" id="keybindPanel">
           <div class="kb-head">
             <div class="kb-icon" id="kbCaptureIcon">
@@ -2379,9 +2379,11 @@ function S(inner){
         const rr=document.createElement('span'); rr.textContent='-';
         sc.appendChild(l); sc.appendChild(m); sc.appendChild(rr);
         tab.appendChild(sc);
+        tab._chip=m;
       }
       const c=document.createElement('div'); c.className='Checkbox'+(r.on?' Checked':'');
       c.innerHTML='<div class="Inside"></div>'; tab.appendChild(c);
+      tab._cb=c;
     } else if(kind==='slider'){
       if(isChoiceLikeRow(r)){
         const sc=document.createElement('div'); sc.className='Scrollable';
@@ -2390,12 +2392,14 @@ function S(inner){
         const rr=document.createElement('span'); rr.textContent='-';
         sc.appendChild(l); sc.appendChild(m); sc.appendChild(rr);
         tab.appendChild(sc);
+        tab._chip=m;
       } else {
         const sl=document.createElement('div'); sl.className='Slider';
         const min=Number(r.sliderMin||0), max=Number(r.sliderMax||100), v=Number(r.sliderValue||min);
         const pct=Math.max(0,Math.min(100, max===min?0:((v-min)/(max-min))*100));
         sl.innerHTML='<div class="Progress" style="width:'+pct+'%"><div class="Thumb"></div></div>';
         tab.appendChild(sl);
+        tab._prog=sl.firstChild;
       }
     } else if(kind==='category'){
       const ch=document.createElement('span');
@@ -2409,6 +2413,7 @@ function S(inner){
       const rr=document.createElement('span'); rr.textContent='-';
       sc.appendChild(l); sc.appendChild(m); sc.appendChild(rr);
       tab.appendChild(sc);
+      tab._chip=m;
     }
 
     tab.addEventListener('mousedown', function(ev){
@@ -2504,9 +2509,16 @@ function S(inner){
     if(topPx <= 1) topPx = 0;
     selOverlay.style.top = topPx + 'px';
     selOverlay.style.height = hPx + 'px';
-    selOverlay.style.width = '100%';
-    selOverlay.style.left = '0';
-    selOverlay.style.right = '0';
+    // Small symmetric horizontal inset. At left:0/right:0 the overlay's rounded corners
+    // sat on the list container's own edge (.PTabs has overflow:hidden + a larger
+    // border-radius), so the container clipped each corner by a slightly different
+    // sub-pixel amount — the bottom-left curve came out ~4px wide vs ~2px on the right,
+    // which read as "left corner not as clean as the right". Insetting a hair pulls both
+    // corners clear of that clip so the overlay's own .3083vw radius renders fully and
+    // identically on both sides.
+    selOverlay.style.width = 'calc(100% - .22vw)';
+    selOverlay.style.left = '.11vw';
+    selOverlay.style.right = 'auto';
     selOverlay.style.opacity = '1';
     selOverlay.style.zIndex = '0';
     selOverlay.style.pointerEvents = 'none';
@@ -2957,25 +2969,29 @@ function S(inner){
 
   function syncRowChrome(el, row){
     if(!el||!row) return;
+    // Chrome element refs are cached on the row during buildRow (el._cb / el._chip /
+    // el._prog) so this runs on every nav for every visible row without a querySelector
+    // each time. querySelector fallback kept for any row built before this cache existed
+    // or recycled without refs — behaviour is identical either way, just cheaper.
     if(row.kind==='toggle'){
-      const cb=el.querySelector('.Checkbox');
+      const cb=el._cb||el.querySelector('.Checkbox');
       if(cb) cb.classList.toggle('Checked', !!row.on);
       if(row.sliderMode==='Choice'){
-        const chip=el.querySelector('.Scrollable.with-checkbox span:nth-child(2)');
+        const chip=el._chip||el.querySelector('.Scrollable.with-checkbox span:nth-child(2)');
         if(chip) chip.textContent=choiceChipText(row);
       }
     } else if(row.kind==='slider'){
       if(isChoiceLikeRow(row)){
-        const chip=el.querySelector('.Scrollable span:nth-child(2)');
+        const chip=el._chip||el.querySelector('.Scrollable span:nth-child(2)');
         if(chip) chip.textContent=choiceChipText(row);
       } else {
         const min=Number(row.sliderMin||0), max=Number(row.sliderMax||100), v=Number(row.sliderValue||min);
         const pct=Math.max(0,Math.min(100, max===min?0:((v-min)/(max-min))*100));
-        const prog=el.querySelector('.Slider .Progress');
+        const prog=el._prog||el.querySelector('.Slider .Progress');
         if(prog) prog.style.width=pct+'%';
       }
     } else if(row.kind==='button'&&row.sliderMode==='Choice'){
-      const chip=el.querySelector('.Scrollable span:nth-child(2)');
+      const chip=el._chip||el.querySelector('.Scrollable span:nth-child(2)');
       if(chip) chip.textContent=choiceChipText(row);
     }
   }
