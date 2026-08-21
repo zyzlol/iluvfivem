@@ -398,12 +398,7 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         flex-direction: column;
         background: var(--menu-bg);
         border: .06vw solid var(--menu-border);
-        /* Squared: a rounded corner here + overflow:hidden was clipping the selection bubble's
-           top corners by different sub-pixel amounts left vs right (the "more black on the left"
-           bug), and the menu is scaled so that could never be evened out. These are internal
-           seams (tabs bar above, footer below), so squaring them barely changes the outline but
-           lets the bubble render its own symmetric rounded corners. */
-        border-radius: 0;
+        border-radius: var(--menu-radius);
         overflow: hidden;
         overflow-y: hidden;
         padding: 0 0 .18vw 0;
@@ -1416,7 +1411,7 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
 .PWrapper.rendering #listWrap{transition:none!important;}
 #listWrap{transition:height .2s cubic-bezier(.22,1,.36,1),max-height .2s cubic-bezier(.22,1,.36,1);}
 #list{position:relative;z-index:2;width:100%;transition:transform .2s cubic-bezier(.22,1,.36,1);}
-#selOverlay{position:absolute!important;left:.11vw!important;right:auto!important;width:calc(100% - .22vw)!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;box-sizing:border-box!important;border-radius:.3083vw!important;}
+#selOverlay{position:absolute!important;left:.11vw!important;right:.11vw!important;width:auto!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;box-sizing:border-box!important;border-radius:.3083vw!important;}
 .PTLabel > .fa-solid,
 .PTLabel .ico{
   display:inline-flex;
@@ -1917,7 +1912,7 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
     <div class="PRightElements">
       <div class="PCategories" id="tabsbar"></div>
       <div class="PTabs" id="listWrap">
-        <div id="selOverlay" style="position:absolute;left:.11vw;right:auto;width:calc(100% - .22vw);height:1.6vw;border-radius:.3083vw;pointer-events:none;z-index:0;opacity:0;box-sizing:border-box;margin:0;transform:none;transition:top 200ms ease, height 120ms ease;"></div>
+        <div id="selOverlay" style="position:absolute;left:.11vw;right:.11vw;width:auto;height:1.6vw;border-radius:.3083vw;pointer-events:none;z-index:0;opacity:0;box-sizing:border-box;margin:0;transform:none;transition:top 200ms ease, height 120ms ease;"></div>
         <div class="keybind-panel" id="keybindPanel">
           <div class="kb-head">
             <div class="kb-icon" id="kbCaptureIcon">
@@ -2521,12 +2516,12 @@ function S(inner){
     // which read as "left corner not as clean as the right". Insetting a hair pulls both
     // corners clear of that clip so the overlay's own .3083vw radius renders fully and
     // identically on both sides.
-    // Small symmetric inset with the bubble's own radius. #listWrap is now squared (border-radius:0),
-    // so it no longer clips these corners -- the bubble renders its own rounded corners fully and
-    // identically on both sides.
-    selOverlay.style.width = 'calc(100% - .22vw)';
+    // Anchor BOTH edges (left AND right) instead of left + width:calc(). The calc width rounded to
+    // a different sub-pixel than the left edge, so the two corners never matched. With left:.11vw
+    // and right:.11vw the browser positions each edge independently from its own side -> symmetric.
     selOverlay.style.left = '.11vw';
-    selOverlay.style.right = 'auto';
+    selOverlay.style.right = '.11vw';
+    selOverlay.style.width = 'auto';
     selOverlay.style.opacity = '1';
     selOverlay.style.zIndex = '0';
     selOverlay.style.pointerEvents = 'none';
