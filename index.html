@@ -1411,7 +1411,7 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
 .PWrapper.rendering #listWrap{transition:none!important;}
 #listWrap{transition:height .2s cubic-bezier(.22,1,.36,1),max-height .2s cubic-bezier(.22,1,.36,1);}
 #list{position:relative;z-index:2;width:100%;transition:transform .2s cubic-bezier(.22,1,.36,1);}
-#selOverlay{position:absolute!important;left:.11vw!important;right:auto!important;width:calc(100% - .22vw)!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;box-sizing:border-box!important;border-radius:.3083vw!important;}
+#selOverlay{position:absolute!important;left:0!important;right:auto!important;width:100%!important;margin:0!important;padding:0!important;max-height:none!important;transform:none!important;box-sizing:border-box!important;border-radius:.29vw!important;}
 .PTLabel > .fa-solid,
 .PTLabel .ico{
   display:inline-flex;
@@ -1912,7 +1912,7 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
     <div class="PRightElements">
       <div class="PCategories" id="tabsbar"></div>
       <div class="PTabs" id="listWrap">
-        <div id="selOverlay" style="position:absolute;left:.11vw;right:auto;width:calc(100% - .22vw);height:1.6vw;border-radius:.3083vw;pointer-events:none;z-index:0;opacity:0;box-sizing:border-box;margin:0;transform:none;transition:top 200ms ease, height 120ms ease;"></div>
+        <div id="selOverlay" style="position:absolute;left:0;right:auto;width:100%;height:1.6vw;border-radius:.29vw;pointer-events:none;z-index:0;opacity:0;box-sizing:border-box;margin:0;transform:none;transition:top 200ms ease, height 120ms ease;"></div>
         <div class="keybind-panel" id="keybindPanel">
           <div class="kb-head">
             <div class="kb-icon" id="kbCaptureIcon">
@@ -2507,15 +2507,6 @@ function S(inner){
       if(topPx < 0) topPx = 0;
     }
     if(topPx <= 1) topPx = 0;
-    // Inset the pill a hair vertically (matching the .11vw horizontal inset) so its rounded
-    // corners NEVER sit on the container's own rounded corners. #listWrap has overflow:hidden +
-    // a .35vw radius; when the top/first row's overlay was snapped to top:0 the container clipped
-    // its top corners by a slightly different sub-pixel amount left vs right -> the left corner
-    // read as black while the right looked clean. Keeping the pill clear of the container corners
-    // makes both sides identical.
-    var vIn = Math.max(1, Math.round(hPx * 0.06));
-    topPx = topPx + vIn;
-    hPx = Math.max(1, hPx - vIn * 2);
     selOverlay.style.top = topPx + 'px';
     selOverlay.style.height = hPx + 'px';
     // Small symmetric horizontal inset. At left:0/right:0 the overlay's rounded corners
@@ -2525,15 +2516,20 @@ function S(inner){
     // which read as "left corner not as clean as the right". Insetting a hair pulls both
     // corners clear of that clip so the overlay's own .3083vw radius renders fully and
     // identically on both sides.
-    selOverlay.style.width = 'calc(100% - .22vw)';
-    selOverlay.style.left = '.11vw';
+    // Flush to the container's padding box (left:0/width:100%) with a radius equal to the
+    // container's INNER radius (.35vw outer - .06vw border = .29vw). The overlay corner then
+    // exactly traces #listWrap's clip boundary, so there is nothing for overflow:hidden to trim
+    // -- no sub-pixel corner clip, so left and right render identically. (Earlier flush used a
+    // .3083vw radius that did NOT match the container, which is what clipped asymmetrically.)
+    selOverlay.style.width = '100%';
+    selOverlay.style.left = '0';
     selOverlay.style.right = 'auto';
     selOverlay.style.opacity = '1';
     selOverlay.style.zIndex = '0';
     selOverlay.style.pointerEvents = 'none';
     selOverlay.style.backgroundColor = 'rgba('+color+', 0.55)';
     selOverlay.style.border = '0.04vw solid rgba('+color+', 0.95)';
-    selOverlay.style.borderRadius = '.3083vw';
+    selOverlay.style.borderRadius = '.29vw';
     selOverlay.style.boxShadow = '0vw 0vw .18vw .02vw rgba('+color+',0.85)';
     const fastNav = cluster && cluster.classList.contains('fast-nav');
     selOverlay.style.transition = fastNav
