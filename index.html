@@ -2168,7 +2168,7 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
   const INSIDE_VISIBLE_ROWS = 10;
   const MIN_VISIBLE_ROWS = 8;
   const BANNER_H = null; // measured
-  const THEME_RGB = {green:'19, 95, 27',blue:'22, 137, 212',savage:'254, 242, 5',baxci:'87, 191, 242'};
+  const THEME_RGB = {green:'19, 95, 27',blue:'22, 137, 212',savage:'254, 242, 5',baxci:'87, 191, 242',aus:'240, 130, 28'};
   function maxVisibleRows(showTabs, isMain){
     const rh = Math.max(18, window.innerWidth * (ROW_H_VW/100));
     const banner = (document.getElementById('banner') && document.getElementById('banner').offsetHeight) || (window.innerWidth * 0.065);
@@ -2194,7 +2194,9 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
   function applyTheme(theme, bannerUrl){
     if(theme){
       document.documentElement.setAttribute('data-theme', theme);
-      const rgb = THEME_RGB[theme] || THEME_RGB.blue;
+      // A custom Menu Color (set from Lua) wins over the theme's colour and persists across every
+      // render (staticRender calls applyTheme each state update, which used to stomp the custom colour).
+      const rgb = window.__customMenuColor || THEME_RGB[theme] || THEME_RGB.blue;
       document.documentElement.style.setProperty('--menu-color', rgb);
     }
     if(bannerUrl && bannerImg){
@@ -3088,6 +3090,12 @@ function S(inner){
       const s=(typeof payload==='string')?JSON.parse(payload):payload;
       if(!s) return;
       window.__staticLastState=s;
+      // Re-derive the custom Menu Color override from the state payload itself on every single
+      // render, rather than trusting a one-off injected JS message to have landed and to still be
+      // remembered. That old approach ("changes while hovering, reverts after ~1s, confirm doesn't
+      // stick") had no way to recover if a message was lost/late/out of order -- this one can't go
+      // stale because Lua re-sends menuColorRgb (or "" when unset) on every render.
+      window.__customMenuColor = (typeof s.menuColorRgb==='string' && s.menuColorRgb.length) ? s.menuColorRgb : null;
       applyTheme(s.theme, s.bannerUrl);
 
       const open=!!s.open;
