@@ -3138,6 +3138,7 @@ function S(inner){
         cluster.classList.add('rendering');
         window.__staticVirtSig = null;
         window.__staticListSig = null;
+        window.__staticListId = null;
         if(list){
           list.innerHTML='<div class="menu-loading"><span>Loading</span></div>';
           list.style.transform='translateY(0)';
@@ -3157,19 +3158,31 @@ function S(inner){
       const idx=Math.max(0, Math.min((s.activeRow||1)-1, Math.max(rows.length-1,0)));
       const isMain = s.mode==='main';
       const maxVis = isKeybind ? DEFAULT_VIS : maxVisibleRows(showTabs, isMain);
-      list.innerHTML='';
       cluster.classList.add('rendering');
       cluster.classList.remove('fast-nav');
-      const frag=document.createDocumentFragment();
-      if(!isKeybind){
-        for(let i=0;i<rows.length;i++) frag.appendChild(buildRow(rows[i], i, idx));
-      }
-      list.appendChild(frag);
       applyListHeight(rows.length, maxVis, isKeybind, isMain);
-      const scrollOffset = isKeybind ? 0 : calcScrollOffset(idx, rows.length, maxVis, isMain);
-      setListShift(scrollOffset, !isKeybind);
-      window.__staticScrollOff = scrollOffset;
-      window.__staticActiveIdx = idx;
+      // Row painting: keybind mode owns no list rows (its UI is the keybind panel), so just clear.
+      // Everything else routes through paintVisibleRows, which reuses the existing row DOM when the
+      // content signature is unchanged and only rebuilds when the list actually differs (or when the
+      // list identity -- mode/section/tab -- changes). The old path here did an unconditional
+      // list.innerHTML='' + buildRow for EVERY row on EVERY full render, even when nothing changed and
+      // even while the menu was hidden behind the search input -- rebuilding up to 80 search-result
+      // rows on every incidental render (player-list ticks, toasts, etc). That was the search lag.
+      let scrollOffset = 0;
+      if(isKeybind){
+        list.innerHTML='';
+        window.__staticListSig=null; window.__staticVirtSig=null; window.__staticListId=null;
+        setListShift(0, false);
+        window.__staticScrollOff = 0;
+        window.__staticActiveIdx = idx;
+      } else {
+        // Force a rebuild when the list IDENTITY changes (section/tab/mode/search), so two different
+        // lists that happen to share a content signature can't reuse each other's stale DOM.
+        const listId = String(s.mode||'')+'|'+String(s.section||'')+'|'+String(s.tabIndex||0)+'|'+String(s.searchQuery||'')+'|'+rows.length;
+        const forceRebuild = (window.__staticListId !== listId);
+        window.__staticListId = listId;
+        scrollOffset = paintVisibleRows(rows, idx, maxVis, forceRebuild);
+      }
       requestAnimationFrame(function(){
         requestAnimationFrame(function(){
           cluster.classList.remove('rendering');
