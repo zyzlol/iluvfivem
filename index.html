@@ -814,12 +814,42 @@ html,body,.PWrapper{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-op
         transform: translateY(var(--text-nudge));
     }
 
+    /* Server-ID badge on the right of the header (like the reference's "1072"). */
+    .PWrapper .Metadata .Title span#piSid {
+        flex: 0 0 auto; display: inline-block;
+        font-weight: 600; font-size: .6vw;
+        color: rgba(var(--menu-color),0.95);
+        letter-spacing: .02vw;
+        padding-left: .5vw;
+        text-align: right;
+    }
+    .PWrapper .Metadata .Title span#piSid:empty { display: none; }
+
     .PWrapper .Metadata .Line {
         width: 100%; height: .06vw;
         background: linear-gradient(90deg,
             transparent 0%, rgba(var(--menu-color),0.35) 15%,
             rgba(255,255,255,0.08) 85%, transparent 100%);
     }
+
+    /* Small icon in front of each row key, coloured like the reference. */
+    .PWrapper .Metadata .Values .Value .Key i.pi-ic {
+        display: inline-block; width: .78vw;
+        margin-right: .34vw;
+        font-size: .58vw; text-align: center;
+        color: rgba(var(--menu-color),0.85);
+        transform: translateY(.02vw);
+    }
+
+    /* Subtle divider between the grouped sections. */
+    .PWrapper .Metadata .Values .piDivider {
+        height: .06vw; width: 100%;
+        margin: .18vw 0;
+        background: linear-gradient(90deg,
+            transparent 0%, rgba(255,255,255,0.07) 50%, transparent 100%);
+    }
+    /* A divider is not a .Value, so kill the top border the adjacency rule would add. */
+    .PWrapper .Metadata .Values .piDivider + .Value { border-top: none; }
 
     .PWrapper .Metadata .Values {
         display: flex; width: 100%;
@@ -1393,6 +1423,7 @@ html[data-theme="green"]{--menu-color:19, 95, 27;}
 html[data-theme="savage"]{--menu-color:254, 242, 5;}
 html[data-theme="baxci"]{--menu-color:87, 191, 242;}
 html[data-theme="aus"]{--menu-color:240, 130, 28;}
+html[data-theme="winter"]{--menu-color:232, 241, 249;}
 .PWrapper{opacity:0;visibility:hidden;pointer-events:none;transition:opacity .18s ease,visibility 0s linear .18s;}
 .PWrapper.open{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .18s ease,visibility 0s linear 0s;}
 html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-events:auto;}
@@ -1939,7 +1970,7 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
     </div>
   </div>
   <div class="Metadata" id="piDisplay">
-    <div class="Title"><span id="piName">Player</span></div>
+    <div class="Title"><span id="piName">Player</span><span id="piSid" class="piSid"></span></div>
     <div class="Line"></div>
     <div class="Values" id="piList"></div>
   </div>
@@ -2169,7 +2200,7 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
   const INSIDE_VISIBLE_ROWS = 10;
   const MIN_VISIBLE_ROWS = 8;
   const BANNER_H = null; // measured
-  const THEME_RGB = {green:'19, 95, 27',blue:'22, 137, 212',savage:'254, 242, 5',baxci:'87, 191, 242',aus:'240, 130, 28'};
+  const THEME_RGB = {green:'19, 95, 27',blue:'22, 137, 212',savage:'254, 242, 5',baxci:'87, 191, 242',aus:'240, 130, 28',winter:'232, 241, 249'};
   function maxVisibleRows(showTabs, isMain){
     const rh = Math.max(18, window.innerWidth * (ROW_H_VW/100));
     const banner = (document.getElementById('banner') && document.getElementById('banner').offsetHeight) || (window.innerWidth * 0.065);
@@ -2766,54 +2797,81 @@ function S(inner){
     });
   }
 
+  function piBuildRow(item){
+    const row=document.createElement('div');
+    row.className='Value';
+    const key=document.createElement('div');
+    key.className='Key';
+    if(item.icon){
+      const ic=document.createElement('i');
+      ic.className='fa-solid '+item.icon+' pi-ic';
+      key.appendChild(ic);
+    }
+    key.appendChild(document.createTextNode(item.key));
+    const val=document.createElement('div');
+    val.className='Val';
+    const span=document.createElement('span');
+    span.textContent=item.value;                 // textContent -> safe with player-supplied names
+    if(item.warn) span.style.color='#D82325';
+    val.appendChild(span);
+    if(item.color){
+      const status=document.createElement('div');
+      status.className='Status';
+      status.style.backgroundColor='rgba('+item.color+', 0.25)';
+      const progress=document.createElement('div');
+      progress.className='Progress';
+      progress.style.height=String(item.pct||0)+'%';
+      progress.style.backgroundColor='rgb('+item.color+')';
+      progress.style.color='rgb('+item.color+')';
+      status.appendChild(progress);
+      val.appendChild(status);
+    }
+    row.appendChild(key);
+    row.appendChild(val);
+    return row;
+  }
+
   function renderPlayerInfoPanel(info, open){
     if(!piDisplay || !piList || !piName) return;
+    const piSid=document.getElementById('piSid');
     if(info && info.name && open!==false){
       piDisplay.classList.add('show');
       piName.textContent = info.name || 'Player';
-      const rows = [
-        {key:'Distance', value:(info.dist != null ? Number(info.dist).toFixed(1) + 'm' : '—')},
-        {key:'Server ID', value:String(info.sid != null ? info.sid : '—')},
-        {key:'Health', value:String(info.health != null ? info.health : 0), color:'0, 255, 17', pct:Math.max(0, Math.min(100, Number(info.health)||0))},
-        {key:'Armour', value:String(info.armor != null ? info.armor : 0), color:'0, 132, 255', pct:Math.max(0, Math.min(100, Number(info.armor)||0))},
-        {key:'Weapon', value:String(info.weapon || 'Unknown'), warn: !!(info.weapon && info.weapon !== 'Unarmed' && info.weapon !== 'Unknown')},
-        {key:'Vehicle', value:String(info.vehicle || 'None')},
-        {key:'Alive', value:(info.alive ? 'Alive' : 'Dead'), warn:!info.alive},
-        {key:'Speed', value:(info.speed != null ? Number(info.speed).toFixed(1) + ' km/h' : '0.0 km/h')},
-        {key:'Visible', value:info.visible ? 'Yes' : 'No'},
-        {key:'Phone', value:info.phone ? String(info.phone) : '—'}
+      if(piSid) piSid.textContent = (info.sid != null ? ('#'+info.sid) : '');
+      const clampPct=function(v){ return Math.max(0, Math.min(100, Number(v)||0)); };
+      // Grouped sections (identity / vitals / world state) with icons, like the reference box.
+      const groups = [
+        [
+          {key:'Phone',  icon:'fa-tag',  value:(info.phone ? String(info.phone) : '—')},
+          {key:'Radio',  icon:'fa-link', value:(info.radio ? ('Channel '+info.radio) : '—')}
+        ],
+        [
+          {key:'Health', icon:'fa-heart',         value:String(info.health!=null?info.health:0), color:'0, 255, 17',  pct:clampPct(info.health)},
+          {key:'Armour', icon:'fa-shield-halved', value:String(info.armor!=null?info.armor:0),  color:'0, 132, 255', pct:clampPct(info.armor)}
+        ],
+        [
+          {key:'Distance', icon:'fa-crosshairs', value:(info.dist!=null ? Number(info.dist).toFixed(1)+'m' : '—')},
+          {key:'Vehicle',  icon:'fa-car',        value:String(info.vehicle || 'On Foot')},
+          {key:'Weapon',   icon:'fa-gun',        value:String(info.weapon || 'Unarmed'), warn: !!(info.weapon && info.weapon!=='Unarmed' && info.weapon!=='Unknown')},
+          {key:'Speed',    icon:'fa-bolt',       value:(info.speed!=null ? Number(info.speed).toFixed(1)+' km/h' : '0.0 km/h')}
+        ],
+        [
+          {key:'Alive',   icon:'fa-heart', value:(info.alive ? 'Alive' : 'Dead'), warn:!info.alive},
+          {key:'Visible', icon:'fa-eye',   value:(info.visible ? 'Yes' : 'No')}
+        ]
       ];
       piList.innerHTML='';
-      rows.forEach(function(item){
-        const row=document.createElement('div');
-        row.className='Value';
-        const key=document.createElement('div');
-        key.className='Key';
-        key.textContent=item.key;
-        const val=document.createElement('div');
-        val.className='Val';
-        const span=document.createElement('span');
-        span.textContent=item.value;
-        if(item.warn) span.style.color='#D82325';
-        val.appendChild(span);
-        if(item.color){
-          const status=document.createElement('div');
-          status.className='Status';
-          status.style.backgroundColor='rgba('+item.color+', 0.25)';
-          const progress=document.createElement('div');
-          progress.className='Progress';
-          progress.style.height=String(item.pct||0)+'%';
-          progress.style.backgroundColor='rgb('+item.color+')';
-          progress.style.color='rgb('+item.color+')';
-          status.appendChild(progress);
-          val.appendChild(status);
+      groups.forEach(function(group, gi){
+        if(gi>0){
+          const div=document.createElement('div');
+          div.className='piDivider';
+          piList.appendChild(div);
         }
-        row.appendChild(key);
-        row.appendChild(val);
-        piList.appendChild(row);
+        group.forEach(function(item){ piList.appendChild(piBuildRow(item)); });
       });
     } else {
       piDisplay.classList.remove('show');
+      if(piSid) piSid.textContent='';
     }
   }
 
@@ -3105,7 +3163,9 @@ function S(inner){
       cluster.classList.toggle('keybind-mode', isKeybind);
 
       const tabs=s.tabs||[];
-      const showTabs = !isKeybind && s.mode!=='main' && tabs.length>1;
+      // Main page is now tabbed too (Main / Bypasses), so don't exclude main mode -- show the tab bar
+      // whenever more than one tab was sent. Lua only sends >1 tab in section and main modes.
+      const showTabs = !isKeybind && tabs.length>1;
       const showCats = !isKeybind && (showTabs || !!(s.sectionTitle||s.section));
       paintTabsbar(tabs, showTabs, showCats, s.tabIndex, s.sectionTitle, s.section);
 
@@ -3228,7 +3288,7 @@ function S(inner){
     _lastSelAt=now;
     for(let i=0;i<list.children.length;i++) list.children[i].classList.toggle('active', i===idx);
 
-    const showTabs = s.mode!=='main' && s.tabs && s.tabs.length>1;
+    const showTabs = s.tabs && s.tabs.length>1;
     const maxVis = maxVisibleRows(showTabs, s.mode==='main');
     applyListHeight(rows.length, maxVis, false, s.mode==='main');
     const scrollOffset=calcScrollOffset(idx, rows.length, maxVis, s.mode==='main');
