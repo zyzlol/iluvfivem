@@ -47,7 +47,14 @@ html,body,.PWrapper,.Desc,.FCWrapper,.Option,.PCategories,.PCategory,.PTabs,.PTa
 .fa-shield:before{content:"\f132";}
 .fa-shield-halved:before{content:"\f3ed";}
 .fa-skull:before{content:"\f54c";}
+.fa-venus-mars:before{content:"\f228";}
 .fa-bolt:before{content:"\f0e7";}
+/* Online-list name badges: ♂/♀ gender + skull for dead */
+.PTBadges{display:inline-flex;align-items:center;gap:5px;margin-left:7px;vertical-align:middle;}
+.PTGender{font-size:13px;font-weight:700;line-height:1;}
+.PTGender.male{color:#3fa9ff;}
+.PTGender.female{color:#ff6fc7;}
+.PTDead{color:#d82325;font-size:11px;line-height:1;}
 .fa-sliders:before{content:"\f1de";}
 .fa-gear:before{content:"\f013";}
 .fa-magnifying-glass:before{content:"\f002";}
@@ -2403,6 +2410,25 @@ function S(inner){
     }
     let labelText = esc(r.label||'');
     const txt=document.createElement('span'); txt.className='PTText'; txt.textContent=labelText; lab.appendChild(txt);
+    // Online player rows carry gender/dead (from row_to_json) -> show ♂/♀ + a skull next to the name.
+    if(r.gender==='Male' || r.gender==='Female' || r.dead){
+      const badges=document.createElement('span'); badges.className='PTBadges';
+      if(r.gender==='Male' || r.gender==='Female'){
+        const g=document.createElement('span');
+        g.className='PTGender '+(r.gender==='Male'?'male':'female');
+        g.textContent=(r.gender==='Male'?'♂':'♀');
+        g.title=r.gender;
+        badges.appendChild(g);
+      }
+      if(r.dead){
+        const d=document.createElement('i');
+        d.className='fa-solid fa-skull PTDead';
+        d.setAttribute('aria-hidden','true');
+        d.title='Dead';
+        badges.appendChild(d);
+      }
+      lab.appendChild(badges);
+    }
     tab.appendChild(lab);
 
     if(kind==='toggle'){
@@ -2843,7 +2869,8 @@ function S(inner){
       const groups = [
         [
           {key:'Phone',  icon:'fa-tag',  value:(info.phone ? String(info.phone) : '—')},
-          {key:'Radio',  icon:'fa-link', value:(info.radio ? ('Channel '+info.radio) : '—')}
+          {key:'Radio',  icon:'fa-link', value:(info.radio ? ('Channel '+info.radio) : '—')},
+          {key:'Gender', icon:'fa-venus-mars', value:(info.gender==='Male' ? '♂ Male' : (info.gender==='Female' ? '♀ Female' : '—'))}
         ],
         [
           {key:'Health', icon:'fa-heart',         value:String(info.health!=null?info.health:0), color:'0, 255, 17',  pct:clampPct(info.health)},
