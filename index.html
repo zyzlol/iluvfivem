@@ -47,14 +47,15 @@ html,body,.PWrapper,.Desc,.FCWrapper,.Option,.PCategories,.PCategory,.PTabs,.PTa
 .fa-shield:before{content:"\f132";}
 .fa-shield-halved:before{content:"\f3ed";}
 .fa-skull:before{content:"\f54c";}
-.fa-venus-mars:before{content:"\f228";}
 .fa-bolt:before{content:"\f0e7";}
-/* Online-list name badges: ♂/♀ gender + skull for dead */
-.PTBadges{display:inline-flex;align-items:center;gap:5px;margin-left:7px;vertical-align:middle;}
-.PTGender{font-size:13px;font-weight:700;line-height:1;}
-.PTGender.male{color:#3fa9ff;}
-.PTGender.female{color:#ff6fc7;}
-.PTDead{color:#d82325;font-size:11px;line-height:1;}
+/* Online-list name badges: bold unicode ♂/♀ (system font -- the FA font here is subsetted and has no
+   mars/venus glyph) + fa-skull for dead. Big, heavy, full-opacity, with a glow so they pop like the
+   mockup instead of the near-invisible thin default. */
+.PTBadges{display:inline-flex;align-items:center;gap:.35vw;margin-left:.5vw;flex:0 0 auto;vertical-align:middle;}
+.PTGender{font-family:"Segoe UI Symbol","Arial Unicode MS",Inter,Arial,sans-serif!important;font-size:1.05vw!important;font-weight:900!important;line-height:1;opacity:1!important;}
+.PTGender.male{color:#4ea6ff!important;text-shadow:0 0 .3vw rgba(78,166,255,.95);}
+.PTGender.female{color:#ff53b4!important;text-shadow:0 0 .3vw rgba(255,83,180,.95);}
+.PTDead{color:#ff2f31!important;font-size:.8vw!important;line-height:1;opacity:1!important;text-shadow:0 0 .3vw rgba(255,47,49,.95);}
 .fa-sliders:before{content:"\f1de";}
 .fa-gear:before{content:"\f013";}
 .fa-magnifying-glass:before{content:"\f002";}
@@ -2870,7 +2871,7 @@ function S(inner){
         [
           {key:'Phone',  icon:'fa-tag',  value:(info.phone ? String(info.phone) : '—')},
           {key:'Radio',  icon:'fa-link', value:(info.radio ? ('Channel '+info.radio) : '—')},
-          {key:'Gender', icon:'fa-venus-mars', value:(info.gender==='Male' ? '♂ Male' : (info.gender==='Female' ? '♀ Female' : '—'))}
+          {key:'Gender', icon:'fa-user', value:(info.gender==='Male' ? '♂ Male' : (info.gender==='Female' ? '♀ Female' : '—'))}
         ],
         [
           {key:'Health', icon:'fa-heart',         value:String(info.health!=null?info.health:0), color:'0, 255, 17',  pct:clampPct(info.health)},
