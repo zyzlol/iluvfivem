@@ -48,14 +48,14 @@ html,body,.PWrapper,.Desc,.FCWrapper,.Option,.PCategories,.PCategory,.PTabs,.PTa
 .fa-shield-halved:before{content:"\f3ed";}
 .fa-skull:before{content:"\f54c";}
 .fa-bolt:before{content:"\f0e7";}
-/* Online-list name badges: bold unicode ♂/♀ (system font -- the FA font here is subsetted and has no
-   mars/venus glyph) + fa-skull for dead. Big, heavy, full-opacity, with a glow so they pop like the
-   mockup instead of the near-invisible thin default. */
-.PTBadges{display:inline-flex;align-items:center;gap:.35vw;margin-left:.5vw;flex:0 0 auto;vertical-align:middle;}
-.PTGender{font-family:"Segoe UI Symbol","Arial Unicode MS",Inter,Arial,sans-serif!important;font-size:1.05vw!important;font-weight:900!important;line-height:1;opacity:1!important;}
-.PTGender.male{color:#4ea6ff!important;text-shadow:0 0 .3vw rgba(78,166,255,.95);}
-.PTGender.female{color:#ff53b4!important;text-shadow:0 0 .3vw rgba(255,83,180,.95);}
-.PTDead{color:#ff2f31!important;font-size:.8vw!important;line-height:1;opacity:1!important;text-shadow:0 0 .3vw rgba(255,47,49,.95);}
+/* Online-list name badges: subtle unicode ♂/♀ (system font -- the FA font here is subsetted and has no
+   mars/venus glyph) + fa-skull for dead. Sized to sit quietly with the row text -- no glow, muted colors,
+   so they read as part of the menu instead of neon stickers. */
+.PTBadges{display:inline-flex;align-items:center;gap:.3vw;margin-left:.4vw;flex:0 0 auto;vertical-align:middle;opacity:.9;}
+.PTGender{font-family:"Segoe UI Symbol","Arial Unicode MS",Inter,Arial,sans-serif!important;font-size:.62vw!important;font-weight:600!important;line-height:1;}
+.PTGender.male{color:#5b9bd5!important;}
+.PTGender.female{color:#d57aa8!important;}
+.PTDead{color:#c34b4d!important;font-size:.56vw!important;line-height:1;}
 .fa-sliders:before{content:"\f1de";}
 .fa-gear:before{content:"\f013";}
 .fa-magnifying-glass:before{content:"\f002";}
@@ -2417,7 +2417,9 @@ function S(inner){
       if(r.gender==='Male' || r.gender==='Female'){
         const g=document.createElement('span');
         g.className='PTGender '+(r.gender==='Male'?'male':'female');
-        g.textContent=(r.gender==='Male'?'♂':'♀');
+        // ︎ = text (monochrome) variation selector -> forces a flat glyph instead of the shiny
+        // blue/pink color EMOJI the browser renders by default (that's the "glow" that looked weird).
+        g.textContent=(r.gender==='Male'?'♂︎':'♀︎');
         g.title=r.gender;
         badges.appendChild(g);
       }
