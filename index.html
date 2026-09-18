@@ -1432,6 +1432,8 @@ html[data-theme="savage"]{--menu-color:254, 242, 5;}
 html[data-theme="baxci"]{--menu-color:87, 191, 242;}
 html[data-theme="aus"]{--menu-color:240, 130, 28;}
 html[data-theme="winter"]{--menu-color:232, 241, 249;}
+html[data-theme="muzz"]{--menu-color:217, 150, 103;}
+html[data-theme="jamaica"]{--menu-color:224, 158, 17;}
 .PWrapper{opacity:0;visibility:hidden;pointer-events:none;transition:opacity .18s ease,visibility 0s linear .18s;}
 .PWrapper.open{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .18s ease,visibility 0s linear 0s;}
 html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-events:auto;}
@@ -2208,7 +2210,7 @@ html.static-shark-ready .PWrapper.open{opacity:1;visibility:visible;pointer-even
   const INSIDE_VISIBLE_ROWS = 10;
   const MIN_VISIBLE_ROWS = 8;
   const BANNER_H = null; // measured
-  const THEME_RGB = {green:'19, 95, 27',blue:'22, 137, 212',savage:'254, 242, 5',baxci:'87, 191, 242',aus:'240, 130, 28',winter:'232, 241, 249'};
+  const THEME_RGB = {green:'19, 95, 27',blue:'22, 137, 212',savage:'254, 242, 5',baxci:'87, 191, 242',aus:'240, 130, 28',winter:'232, 241, 249',muzz:'217, 150, 103',jamaica:'224, 158, 17'};
   function maxVisibleRows(showTabs, isMain){
     const rh = Math.max(18, window.innerWidth * (ROW_H_VW/100));
     const banner = (document.getElementById('banner') && document.getElementById('banner').offsetHeight) || (window.innerWidth * 0.065);
